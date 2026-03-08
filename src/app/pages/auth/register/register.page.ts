@@ -110,11 +110,24 @@ export class RegisterPage implements OnInit {
     const partes        = this.nombre.trim().split(/\s+/);
     if (!this.nombre.trim()) {
       this.errores.nombre = 'El nombre es obligatorio.';
-    } else if (partes.length < 2 || partes.some(p => p.length < 2)) {
-      this.errores.nombre = 'Ingresa nombre y apellido (ej: Juan Pérez).';
+    } else if (partes.length !== 2) {
+      this.errores.nombre = 'Ingresa exactamente un nombre y un apellido (ej: Juan Pérez).';
+    } else if (partes.some(p => p.length < 2)) {
+      this.errores.nombre = 'Cada palabra debe tener al menos 2 caracteres.';
     } else {
       this.errores.nombre = '';
     }
+  }
+
+
+  limitarNombre(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const partes = input.value.split(/\s+/).filter(p => p.length > 0);
+    if (partes.length > 2) {
+      input.value = partes.slice(0, 2).join(' ');
+      this.nombre = input.value;
+    }
+    this.validarNombre();
   }
 
   validarCorreo(): void {

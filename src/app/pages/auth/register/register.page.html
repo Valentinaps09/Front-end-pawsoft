@@ -81,6 +81,8 @@
               type="text"
               placeholder="Ej: Juan Pérez"
               [(ngModel)]="nombre"
+              maxlength="50"
+              (ionInput)="limitarNombre($event)"
               (ionBlur)="validarNombre()">
             </ion-input>
           </ion-item>
