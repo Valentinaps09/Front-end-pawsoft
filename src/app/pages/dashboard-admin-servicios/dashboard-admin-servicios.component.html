@@ -1,0 +1,224 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <!-- ── Topbar ── -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Gestión de Servicios</div>
+        <div class="topbar-sub">Administra los servicios y sus precios base</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-primary" (click)="openCreateServiceModal()">+ Nuevo Servicio</button>
+      </div>
+    </div>
+
+    <div class="content-area">
+      <div style="display:flex; flex-direction:column; gap:20px; padding-bottom:20px;">
+
+        <!-- Stats strip -->
+        <div class="stats-strip-3">
+          <div class="stat-card">
+            <div class="stat-icon-wrap">🩺</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ services.length }}</div>
+              <div class="stat-label">Total Servicios</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap">✅</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ activeCount }}</div>
+              <div class="stat-label">Activos</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap">⏸️</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ inactiveCount }}</div>
+              <div class="stat-label">Inactivos</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="section-card">
+          <div class="filters-row">
+            <input type="text" class="form-input search-input"
+                   placeholder="Buscar por nombre o tipo..."
+                   [(ngModel)]="serviceSearch" (input)="filterServices()">
+            <select class="form-select filter-select"
+                    [(ngModel)]="serviceStatusFilter" (change)="filterServices()">
+              <option value="">Todos los estados</option>
+              <option value="active">Activos</option>
+              <option value="inactive">Inactivos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>Servicio</th>
+                <th>Tipo (clave)</th>
+                <th>Precio base</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let svc of filteredServices" class="table-row">
+                <td>
+                  <div class="cell-name">{{ svc.displayName }}</div>
+                  <div class="cell-sub">{{ svc.description || '—' }}</div>
+                </td>
+                <td>
+                  <span class="type-chip">{{ svc.serviceType }}</span>
+                </td>
+                <td>
+                  <span class="price-value">{{ formatPrice(svc.price) }}</span>
+                </td>
+                <td>
+                  <span class="status-badge"
+                        [class.active]="svc.active"
+                        [class.inactive]="!svc.active">
+                    {{ svc.active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-action edit"
+                            (click)="openEditServiceModal(svc)">Editar</button>
+                    <button class="btn-action"
+                            [class.deactivate]="svc.active"
+                            [class.activate]="!svc.active"
+                            (click)="toggleServiceActive(svc)">
+                      {{ svc.active ? 'Desactivar' : 'Activar' }}
+                    </button>
+                    <button class="btn-action delete"
+                            (click)="openDeleteModal(svc)">Eliminar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredServices.length === 0 && !loadingServices">
+                <td colspan="5" class="empty-row">No se encontraron servicios</td>
+              </tr>
+              <tr *ngIf="loadingServices">
+                <td colspan="5" class="empty-row">Cargando servicios...</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL CREAR / EDITAR -->
+<div class="modal-overlay" *ngIf="showServiceModal" (click)="closeServiceModal()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingService ? 'Editar Servicio' : 'Nuevo Servicio' }}</h3>
+      <button class="modal-close" (click)="closeServiceModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="serviceForm">
+        <!-- Al crear: solo nombre. Al editar: nombre + tipo readonly -->
+        <div class="form-row" *ngIf="editingService">
+          <div class="form-group">
+            <label class="form-label">Nombre visible *</label>
+            <input type="text" class="form-input" formControlName="displayName"
+                   placeholder="Ej: Consulta general"
+                   [class.invalid]="isFieldInvalid('displayName')">
+            <span class="field-error" *ngIf="isFieldInvalid('displayName')">Campo requerido</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo (clave interna)</label>
+            <input type="text" class="form-input" formControlName="serviceType" readonly>
+          </div>
+        </div>
+        <div class="form-group full" *ngIf="!editingService">
+          <label class="form-label">Nombre del servicio *</label>
+          <input type="text" class="form-input" formControlName="displayName"
+                 placeholder="Ej: Consulta general"
+                 [class.invalid]="isFieldInvalid('displayName')">
+          <span class="field-error" *ngIf="isFieldInvalid('displayName')">Campo requerido</span>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Precio base (COP) *</label>
+            <input type="number" class="form-input" formControlName="price"
+                   placeholder="0" min="0"
+                   [class.invalid]="isFieldInvalid('price')">
+            <span class="field-error" *ngIf="isFieldInvalid('price')">Ingresa un precio válido (≥ 0)</span>
+          </div>
+          <div class="form-group toggle-group">
+            <label class="form-label">Estado</label>
+            <label class="toggle-switch">
+              <input type="checkbox" formControlName="active">
+              <span class="toggle-track">
+                <span class="toggle-thumb"></span>
+              </span>
+              <span class="toggle-label">
+                {{ serviceForm.get('active')?.value ? 'Activo' : 'Inactivo' }}
+              </span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Descripción</label>
+          <textarea class="form-input form-textarea" formControlName="description"
+                    placeholder="Descripción breve del servicio (opcional)"
+                    rows="3"></textarea>
+        </div>
+
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeServiceModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveService()"
+              [disabled]="serviceForm.invalid || savingService">
+        <span *ngIf="savingService">Guardando...</span>
+        <span *ngIf="!savingService">{{ editingService ? 'Actualizar' : 'Crear Servicio' }}</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ELIMINAR -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Eliminar Servicio</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cancel-warning-box">
+        <p>¿Estás seguro? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="cancel-details" *ngIf="serviceToDelete">
+        <div class="detail-row">
+          <span>Servicio</span>
+          <strong>{{ serviceToDelete.displayName }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Precio</span>
+          <strong>{{ formatPrice(serviceToDelete.price) }}</strong>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="deleteService()" [disabled]="deletingService">
+        <span *ngIf="!deletingService">Eliminar</span>
+        <span *ngIf="deletingService">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>

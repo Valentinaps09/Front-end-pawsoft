@@ -1,29 +1,36 @@
 .login-content {
-  /* Verde más opaco (mezclado con blanco) */
-  --background: linear-gradient(
-      135deg,
-      rgb(47, 60, 54),
-      rgb(47, 57, 53)
-  );
+  --background: linear-gradient(135deg, rgb(47, 60, 54), rgb(47, 57, 53));
+  position: relative;
 }
 
-/* Centrado real */
+.login-content::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.045;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='%23ffffff'%3E%3Cellipse cx='40' cy='50' rx='10' ry='8'/%3E%3Cellipse cx='25' cy='35' rx='5.5' ry='4'/%3E%3Cellipse cx='37' cy='30' rx='5' ry='4'/%3E%3Cellipse cx='49' cy='30' rx='5' ry='4'/%3E%3Cellipse cx='58' cy='37' rx='5.5' ry='4'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 80px 80px;
+  background-repeat: repeat;
+}
+
 .center-container {
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
   padding: 24px;
+  position: relative;
+  z-index: 1;
 }
 
-/* Limita ancho en web */
 .login-wrapper {
   width: 100%;
   max-width: 420px;
 }
 
 /* ---------- Logo ---------- */
-
 .logo-section {
   text-align: center;
   margin-bottom: 30px;
@@ -34,9 +41,7 @@
     color: white;
   }
 
-  h1 span {
-    color: var(--ochre);
-  }
+  h1 span { color: #f4b860; }
 
   p {
     font-size: 0.9rem;
@@ -45,104 +50,30 @@
   }
 }
 
-/* ---------- Card blanca semi transparente ---------- */
-/* ---------- Card blanca refinada ---------- */
-
+/* ---------- Card ---------- */
 .login-card {
   background: rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-
   padding: 32px 28px;
   border-radius: 20px;
-
   border: 1px solid rgba(0, 0, 0, 0.08);
-
-  box-shadow:
-    0 15px 35px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
 }
 
 .login-card h2 {
   text-align: center;
   margin-bottom: 24px;
-  color: #1f2d27; /* más oscuro */
+  color: #1f2d27;
   font-weight: 700;
 }
 
-/* ---------- Inputs más oscuros ---------- */
-
+/* ---------- Inputs ---------- */
 .input-item {
   --background: rgba(33, 37, 37, 0.08);
   border-radius: 12px;
   margin-bottom: 16px;
   padding: 6px 10px;
-}
-
-ion-label {
-  color: #2e4038; /* más oscuro */
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-ion-input {
-  color: #1c2722;
-}
-
-/* ---------- Button más profundo ---------- */
-
-.login-btn {
-  margin-top: 18px;
-  --background: #355c4f; /* verde más oscuro */
-  --color: white;
-  --border-radius: 12px;
-  font-weight: 600;
-}
-
-.login-btn:hover {
-  --background: #2a4a3f;
-}
-
-/* ---------- Links más sobrios ---------- */
-
-.forgot {
-  text-align: center;
-  margin-top: 16px;
-  font-size: 0.8rem;
-  color: rgb(49, 83, 72);
-  letter-spacing: 0.3px;
-}
-
-.register-link {
-  cursor: pointer;
-  transition: 0.2s ease;
-}
-
-.register-link:hover {
-  opacity: 0.8;
-  text-decoration: underline;
-}
-
-.register {
-  text-align: center;
-  margin-top: 20px;
-  font-size: 0.85rem;
-  color: rgb(49, 83, 72);
-}
-
-.register span {
-  color: #ff9b00; /* ochre suavizado */
-  font-weight: 600;
-}
-
-.forgot,
-.register {
-  cursor: pointer; /* hace que se vea clickable */
-}
-
-.forgot:hover,
-.register:hover {
-  /* opcional, si quieres solo un efecto mínimo */
-  opacity: 0.9;
 }
 
 ion-label {
@@ -159,14 +90,167 @@ ion-input {
 ion-input::part(native) {
   color: #1c2722 !important;
 }
-.error-message {
-  color: var(--ion-color-danger);
-  text-align: center;
-  font-size: 0.9rem;
+
+/* ---------- Ojito ---------- */
+.eye-icon {
+  color: #4a6358;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: color 0.2s;
+  &:hover { color: #355c4f; }
+}
+
+/* ---------- reCAPTCHA ---------- */
+.recaptcha-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 14px 0 6px;
+}
+
+/* ---------- Spinner ---------- */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin: 12px 0;
+  color: #4a6358;
+  font-size: 0.9rem;
+}
+
+/* ---------- Error ---------- */
+.error-message {
+  color: #c0392b;
+  text-align: center;
+  font-size: 0.85rem;
+  margin: 8px 0 4px;
+}
+
+/* ---------- Verify resend ---------- */
+.verify-resend-block {
+  background: rgba(53, 92, 79, 0.07);
+  border: 1px solid rgba(53, 92, 79, 0.2);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 4px 0 12px;
+
+  .verify-hint {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #2e4038;
+    margin: 0 0 10px;
+
+    ion-icon { font-size: 1rem; color: #355c4f; flex-shrink: 0; }
+  }
+
+  .resend-verif-btn {
+    --background: #355c4f;
+    --color: white;
+    --border-radius: 10px;
+    --box-shadow: 0 3px 10px rgba(53, 92, 79, 0.3);
+    font-size: 0.83rem;
+    font-weight: 600;
+    height: 38px;
+  }
+
+  .resend-verif-msg {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin: 10px 0 0;
+    padding: 8px 10px;
+    border-radius: 8px;
+    line-height: 1.4;
+
+    &.ok {
+      background: rgba(39, 174, 96, 0.1);
+      color: #1e6e3e;
+      border: 1px solid rgba(39, 174, 96, 0.25);
+    }
+
+    &.error {
+      background: rgba(192, 57, 43, 0.08);
+      color: #c0392b;
+      border: 1px solid rgba(192, 57, 43, 0.2);
+    }
+  }
+}
+
+/* ---------- Botón ---------- */
+.login-btn {
+  margin-top: 18px;
+  --background: #355c4f;
+  --color: white;
+  --border-radius: 12px;
+  --box-shadow: 0 4px 14px rgba(53, 92, 79, 0.35);
+  font-weight: 600;
+  &:hover { --background: #2a4a3f; }
+}
+
+/* ---------- Links ---------- */
+.forgot {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 0.8rem;
+  color: rgb(49, 83, 72);
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  &:hover { opacity: 0.9; }
+}
+
+.register {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 0.85rem;
+  color: rgb(49, 83, 72);
+  cursor: pointer;
+  span { color: #f4b860; font-weight: 600; }
+  &:hover { opacity: 0.9; }
 }
 
 .disabled {
   opacity: 0.6;
   pointer-events: none;
 }
+
+/* ---------- Sesión expirada ---------- */
+.session-expired-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(192, 112, 0, 0.1);
+  border: 1px solid rgba(192, 112, 0, 0.3);
+  border-radius: 10px;
+  color: #7a4f00;
+  font-size: 0.83rem;
+  font-weight: 500;
+  line-height: 1.4;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  ion-icon { font-size: 1.1rem; flex-shrink: 0; color: #c07000; }
+}
+
+/* ---------- Contáctanos ---------- */
+.contact-footer {
+  text-align: center;
+  padding: 20px 24px 8px;
+}
+
+.contact-link {
+  display: inline-block;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+  span { color: #f4b860; font-weight: 600; }
+  cursor: default;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TEMA OSCURO - Estilos en global.scss
+═══════════════════════════════════════════════════════ */
+

@@ -35,3 +35,2712 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - LOGIN
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Fondo de página login: oscuro con gradiente ── */
+  ion-content.login-content,
+  .login-content {
+    --background: linear-gradient(135deg, #0a0f0d, #121816) !important;
+  }
+
+  /* ── Patrón de fondo: más visible en oscuro ── */
+  .login-content::before {
+    opacity: 0.08 !important;
+  }
+
+  /* ── Logo: texto blanco ── */
+  .logo-section h1 {
+    color: #ffffff !important;
+  }
+
+  .logo-section h1 span {
+    color: #f4b860 !important;
+  }
+
+  .logo-section p {
+    color: rgba(255, 255, 255, 0.75) !important;
+  }
+
+  /* ── Card: fondo oscuro pero más claro que el fondo de página ── */
+  .login-card {
+    background: #1a1f1d !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* ── Título "Iniciar Sesión": blanco ── */
+  .login-card h2 {
+    color: #ffffff !important;
+  }
+
+  /* ── Inputs: fondo oscuro, texto blanco ── */
+  .input-item {
+    --background: #1a2820 !important;
+    background: #1a2820 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  }
+
+  /* ── Labels: gris claro ── */
+  ion-label {
+    color: #b8c5be !important;
+    --color: #b8c5be !important;
+  }
+
+  /* ── Input text: blanco ── */
+  ion-input {
+    color: #ffffff !important;
+    --color: #ffffff !important;
+    --placeholder-color: rgba(255, 255, 255, 0.4) !important;
+    --placeholder-opacity: 1 !important;
+  }
+
+  ion-input::part(native) {
+    color: #ffffff !important;
+    caret-color: #1A7A4C !important;
+  }
+
+  /* Asegurar que el placeholder sea visible */
+  ion-input input::placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+    opacity: 1 !important;
+  }
+
+  /* ── Ojito: gris claro ── */
+  .eye-icon {
+    color: #8a9a92 !important;
+    &:hover { color: #b8c5be !important; }
+  }
+
+  /* ── Spinner y loading: blanco ── */
+  .loading {
+    color: #b8c5be !important;
+  }
+
+  ion-spinner {
+    --color: #1A7A4C !important;
+  }
+
+  /* ── Error: rojo claro sobre fondo oscuro ── */
+  .error-message {
+    color: #ff6b6b !important;
+    background: rgba(255, 107, 107, 0.12) !important;
+    border: 1px solid rgba(255, 107, 107, 0.25) !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+  }
+
+  /* ── Verify resend block ── */
+  .verify-resend-block {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    .verify-hint {
+      color: #b8c5be !important;
+      ion-icon { color: #1A7A4C !important; }
+    }
+
+    .resend-verif-btn {
+      --background: #1A7A4C !important;
+      --color: #ffffff !important;
+    }
+
+    .resend-verif-msg.ok {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+      border-color: rgba(26, 122, 76, 0.35) !important;
+    }
+
+    .resend-verif-msg.error {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+      border-color: rgba(255, 107, 107, 0.25) !important;
+    }
+  }
+
+  /* ── Sesión expirada ── */
+  .session-expired-msg {
+    background: rgba(244, 184, 96, 0.15) !important;
+    border-color: rgba(244, 184, 96, 0.35) !important;
+    color: #f4b860 !important;
+    ion-icon { color: #f4b860 !important; }
+  }
+
+  /* ── Botón Ingresar: verde con texto blanco ── */
+  .login-btn {
+    --background: #1A7A4C !important;
+    --color: #ffffff !important;
+    --box-shadow: 0 4px 16px rgba(26, 122, 76, 0.4) !important;
+    &:hover { --background: #22a06b !important; }
+  }
+
+  /* ── Links: gris claro ── */
+  .forgot {
+    color: #b8c5be !important;
+    &:hover { color: #ffffff !important; }
+  }
+
+  .register {
+    color: #b8c5be !important;
+    span { color: #f4b860 !important; font-weight: 600; }
+    &:hover { color: #ffffff !important; }
+  }
+
+  /* ── Contáctanos: gris claro ── */
+  .contact-link {
+    color: rgba(255, 255, 255, 0.6) !important;
+    span { color: #f4b860 !important; }
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - REGISTER
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Fondo de página register ── */
+  ion-content.register-content,
+  .register-content {
+    --background: linear-gradient(135deg, #0a0f0d, #121816) !important;
+  }
+
+  .register-content::before {
+    opacity: 0.08 !important;
+  }
+
+  /* ── Card register ── */
+  .register-card {
+    background: #1a1f1d !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .register-card h2 {
+    color: #ffffff !important;
+  }
+
+  .card-desc {
+    color: #b8c5be !important;
+
+    &.small { color: #b8c5be !important; }
+  }
+
+  /* ── Card verificación ── */
+  .verification-card {
+    .correo-registrado {
+      color: #7dd3a3 !important;
+      background: rgba(26, 122, 76, 0.12) !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+
+    .action-divider {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    .reenvio-msg.ok {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+      border-color: rgba(26, 122, 76, 0.35) !important;
+    }
+
+    .reenvio-msg.error {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+      border-color: rgba(255, 107, 107, 0.25) !important;
+    }
+
+    .resend-btn {
+      --background: #1A7A4C !important;
+      --color: #ffffff !important;
+    }
+
+    .back-btn {
+      --border-color: rgba(255, 255, 255, 0.3) !important;
+      --color: #b8c5be !important;
+    }
+  }
+
+  /* ── Field hints ── */
+  .field-hint {
+    color: #8a9a92 !important;
+
+    &.error {
+      color: #ff6b6b !important;
+    }
+  }
+
+  .field-wrap.field-error .input-item {
+    --background: rgba(255, 107, 107, 0.08) !important;
+    background: rgba(255, 107, 107, 0.08) !important;
+    border-color: rgba(255, 107, 107, 0.4) !important;
+  }
+
+  /* ── Botón registro ── */
+  .register-btn {
+    --background: #1A7A4C !important;
+    --color: #ffffff !important;
+    --box-shadow: 0 4px 16px rgba(26, 122, 76, 0.4) !important;
+  }
+
+  /* ── Link login ── */
+  .login-link {
+    color: #b8c5be !important;
+    span { color: #f4b860 !important; }
+  }
+
+  /* ── Política ── */
+  .politica-label {
+    color: #b8c5be !important;
+  }
+
+  .politica-check {
+    accent-color: #1A7A4C !important;
+  }
+
+  .politica-link {
+    color: #f4b860 !important;
+    &:hover { color: #d4963a !important; }
+  }
+
+  /* ── Barra de fuerza ── */
+  .strength-track {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* ── Error general ── */
+  .error-msg {
+    color: #ff6b6b !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - FORGOT PASSWORD
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Fondo ── */
+  ion-content.forgot-content,
+  .forgot-content {
+    --background: linear-gradient(135deg, #0a0f0d, #121816) !important;
+  }
+
+  /* ── Card ── */
+  .forgot-card {
+    background: #1a1f1d !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .forgot-card h2 {
+    color: #ffffff !important;
+  }
+
+  /* ── Ícono ── */
+  .card-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+
+    ion-icon {
+      color: #1A7A4C !important;
+    }
+  }
+
+  /* ── Botones ── */
+  .main-btn {
+    --background: #1A7A4C !important;
+    --color: #ffffff !important;
+    --box-shadow: 0 4px 16px rgba(26, 122, 76, 0.4) !important;
+  }
+
+  .outline-btn {
+    --border-color: rgba(255, 255, 255, 0.3) !important;
+    --color: #b8c5be !important;
+  }
+
+  /* ── Success box ── */
+  .success-box {
+    background: rgba(26, 122, 76, 0.12) !important;
+  }
+
+  .success-icon-wrap {
+    background: rgba(26, 122, 76, 0.2) !important;
+
+    ion-icon {
+      color: #1A7A4C !important;
+    }
+  }
+
+  .success-text {
+    color: #b8c5be !important;
+
+    .email-highlight {
+      color: #7dd3a3 !important;
+    }
+  }
+
+  /* ── Link volver ── */
+  .back-link {
+    color: #b8c5be !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - RESET PASSWORD
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Fondo ── */
+  ion-content.reset-content,
+  .reset-content {
+    --background: linear-gradient(135deg, #0a0f0d, #121816) !important;
+  }
+
+  /* ── Card ── */
+  .reset-card {
+    background: #1a1f1d !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  .reset-card h2 {
+    color: #ffffff !important;
+  }
+
+  /* ── Ícono ── */
+  .card-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+
+    ion-icon {
+      color: #1A7A4C !important;
+    }
+  }
+
+  .success-icon {
+    background: rgba(26, 122, 76, 0.2) !important;
+
+    ion-icon {
+      color: #1A7A4C !important;
+    }
+  }
+
+  /* ── Botón ── */
+  .main-btn {
+    --background: #1A7A4C !important;
+    --color: #ffffff !important;
+    --box-shadow: 0 4px 16px rgba(26, 122, 76, 0.4) !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - PET (MASCOTAS)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Variables ── */
+  .pet-component,
+  :host {
+    --verde: #1A7A4C !important;
+    --verde-claro: #0f1412 !important;
+    --verde-hover: #1a2820 !important;
+    --verde-oscuro: #22A06B !important;
+    --texto: #ffffff !important;
+    --texto-secundario: #b8c5be !important;
+    --borde: rgba(255, 255, 255, 0.15) !important;
+    --fondo: #0a0f0d !important;
+    --blanco: #1a1f1d !important;
+    --rojo: #ff6b6b !important;
+    --rojo-claro: rgba(255, 107, 107, 0.12) !important;
+  }
+
+  /* ── Layout ── */
+  .dashboard-layout {
+    background: #0a0f0d !important;
+    color: #ffffff !important;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    color: #b8c5be !important;
+
+    h3 { color: #ffffff !important; }
+  }
+
+  /* ── Pet cards ── */
+  .pet-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover { box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6) !important; }
+  }
+
+  .pet-card-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .pet-avatar {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .pet-card-name {
+    color: #ffffff !important;
+  }
+
+  .pet-card-species {
+    color: #b8c5be !important;
+  }
+
+  .btn-icon {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+      color: #1A7A4C !important;
+    }
+
+    &.danger:hover {
+      background: rgba(255, 107, 107, 0.12) !important;
+      border-color: rgba(255, 107, 107, 0.4) !important;
+      color: #ff6b6b !important;
+    }
+  }
+
+  .detail-row {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    color: #b8c5be !important;
+
+    strong { color: #ffffff !important; }
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover { background: #22A06B !important; }
+  }
+
+  .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .btn-danger {
+    background: #ff6b6b !important;
+    color: #ffffff !important;
+
+    &:hover { background: #ff5252 !important; }
+  }
+
+  /* ── Modal ── */
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 { color: #ffffff !important; }
+  }
+
+  .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+  }
+
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* ── Form ── */
+  .form-label {
+    color: #ffffff !important;
+  }
+
+  .form-select,
+  .form-input {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder { color: rgba(255, 255, 255, 0.4) !important; }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .form-select {
+    color: #aaa !important;
+
+    &.has-value { color: #ffffff !important; }
+  }
+
+  /* ── Warning box ── */
+  .cancel-warning-box {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    p { color: #f4b860 !important; }
+    strong { color: #f4b860 !important; }
+  }
+
+  /* ── Photo upload ── */
+  .photo-upload-group {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .photo-preview {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .btn-upload {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover { background: #22A06B !important; }
+  }
+
+  .btn-remove-photo {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+  }
+
+  .photo-hint {
+    color: #b8c5be !important;
+  }
+
+  /* ── Errores ── */
+  .input-error {
+    border-color: #ff6b6b !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+  }
+
+  .field-error {
+    color: #ff6b6b !important;
+  }
+
+  /* ── Calendario ── */
+  .date-display {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover { border-color: #1A7A4C !important; }
+    &.date-has-value { border-color: #1A7A4C !important; }
+  }
+
+  .date-placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .date-arrow {
+    color: #b8c5be !important;
+  }
+
+  .calendar-popup {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+  }
+
+  .cal-nav {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+      color: #1A7A4C !important;
+    }
+  }
+
+  .cal-select {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:focus { border-color: #1A7A4C !important; }
+  }
+
+  .cal-weekdays {
+    color: #b8c5be !important;
+  }
+
+  .cal-day {
+    color: #ffffff !important;
+
+    &:hover:not(.empty):not(.disabled) {
+      background: #1a2820 !important;
+      color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+    }
+
+    &.today:not(.selected) {
+      border-color: #1A7A4C !important;
+      color: #1A7A4C !important;
+    }
+
+    &.disabled {
+      color: rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - ADMIN PAYMENTS
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Layout ── */
+  .admin-payments-component .dashboard-layout,
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  /* ── Topbar ── */
+  .admin-payments-component .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .admin-payments-component .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .admin-payments-component .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  /* ── Stats cards ── */
+  .admin-payments-component .stat-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6) !important;
+    }
+  }
+
+  .admin-payments-component .stat-icon-wrap {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .admin-payments-component .stat-value {
+    color: #ffffff !important;
+  }
+
+  .admin-payments-component .stat-label {
+    color: #b8c5be !important;
+  }
+
+  /* ── Section cards ── */
+  .admin-payments-component .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* ── Form inputs ── */
+  .admin-payments-component .form-input,
+  .admin-payments-component .form-select {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder { color: rgba(255, 255, 255, 0.4) !important; }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  /* ── Tabla ── */
+  .admin-payments-component .data-table {
+    thead tr {
+      background: #0f1412 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    th {
+      color: #b8c5be !important;
+    }
+
+    td {
+      border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
+
+  .admin-payments-component .table-row {
+    &:hover { background: #0f1412 !important; }
+  }
+
+  .admin-payments-component .cell-name {
+    color: #ffffff !important;
+  }
+
+  .admin-payments-component .cell-sub {
+    color: #8a9a92 !important;
+  }
+
+  .admin-payments-component .cell-text {
+    color: #b8c5be !important;
+  }
+
+  .admin-payments-component .empty-row,
+  .admin-payments-component .loading-row {
+    color: #8a9a92 !important;
+  }
+
+  /* ── Status badges ── */
+  .admin-payments-component .status-badge {
+    &.paid {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.pending {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+  }
+
+  /* ── Botones ── */
+  .admin-payments-component .btn-action {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #b8c5be !important;
+
+    &.revert:hover {
+      background: rgba(244, 184, 96, 0.15) !important;
+      border-color: rgba(244, 184, 96, 0.4) !important;
+      color: #f4b860 !important;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - DASHBOARDS (ADMIN, VET, REC, CLIENTE)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Layout general ── */
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .main-content {
+    background: transparent !important;
+  }
+
+  /* ── Topbar ── */
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  .today-badge {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .today-dot {
+    background: #1A7A4C !important;
+  }
+
+  /* ── Tab nav ── */
+  .tab-nav {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .tab-btn {
+    color: #8a9a92 !important;
+
+    &:hover {
+      color: #ffffff !important;
+      background: #0f1412 !important;
+    }
+
+    &.active {
+      color: #ffffff !important;
+      border-bottom-color: #1A7A4C !important;
+    }
+  }
+
+  /* ── Section cards ── */
+  .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  /* ── Stats ── */
+  .stat-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover {
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6) !important;
+    }
+  }
+
+  .stat-icon-wrap {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .stat-value {
+    color: #ffffff !important;
+  }
+
+  .stat-label {
+    color: #b8c5be !important;
+  }
+
+  /* ── Tabla ── */
+  .data-table {
+    thead tr {
+      background: #0f1412 !important;
+      border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    th {
+      color: #b8c5be !important;
+    }
+
+    td {
+      border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+    }
+  }
+
+  .table-row {
+    &:hover {
+      background: #0f1412 !important;
+    }
+
+    &.row-cancelled {
+      opacity: 0.5 !important;
+    }
+  }
+
+  .cell-name {
+    color: #ffffff !important;
+  }
+
+  .cell-sub {
+    color: #8a9a92 !important;
+  }
+
+  .cell-text {
+    color: #b8c5be !important;
+  }
+
+  .empty-row {
+    color: #8a9a92 !important;
+  }
+
+  /* ── User avatars ── */
+  .user-avatar-small {
+    background: linear-gradient(135deg, #1A7A4C, #22A06B) !important;
+
+    &.client {
+      background: linear-gradient(135deg, #4A8FD4, #5B9FE4) !important;
+    }
+
+    &.owner {
+      background: linear-gradient(135deg, #8B6DB8, #9B7DC8) !important;
+    }
+  }
+
+  .pet-avatar-cell {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  /* ── Badges ── */
+  .role-badge {
+    &.role-vet {
+      background: rgba(74, 143, 212, 0.15) !important;
+      color: #5B9FE4 !important;
+    }
+
+    &.role-recep {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+
+    &.role-admin {
+      background: rgba(139, 109, 184, 0.15) !important;
+      color: #9B7DC8 !important;
+    }
+  }
+
+  .status-badge {
+    &.active {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.inactive {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #8a9a92 !important;
+    }
+  }
+
+  .apt-status-badge,
+  .status-apt-badge {
+    &.status-programada,
+    &.status-confirmada {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.status-cancelada {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+    }
+
+    &.status-pendiente {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+
+    &.status-no_asistio {
+      background: rgba(139, 109, 184, 0.15) !important;
+      color: #9B7DC8 !important;
+    }
+
+    &.status-completada {
+      background: rgba(74, 143, 212, 0.15) !important;
+      color: #5B9FE4 !important;
+    }
+  }
+
+  /* ── Time/Date chips ── */
+  .time-chip {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .date-chip {
+    background: rgba(139, 109, 184, 0.15) !important;
+    border-color: rgba(139, 109, 184, 0.3) !important;
+    color: #9B7DC8 !important;
+  }
+
+  /* ── Action buttons ── */
+  .btn-action {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #b8c5be !important;
+
+    &.edit:hover {
+      background: rgba(74, 143, 212, 0.15) !important;
+      border-color: rgba(74, 143, 212, 0.4) !important;
+      color: #5B9FE4 !important;
+    }
+
+    &.confirm:hover,
+    &.activate:hover,
+    &.view:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: rgba(26, 122, 76, 0.4) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.deactivate:hover,
+    &.delete:hover {
+      background: rgba(255, 107, 107, 0.12) !important;
+      border-color: rgba(255, 107, 107, 0.4) !important;
+      color: #ff6b6b !important;
+    }
+
+    &.no-show:hover {
+      background: rgba(139, 109, 184, 0.15) !important;
+      border-color: rgba(139, 109, 184, 0.4) !important;
+      color: #9B7DC8 !important;
+    }
+
+    &.cobrar {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+      color: #7dd3a3 !important;
+
+      &:hover {
+        background: #1A7A4C !important;
+        border-color: #22A06B !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.btn-self {
+      opacity: 0.3 !important;
+      background: #0f1412 !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
+      color: #8a9a92 !important;
+    }
+  }
+
+  .pet-mini-chip {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .no-pets-label {
+    color: #8a9a92 !important;
+  }
+
+  /* ── Forms ── */
+  .form-label {
+    color: #ffffff !important;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+      background: #0f1412 !important;
+    }
+
+    &.invalid {
+      border-color: #ff6b6b !important;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .field-error {
+    color: #ff6b6b !important;
+  }
+
+  .form-label-readonly {
+    color: #ffffff !important;
+  }
+
+  .readonly-tag {
+    background: #0f1412 !important;
+    color: #8a9a92 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .input-readonly {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #b8c5be !important;
+  }
+
+  /* ── Password ── */
+  .toggle-pw {
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .strength-bar {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .pw-hints .hint {
+    background: #0f1412 !important;
+    color: #8a9a92 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+
+    &.ok {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+  }
+
+  /* ── Buttons ── */
+  .btn-primary {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #22A06B !important;
+      box-shadow: 0 4px 12px rgba(26, 122, 76, 0.4) !important;
+    }
+  }
+
+  .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    &:hover {
+      background: #1a2820 !important;
+    }
+  }
+
+  .btn-danger {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 107, 107, 0.2) !important;
+      border-color: rgba(255, 107, 107, 0.5) !important;
+    }
+  }
+
+  .btn-success {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .btn-icon {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(74, 143, 212, 0.15) !important;
+      border-color: rgba(74, 143, 212, 0.4) !important;
+    }
+  }
+
+  .btn-icon-danger:hover {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.4) !important;
+  }
+
+  /* ── Modals ── */
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+    }
+  }
+
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+    background: #0f1412 !important;
+  }
+
+  /* ── Warning boxes ── */
+  .cancel-warning-box {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    p {
+      color: #f4b860 !important;
+    }
+
+    strong {
+      color: #f4b860 !important;
+    }
+  }
+
+  .cancel-details {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .detail-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .temp-password-notice {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    p {
+      color: #7dd3a3 !important;
+    }
+  }
+
+  .save-error-box {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: #ff6b6b !important;
+  }
+
+  .save-error-icon {
+    color: #ff6b6b !important;
+  }
+
+  /* ── Photo upload ── */
+  .photo-upload-group {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .photo-preview {
+    background: #0f1412 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .btn-upload {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #22A06B !important;
+    }
+  }
+
+  .btn-remove-photo {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+  }
+
+  .photo-hint {
+    color: #b8c5be !important;
+  }
+
+  /* ── Client detail ── */
+  .client-detail-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .client-big-avatar {
+    background: linear-gradient(135deg, #4A8FD4, #5B9FE4) !important;
+  }
+
+  .client-detail-name {
+    color: #ffffff !important;
+  }
+
+  .client-detail-email,
+  .client-detail-phone {
+    color: #b8c5be !important;
+  }
+
+  .detail-section-title {
+    color: #b8c5be !important;
+  }
+
+  .pet-detail-card {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .pet-detail-name {
+    color: #ffffff !important;
+  }
+
+  .pet-detail-sub {
+    color: #8a9a92 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - DASHBOARD CLIENTE (APPOINTMENTS)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Two columns layout ── */
+  .two-columns {
+    .left-column,
+    .right-column {
+      .section-card {
+        background: #1a1f1d !important;
+      }
+    }
+  }
+
+  .section-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  /* ── Appointments ── */
+  .appointment-item {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.cancelled {
+      opacity: 0.5 !important;
+      background: #0f1412 !important;
+    }
+  }
+
+  .appt-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .appt-pet-name {
+    color: #ffffff !important;
+  }
+
+  .appt-datetime {
+    color: #7dd3a3 !important;
+  }
+
+  .appt-reason {
+    color: #b8c5be !important;
+  }
+
+  .appt-vet {
+    color: #7dd3a3 !important;
+  }
+
+  .btn-cancel-small {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .appt-cancelled-label {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8a9a92 !important;
+  }
+
+  .no-appointments {
+    color: #b8c5be !important;
+  }
+
+  /* ── Pets ── */
+  .pet-chip {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+  }
+
+  .no-pets {
+    color: #b8c5be !important;
+  }
+
+  /* ── Calendar ── */
+  .calendar-widget {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .cal-month {
+    color: #ffffff !important;
+  }
+
+  .cal-nav-btn {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .cal-day-name {
+    color: #b8c5be !important;
+  }
+
+  .cal-day {
+    color: #ffffff !important;
+
+    &.available:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.today:not(.selected) {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &.disabled {
+      opacity: 0.2 !important;
+    }
+  }
+
+  /* ── Time slots ── */
+  .time-slot {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &:disabled {
+      opacity: 0.3 !important;
+    }
+  }
+
+  .selected-date-label {
+    color: #7dd3a3 !important;
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .loading-slots {
+    color: #b8c5be !important;
+  }
+
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  /* ── Appointment summary ── */
+  .appointment-summary {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .summary-row {
+    border-bottom-color: rgba(26, 122, 76, 0.2) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  /* ── Vets ── */
+  .vet-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .vet-avatar {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .vet-name {
+    color: #ffffff !important;
+  }
+
+  .vet-specialty {
+    color: #b8c5be !important;
+  }
+
+  .vet-selected-check {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+  }
+
+  .no-vets {
+    color: #b8c5be !important;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    background: #1a1f1d !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+
+    &.toast-success {
+      border-left-color: #1A7A4C !important;
+    }
+
+    &.toast-error {
+      border-left-color: #ff6b6b !important;
+    }
+  }
+
+  /* ── Payments ── */
+  .pay-item {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.08) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .pay-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .pay-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .pay-badge {
+    &.paid {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.pending {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+  }
+
+  /* ── Price hint ── */
+  .price-hint-box {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .price-hint-label {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-disclaimer {
+    color: #b8c5be !important;
+  }
+
+  .price-hint-no-price {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    .price-hint-disclaimer {
+      color: #f4b860 !important;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - DASHBOARD REC (COMPONENTES ESPECÍFICOS)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Stats panels ── */
+  .panel-card {
+    background: #1a1f1d !important;
+  }
+
+  .panel-title {
+    color: #ffffff !important;
+  }
+
+  .panel-subtitle {
+    color: #8a9a92 !important;
+  }
+
+  /* ── Bar chart ── */
+  .bar-track {
+    background: #0f1412 !important;
+  }
+
+  .bar-fill {
+    background: #1A7A4C !important;
+
+    &.today-bar {
+      background: #5B9FE4 !important;
+      box-shadow: 0 0 0 2px #22A06B, 0 0 0 4px rgba(34, 160, 107, 0.3) !important;
+    }
+
+    &.bar-empty {
+      background: rgba(26, 122, 76, 0.2) !important;
+    }
+
+    &.today-bar.bar-empty {
+      background: rgba(91, 159, 228, 0.2) !important;
+      box-shadow: 0 0 0 2px #5B9FE4, 0 0 0 4px rgba(91, 159, 228, 0.2) !important;
+    }
+  }
+
+  .bar-label {
+    color: #8a9a92 !important;
+
+    &.today-label {
+      color: #ffffff !important;
+    }
+  }
+
+  .bar-value {
+    color: #ffffff !important;
+  }
+
+  .chart-legend {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+    color: #b8c5be !important;
+  }
+
+  .legend-today {
+    background: #5B9FE4 !important;
+  }
+
+  .legend-other {
+    background: #1A7A4C !important;
+  }
+
+  .legend-text {
+    color: #b8c5be !important;
+  }
+
+  /* ── Cancelled list ── */
+  .cancelled-item {
+    background: rgba(244, 184, 96, 0.08) !important;
+    border-color: rgba(244, 184, 96, 0.2) !important;
+  }
+
+  .cancelled-dot {
+    background: #ff6b6b !important;
+  }
+
+  .cancelled-client {
+    color: #ffffff !important;
+  }
+
+  .cancelled-detail {
+    color: #8a9a92 !important;
+  }
+
+  .cancelled-reason {
+    color: #f4b860 !important;
+  }
+
+  .no-cancelled {
+    color: #7dd3a3 !important;
+  }
+
+  /* ── Vet stats ── */
+  .vet-bar-track {
+    background: #0f1412 !important;
+  }
+
+  .vet-bar-fill {
+    background: linear-gradient(90deg, #1A7A4C, #22A06B) !important;
+  }
+
+  .vet-count {
+    color: #ffffff !important;
+  }
+
+  /* ── Create appointment wizard ── */
+  .create-apt-card {
+    background: #1a1f1d !important;
+  }
+
+  .step-dot {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #8a9a92 !important;
+
+    &.active {
+      background: #1A7A4C !important;
+      border-color: #1A7A4C !important;
+      color: #ffffff !important;
+      box-shadow: 0 0 0 4px rgba(26, 122, 76, 0.2) !important;
+    }
+
+    &.done {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+  }
+
+  .step-line {
+    background: rgba(255, 255, 255, 0.15) !important;
+
+    &.done {
+      background: #1A7A4C !important;
+    }
+  }
+
+  .step-labels span {
+    color: #8a9a92 !important;
+
+    &.active-label {
+      color: #ffffff !important;
+    }
+  }
+
+  .step-title {
+    color: #ffffff !important;
+  }
+
+  .step-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  /* ── Toggle buttons ── */
+  .toggle-btn {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #b8c5be !important;
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &:hover:not(.selected) {
+      background: #1a2820 !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+  }
+
+  /* ── Client search ── */
+  .client-results {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .client-result-item {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+
+    &:hover {
+      background: #0f1412 !important;
+    }
+  }
+
+  .no-results-hint {
+    color: #8a9a92 !important;
+  }
+
+  .selected-client-card {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .btn-change-client {
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+    }
+  }
+
+  /* ── Pet select cards ── */
+  .pet-select-card {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: #1a2820 !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .pet-select-name {
+    color: #ffffff !important;
+  }
+
+  .pet-select-sub {
+    color: #8a9a92 !important;
+  }
+
+  .pet-select-check {
+    color: #1A7A4C !important;
+  }
+
+  /* ── Photo upload ── */
+  .photo-preview {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .new-pet-notice {
+    background: rgba(74, 143, 212, 0.15) !important;
+    color: #5B9FE4 !important;
+    border-color: rgba(74, 143, 212, 0.3) !important;
+  }
+
+  /* ── Appointment summary ── */
+  .apt-summary-row {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .apt-summary-chip {
+    color: #ffffff !important;
+  }
+
+  .pet-chip {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .apt-summary-sep {
+    color: rgba(26, 122, 76, 0.5) !important;
+  }
+
+  .apt-status-note {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+  }
+
+  .status-note-text {
+    color: #f4b860 !important;
+  }
+
+  .apt-edit-summary {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .payment-amount-display {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  /* ── Clientes layout ── */
+  .clientes-panel {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .panel-header {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .search-bar {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .loading-msg {
+    color: #b8c5be !important;
+  }
+
+  .client-row {
+    border-bottom-color: rgba(255, 255, 255, 0.03) !important;
+
+    &:hover {
+      background: #0f1412 !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.12) !important;
+      border-left-color: #1A7A4C !important;
+    }
+  }
+
+  .client-avatar {
+    background: linear-gradient(135deg, #1A7A4C, #22A06B) !important;
+  }
+
+  .client-name {
+    color: #ffffff !important;
+  }
+
+  .client-email {
+    color: #8a9a92 !important;
+  }
+
+  .empty-msg {
+    color: #8a9a92 !important;
+  }
+
+  /* ── Detalle panel ── */
+  .detalle-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .detalle-avatar {
+    background: linear-gradient(135deg, #1A7A4C, #22A06B) !important;
+  }
+
+  .detalle-name {
+    color: #ffffff !important;
+  }
+
+  .detalle-email {
+    color: #8a9a92 !important;
+  }
+
+  .mascotas-title {
+    color: #ffffff !important;
+  }
+
+  .pet-card {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 4px 12px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .pet-photo {
+    background: rgba(26, 122, 76, 0.15) !important;
+
+    &.no-photo {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .pet-name {
+    color: #ffffff !important;
+  }
+
+  .pet-breed {
+    color: #8a9a92 !important;
+  }
+
+  .pet-sex {
+    color: #b8c5be !important;
+  }
+
+  /* ── Time slots ── */
+  .slots-hint {
+    color: #b8c5be !important;
+  }
+
+  .slots-loading {
+    color: #b8c5be !important;
+  }
+
+  .spinner-sm-inline {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  .time-slot-btn {
+    &.available {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+      color: #7dd3a3 !important;
+
+      &:hover:not(:disabled) {
+        background: #1A7A4C !important;
+        border-color: #22A06B !important;
+        color: #ffffff !important;
+      }
+    }
+
+    &.slot-selected {
+      background: #1A7A4C !important;
+      border-color: #22A06B !important;
+      color: #ffffff !important;
+      box-shadow: 0 2px 8px rgba(26, 122, 76, 0.4) !important;
+    }
+
+    &.taken {
+      background: rgba(255, 107, 107, 0.08) !important;
+      border-color: rgba(255, 107, 107, 0.2) !important;
+      color: #ff6b6b !important;
+    }
+
+    &.past {
+      background: #0f1412 !important;
+      border-color: rgba(255, 255, 255, 0.05) !important;
+      color: rgba(255, 255, 255, 0.2) !important;
+    }
+  }
+
+  .slots-empty {
+    background: rgba(255, 107, 107, 0.08) !important;
+    border-color: rgba(255, 107, 107, 0.2) !important;
+    color: #ff6b6b !important;
+  }
+
+  /* ── Date picker ── */
+  .date-display {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover,
+    &.date-has-value {
+      border-color: #1A7A4C !important;
+    }
+
+    &.invalid {
+      border-color: #ff6b6b !important;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .date-placeholder {
+    color: rgba(255, 255, 255, 0.4) !important;
+  }
+
+  .date-arrow {
+    color: #b8c5be !important;
+  }
+
+  .calendar-popup {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+  }
+
+  /* ── Toast container ── */
+  .toast-container .toast {
+    &.toast-success {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+
+    &.toast-error {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+      border-color: rgba(255, 107, 107, 0.3) !important;
+    }
+  }
+
+  /* ── Table header row ── */
+  .table-header-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .table-section-title {
+    color: #ffffff !important;
+  }
+
+  .time-badge {
+    background: rgba(74, 143, 212, 0.15) !important;
+    color: #5B9FE4 !important;
+  }
+
+  .time-badge-sm {
+    background: rgba(74, 143, 212, 0.15) !important;
+    color: #5B9FE4 !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - PERFIL CLIENTE
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  /* ── Perfil cliente - aplicar a todo el componente ── */
+  app-perfil-cliente {
+    --verde: #1A7A4C !important;
+    --verde-claro: rgba(26, 122, 76, 0.15) !important;
+    --verde-hover: rgba(26, 122, 76, 0.25) !important;
+    --verde-oscuro: #22A06B !important;
+    --texto: #ffffff !important;
+    --texto-secundario: #b8c5be !important;
+    --borde: rgba(255, 255, 255, 0.15) !important;
+    --fondo: #0a0f0d !important;
+    --blanco: #1a1f1d !important;
+    --rojo: #ff6b6b !important;
+    --rojo-claro: rgba(255, 107, 107, 0.12) !important;
+  }
+
+  /* ── Layout ── */
+  app-perfil-cliente .dashboard-layout {
+    background: #0a0f0d !important;
+    color: #ffffff !important;
+  }
+
+  /* ── Topbar ── */
+  app-perfil-cliente .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-perfil-cliente .topbar-title {
+    color: #ffffff !important;
+  }
+
+  app-perfil-cliente .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  /* ── Avatar ── */
+  app-perfil-cliente .avatar-circle {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  app-perfil-cliente .perfil-title {
+    color: #ffffff !important;
+  }
+
+  app-perfil-cliente .perfil-subtitle {
+    color: #b8c5be !important;
+  }
+
+  /* ── Alerts ── */
+  app-perfil-cliente .alert-success {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  app-perfil-cliente .alert-error {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: #ff6b6b !important;
+  }
+
+  /* ── Section cards ── */
+  app-perfil-cliente .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-perfil-cliente .section-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-perfil-cliente .section-header h3 {
+    color: #ffffff !important;
+  }
+
+  app-perfil-cliente .optional-badge {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #b8c5be !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-perfil-cliente .section-hint {
+    color: #b8c5be !important;
+  }
+
+  /* ── Fields ── */
+  app-perfil-cliente .field-label {
+    color: #ffffff !important;
+  }
+
+  app-perfil-cliente .field-readonly {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    color: #b8c5be !important;
+  }
+
+  app-perfil-cliente .readonly-badge {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #8a9a92 !important;
+  }
+
+  app-perfil-cliente .field-input-wrapper {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:focus-within {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+
+    &.field-error {
+      border-color: #ff6b6b !important;
+      box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  app-perfil-cliente .field-prefix {
+    color: #b8c5be !important;
+  }
+
+  app-perfil-cliente .field-icon {
+    color: #b8c5be !important;
+  }
+
+  app-perfil-cliente .field-input {
+    color: #ffffff !important;
+    background: transparent !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+
+  app-perfil-cliente .field-hint-error {
+    color: #ff6b6b !important;
+  }
+
+  app-perfil-cliente .field-hint {
+    color: #b8c5be !important;
+  }
+
+  app-perfil-cliente .toggle-pass {
+    color: #b8c5be !important;
+
+    &:hover {
+      color: #1A7A4C !important;
+    }
+  }
+
+  /* ── Strength bar ── */
+  app-perfil-cliente .strength-bar {
+    background: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-perfil-cliente .match-hint {
+    &.match-ok {
+      color: #7dd3a3 !important;
+    }
+
+    &.match-err {
+      color: #ff6b6b !important;
+    }
+  }
+
+  /* ── Buttons ── */
+  app-perfil-cliente .btn-save {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #22A06B !important;
+      box-shadow: 0 4px 14px rgba(26, 122, 76, 0.4) !important;
+    }
+  }
+
+  /* ── Modal ── */
+  app-perfil-cliente .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  app-perfil-cliente .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  app-perfil-cliente .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-perfil-cliente .modal-header h3 {
+    color: #ffffff !important;
+  }
+
+  app-perfil-cliente .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  app-perfil-cliente .modal-subtitle {
+    color: #b8c5be !important;
+  }
+
+  app-perfil-cliente .code-input {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+
+  app-perfil-cliente .verify-error {
+    color: #ff6b6b !important;
+  }
+
+  app-perfil-cliente .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-perfil-cliente .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  app-perfil-cliente .btn-confirm {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #22A06B !important;
+      box-shadow: 0 4px 14px rgba(26, 122, 76, 0.4) !important;
+    }
+  }
+
+  /* ── Toggle buttons ── */
+  app-perfil-cliente .toggle-btn {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.active {
+      background: #1A7A4C !important;
+      border-color: #22A06B !important;
+      color: #ffffff !important;
+    }
+  }
+
+  /* ── Switch ── */
+  app-perfil-cliente .slider {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+  }
+
+  app-perfil-cliente .switch input:checked + .slider {
+    background-color: #1A7A4C !important;
+  }
+
+  app-perfil-cliente .switch-label {
+    color: #b8c5be !important;
+  }
+
+  /* ── Spinner ── */
+  app-perfil-cliente .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  app-perfil-cliente .spinner-sm {
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    border-top-color: #ffffff !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   ACCESIBILIDAD - TAMAÑO DE FUENTE
+
+   Aumenta el tamaño de TODO el texto de forma muy sutil.
+
+   - Normal: 100% (base)
+   - Grande: 101% (+1%)
+   - Muy grande: 102% (+2%)
+══════════════════════════════════════════════════════ */
+
+/* Tamaño normal (por defecto) */
+body.font-normal {
+  font-size: 100%;
+}
+
+/* Tamaño grande - 101% */
+body.font-large {
+  font-size: 101%;
+}
+
+body.font-large * {
+  font-size: 101% !important;
+}
+
+/* Tamaño muy grande - 102% */
+body.font-xlarge {
+  font-size: 102%;
+}
+
+body.font-xlarge * {
+  font-size: 102% !important;
+}
+
+/* Proteger el logo para que no crezca */
+body.font-large .logo-section,
+body.font-large .logo-section *,
+body.font-xlarge .logo-section,
+body.font-xlarge .logo-section * {
+  font-size: 100% !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   ACCESIBILIDAD - DESACTIVAR INTERRUPCIONES
+   
+   Suprime toasts, animaciones de modales, badges pulsantes
+   y cualquier elemento visual automático no solicitado
+══════════════════════════════════════════════════════ */
+
+/* Ocultar toasts flotantes */
+body.disable-interruptions .toast,
+body.disable-interruptions .toast-container,
+body.disable-interruptions ion-toast {
+  display: none !important;
+}
+
+/* Desactivar animaciones de entrada de modales */
+body.disable-interruptions .modal-overlay,
+body.disable-interruptions .modal-card,
+body.disable-interruptions ion-modal {
+  animation: none !important;
+  transition: none !important;
+}
+
+/* Desactivar badges pulsantes */
+body.disable-interruptions .badge,
+body.disable-interruptions .notification-badge,
+body.disable-interruptions [class*="badge"] {
+  animation: none !important;
+}
+
+/* Desactivar animaciones y transiciones generales */
+body.disable-interruptions *,
+body.disable-interruptions *:hover,
+body.disable-interruptions *:focus,
+body.disable-interruptions *:active,
+body.disable-interruptions *::before,
+body.disable-interruptions *::after {
+  animation: none !important;
+  animation-duration: 0s !important;
+  transition: none !important;
+  transition-duration: 0s !important;
+  scroll-behavior: auto !important;
+}
+
+/* Restaurar animaciones SOLO para el widget de accesibilidad */
+body.disable-interruptions .accessibility-fab,
+body.disable-interruptions .accessibility-fab:hover {
+  animation: unset !important;
+  transition: all 0.3s ease !important;
+}
+
+body.disable-interruptions .accessibility-fab:hover {
+  transform: scale(1.05);
+}
+
+body.disable-interruptions .accessibility-panel {
+  transition: right 0.3s ease !important;
+}
+
+body.disable-interruptions .accessibility-overlay {
+  animation: fadeIn 0.2s ease !important;
+}
+
+body.disable-interruptions .accessibility-widget .control-btn,
+body.disable-interruptions .accessibility-widget .control-btn:hover,
+body.disable-interruptions .accessibility-panel .control-btn,
+body.disable-interruptions .accessibility-panel .control-btn:hover {
+  transition: all 0.2s ease !important;
+}
+
+body.disable-interruptions .slider {
+  transition: 0.3s !important;
+}
+
+body.disable-interruptions .slider::before {
+  transition: 0.3s !important;
+}
+
+
+
+
+
+
+/* ══════════════════════════════════════════════════════
+   ACCESIBILIDAD - ALTO CONTRASTE
+
+   3 niveles de contraste:
+   - Normal: colores normales
+   - Medio: escala de grises + contraste moderado
+   - Alto: escala de grises + contraste máximo
+
+   Inspirado en el sistema de la Universidad del Quindío
+   Funciona tanto en tema claro como oscuro
+══════════════════════════════════════════════════════ */
+
+/* Contraste medio - Escala de grises + contraste moderado */
+body.contrast-medium {
+  filter: grayscale(100%) contrast(1.3) !important;
+}
+
+body.contrast-medium button,
+body.contrast-medium input,
+body.contrast-medium select,
+body.contrast-medium textarea,
+body.contrast-medium .card,
+body.contrast-medium .modal-card {
+  border-width: 2px !important;
+}
+
+body.contrast-medium a {
+  text-decoration: underline !important;
+}
+
+/* Contraste alto - Escala de grises + contraste muy alto */
+body.contrast-high {
+  filter: grayscale(100%) contrast(1.8) !important;
+}
+
+body.contrast-high button,
+body.contrast-high input,
+body.contrast-high select,
+body.contrast-high textarea,
+body.contrast-high .card,
+body.contrast-high .modal-card {
+  border-width: 3px !important;
+}
+
+body.contrast-high a {
+  text-decoration: underline !important;
+  text-decoration-thickness: 2px !important;
+}
+
+body.contrast-high h1,
+body.contrast-high h2,
+body.contrast-high h3,
+body.contrast-high h4 {
+  font-weight: 600 !important;
+}
+
+/* Ajustes específicos para tema oscuro con alto contraste */
+body.contrast-high.theme-dark {
+  filter: grayscale(100%) contrast(2.0) brightness(1.1) !important;
+}
+
+body.contrast-medium.theme-dark {
+  filter: grayscale(100%) contrast(1.5) brightness(1.05) !important;
+}

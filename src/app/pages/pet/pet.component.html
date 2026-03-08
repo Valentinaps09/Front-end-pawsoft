@@ -1,0 +1,212 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Mis Mascotas</div>
+        <div class="topbar-sub">Gestiona el perfil de tus mascotas</div>
+      </div>
+      <button class="btn-primary" (click)="openCreateModal()">+ Registrar Mascota</button>
+    </div>
+
+    <div class="content-area">
+      <div class="empty-state" *ngIf="pets.length === 0">
+        <div class="empty-icon">🐾</div>
+        <h3>No tienes mascotas registradas</h3>
+        <p>Agrega tu primera mascota para comenzar</p>
+        <button class="btn-primary" (click)="openCreateModal()">+ Registrar Mascota</button>
+      </div>
+
+      <div class="pets-grid" *ngIf="pets.length > 0">
+        <div class="pet-card" *ngFor="let pet of pets">
+          <div class="pet-card-header">
+            <div class="pet-avatar">
+              <img *ngIf="pet.photoUrl" [src]="pet.photoUrl" alt="Foto de {{ pet.name }}" class="pet-photo">
+              <span *ngIf="!pet.photoUrl">{{ getEmoji(pet.species) }}</span>
+            </div>
+            <div class="pet-card-info">
+              <div class="pet-card-name">{{ pet.name }}</div>
+              <div class="pet-card-species">{{ pet.species }} · {{ pet.breed || 'Sin raza' }}</div>
+            </div>
+            <div class="pet-card-actions">
+              <button class="btn-icon" title="Editar" (click)="openEditModal(pet)">✏️</button>
+              <button class="btn-icon danger" title="Eliminar" (click)="openDeleteModal(pet)">🗑️</button>
+            </div>
+          </div>
+          <div class="pet-card-body">
+            <div class="detail-row"><span>Sexo</span><strong>{{ pet.sex === 'M' ? 'Macho' : 'Hembra' }}</strong></div>
+            <div class="detail-row"><span>Raza</span><strong>{{ pet.breed || '—' }}</strong></div>
+            <div class="detail-row"><span>Nacimiento</span><strong>{{ pet.birthDate ? formatDate(pet.birthDate) : '—' }}</strong></div>
+            <div class="detail-row"><span>Propietario</span><strong>{{ pet.ownerEmail }}</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- CREATE / EDIT MODAL -->
+<div class="modal-overlay" *ngIf="showFormModal" (click)="closeFormModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ editingPet ? 'Editar Mascota' : 'Registrar Nueva Mascota' }}</h3>
+      <button class="modal-close" (click)="closeFormModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="petForm">
+
+        <!-- FOTO -->
+        <div class="photo-upload-group">
+          <div class="photo-preview">
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Vista previa">
+            <span *ngIf="!photoPreview">{{ petForm.value.species ? getEmoji(petForm.value.species!) : '🐾' }}</span>
+          </div>
+          <div class="photo-actions">
+            <label class="btn-upload" for="photoInput">
+              📷 {{ photoPreview ? 'Cambiar foto' : 'Subir foto' }}
+            </label>
+            <!-- FIX Safari iOS: opacity:0 en vez de display:none para que
+                 el label active el file picker correctamente en móvil -->
+            <input type="file"
+                   id="photoInput"
+                   accept="image/*"
+                   style="position:absolute; opacity:0; width:1px; height:1px; overflow:hidden;"
+                   (change)="onPhotoSelected($event)">
+            <button type="button" class="btn-remove-photo" *ngIf="photoPreview" (click)="removePhoto()">Quitar</button>
+            <span class="photo-hint">Opcional · máx. 2MB</span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="petName">Nombre *</label>
+            <input id="petName" type="text" class="form-input" formControlName="name" placeholder="Ej: Rocky, Luna...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="petSpecies">Especie *</label>
+            <select id="petSpecies" class="form-select"
+                    [class.has-value]="petForm.get('species')?.value"
+                    formControlName="species">
+              <option value="" disabled>Selecciona...</option>
+              <option value="Perro">🐕 Perro</option>
+              <option value="Gato">🐈 Gato</option>
+              <option value="Conejo">🐰 Conejo</option>
+              <option value="Hamster">🐹 Hámster</option>
+              <option value="Ave">🦜 Ave</option>
+              <option value="Otro">🐾 Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label" for="petBreed">Raza</label>
+            <input id="petBreed" type="text" class="form-input" formControlName="breed" placeholder="Ej: Labrador...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="petSex">Sexo *</label>
+            <select id="petSex" class="form-select"
+                    [class.has-value]="petForm.get('sex')?.value"
+                    formControlName="sex">
+              <option value="" disabled>Selecciona...</option>
+              <option value="M">Macho</option>
+              <option value="F">Hembra</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- FECHA DE NACIMIENTO -->
+        <div class="form-group">
+          <label class="form-label">📅 Fecha de Nacimiento</label>
+
+          <div class="date-picker-wrapper" (click)="$event.stopPropagation()">
+
+            <div class="date-display" (click)="toggleCalendar()"
+                 [class.date-has-value]="petForm.value.birthDate">
+              <span *ngIf="!petForm.value.birthDate" class="date-placeholder">Toca para seleccionar fecha</span>
+              <span *ngIf="petForm.value.birthDate">{{ formatDate(petForm.value.birthDate!) }}</span>
+              <span class="date-arrow">▾</span>
+            </div>
+
+            <div class="calendar-popup" *ngIf="showCalendar">
+              <div class="cal-header">
+                <button type="button" class="cal-nav" (click)="prevMonth()">‹</button>
+                <div class="cal-title">
+                  <!-- FIX: [ngValue] en vez de [value] para preservar tipo number
+                       y evitar que calMonth quede como undefined al cambiar -->
+                  <select class="cal-select" [(ngModel)]="calMonth" [ngModelOptions]="{standalone:true}" (change)="onMonthChange()">
+                    <option *ngFor="let m of meses; let i = index" [ngValue]="i">{{ m }}</option>
+                  </select>
+                  <select class="cal-select" [(ngModel)]="calYear" [ngModelOptions]="{standalone:true}" (change)="onYearChange()">
+                    <option *ngFor="let y of years" [ngValue]="y">{{ y }}</option>
+                  </select>
+                </div>
+                <button type="button" class="cal-nav" (click)="nextMonth()">›</button>
+              </div>
+
+              <div class="cal-weekdays">
+                <span>Do</span><span>Lu</span><span>Ma</span>
+                <span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span>
+              </div>
+
+              <div class="cal-days">
+                <span
+                  *ngFor="let day of calDays"
+                  class="cal-day"
+                  [class.empty]="day === 0"
+                  [class.selected]="isSelected(day)"
+                  [class.disabled]="isDisabled(day)"
+                  [class.today]="isToday(day)"
+                  (click)="selectDay(day)">
+                  {{ day || '' }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <span class="field-error"
+                *ngIf="petForm.get('birthDate')?.invalid && petForm.get('birthDate')?.touched">
+            Selecciona una fecha válida
+          </span>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeFormModal()">Cancelar</button>
+      <button class="btn-primary" (click)="savePet()" [disabled]="!petForm.valid || saving || uploadingPhoto">
+        <span *ngIf="uploadingPhoto">Subiendo foto...</span>
+        <span *ngIf="saving && !uploadingPhoto">Guardando...</span>
+        <span *ngIf="!saving && !uploadingPhoto">💾 Guardar</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Eliminar Mascota</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cancel-warning-box">
+        <span class="warning-icon">⚠️</span>
+        <p>¿Estás seguro de que deseas eliminar a <strong>{{ petToDelete?.name }}</strong>? Esta acción no se puede deshacer.</p>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="confirmDelete()" [disabled]="deleting">
+        <span *ngIf="!deleting">🗑️ Eliminar</span>
+        <span *ngIf="deleting">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,31 +1,27 @@
-import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, ViewChild, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
+import { Component, NgZone, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { NavigationStart, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import {
   IonButton,
   IonContent,
+  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
-  IonSpinner
+  IonSpinner,
 } from '@ionic/angular/standalone';
-
-import { HttpErrorResponse } from '@angular/common/http';
+import { addIcons } from 'ionicons';
+import { eyeOutline, eyeOffOutline, refreshOutline, mailOutline } from 'ionicons/icons';
 
 import { AuthService, LoginResponse } from '../../../services/auth';
 import { OtpModalComponent } from '../../../component/otp-modal/otp-modal.component';
 
-/**
- * Página de inicio de sesión.
- *
- * Flujo:
- * 1) El usuario envía credenciales → el backend envía un OTP al correo.
- * 2) El usuario ingresa OTP → se valida contra el backend y se guarda sesión.
- * 3) Se redirige según el rol.
- */
+declare const grecaptcha: any;
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.page.html',
@@ -39,85 +35,222 @@ import { OtpModalComponent } from '../../../component/otp-modal/otp-modal.compon
     IonLabel,
     IonInput,
     IonButton,
+    IonIcon,
     IonSpinner,
-    OtpModalComponent
-  ]
+    OtpModalComponent,
+  ],
 })
-export class LoginPage implements OnDestroy {
-  private authService = inject(AuthService);
-  private router = inject(Router);
+export class LoginPage implements OnInit, OnDestroy {
 
-  email = '';
+  private authService = inject(AuthService);
+  private router      = inject(Router);
+  private ngZone      = inject(NgZone);
+  private location    = inject(Location);
+
+  // ── Estado del formulario ──────────────────────────────────────
+  email    = '';
   password = '';
   errorMsg = '';
   cargando = false;
 
-  mostrarOtp = false;
+  // ── Estado del modal OTP ───────────────────────────────────────
+  mostrarOtp    = false;
   correoUsuario = '';
+  mostrarPass   = false;
+
+  // ── reCAPTCHA ──────────────────────────────────────────────────
+  siteKey        = '6Lc8A4EsAAAAALRBXHH98TRFskX6urHK28txP555';
+  recaptchaToken = '';
+
+  // ── Sesión expirada ────────────────────────────────────────────
+  sessionExpiredMsg = '';
+
+  // ── Reenvío verificación de cuenta ────────────────────────────
+  /** Se llena cuando el backend responde "debes verificar tu correo" */
+  correoSinVerificar  = '';
+  reenviandoVerif     = false;
+  mensajeReenvioVerif = '';
 
   @ViewChild(OtpModalComponent) otpModal!: OtpModalComponent;
 
   private subscriptions: Subscription[] = [];
 
-  login(): void {
-    this.errorMsg = '';
-    this.cargando = true;
+  private onPopState = (): void => {
+    window.history.pushState(null, '', '/login');
+  };
 
-    const sub = this.authService.login(this.email, this.password).subscribe({
+  constructor() {
+    addIcons({ eyeOutline, eyeOffOutline, refreshOutline, mailOutline });
+  }
+
+  // ── Ciclo de vida ──────────────────────────────────────────────
+
+  ngOnInit(): void {
+    this.mostrarPass    = false;
+    this.errorMsg       = '';
+    this.recaptchaToken = '';
+    this.renderRecaptcha();
+
+    const nav = this.router.getCurrentNavigation();
+    if (nav?.extras?.state?.['reason'] === 'inactivity') {
+      this.sessionExpiredMsg = 'Tu sesión expiró por inactividad. Por favor, inicia sesión de nuevo.';
+    } else {
+      this.sessionExpiredMsg = '';
+    }
+
+    window.history.pushState(null, '', '/login');
+    window.addEventListener('popstate', this.onPopState);
+
+    const navSub = this.router.events.pipe(
+      filter(event => event instanceof NavigationStart)
+    ).subscribe(() => {
+      this.email              = '';
+      this.password           = '';
+      this.errorMsg           = '';
+      this.mostrarPass        = false;
+      this.correoSinVerificar = '';
+      this.mensajeReenvioVerif = '';
+    });
+
+    this.subscriptions.push(navSub);
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach(s => s.unsubscribe());
+    window.removeEventListener('popstate', this.onPopState);
+  }
+
+  // ── reCAPTCHA ──────────────────────────────────────────────────
+
+  private renderRecaptcha(): void {
+    const interval = setInterval(() => {
+      if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+        clearInterval(interval);
+        grecaptcha.render('recaptcha-container', {
+          sitekey: this.siteKey,
+          callback: (token: string) => {
+            this.ngZone.run(() => { this.recaptchaToken = token; });
+          },
+          'expired-callback': () => {
+            this.ngZone.run(() => { this.recaptchaToken = ''; });
+          },
+        });
+      }
+    }, 200);
+  }
+
+  private resetRecaptcha(): void {
+    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+      grecaptcha.reset();
+    }
+  }
+
+  // ── Fase 1: Login ──────────────────────────────────────────────
+
+  login(): void {
+    this.errorMsg            = '';
+    this.sessionExpiredMsg   = '';
+    this.correoSinVerificar  = '';
+    this.mensajeReenvioVerif = '';
+    this.cargando            = true;
+
+    const sub = this.authService.login(this.email, this.password, this.recaptchaToken).subscribe({
       next: () => {
-        this.cargando = false;
-        this.correoUsuario = this.email;
+        this.cargando       = false;
+        this.correoUsuario  = this.email;
         localStorage.setItem('email_pendiente', this.email);
-        this.limpiarPassword();
-        this.mostrarOtp = true;
+        this.password       = '';
+        this.recaptchaToken = '';
+        this.resetRecaptcha();
+        this.mostrarOtp     = true;
       },
       error: (err: unknown) => {
-        this.cargando = false;
-        this.limpiarPassword();
-        this.errorMsg =
-          this.extraerMensajeError(err) ?? 'Credenciales inválidas o error de conexión';
-      }
+        this.cargando       = false;
+        this.recaptchaToken = '';
+        this.resetRecaptcha();
+
+        const msg = this.extraerMensajeError(err) ?? 'Credenciales inválidas o error de conexión';
+        this.errorMsg = msg;
+
+        // ✅ Si el error es "correo no verificado", ofrecemos el botón de reenvío
+        if (msg.toLowerCase().includes('verificar tu correo')) {
+          this.correoSinVerificar = this.email;
+        } else {
+          this.correoSinVerificar = '';
+        }
+      },
     });
 
     this.subscriptions.push(sub);
   }
 
-  private limpiarPassword(): void {
-    this.password = '';
+  // ── Reenvío verificación de cuenta desde login ─────────────────
+
+  /**
+   * Permite a un usuario que nunca verificó su correo solicitar un nuevo
+   * enlace directamente desde la pantalla de login, sin necesidad de
+   * volver a registrarse ni abrir la terminal.
+   */
+  reenviarVerificacionDesdeLogin(): void {
+    if (!this.correoSinVerificar || this.reenviandoVerif) return;
+
+    this.reenviandoVerif     = true;
+    this.mensajeReenvioVerif = '';
+
+    const sub = this.authService.resendVerificationEmail(this.correoSinVerificar).subscribe({
+      next: () => {
+        this.reenviandoVerif     = false;
+        this.mensajeReenvioVerif = '✅ Correo reenviado. Revisa tu bandeja de entrada.';
+      },
+      error: () => {
+        this.reenviandoVerif     = false;
+        this.mensajeReenvioVerif = '❌ No se pudo reenviar. Intenta más tarde.';
+      },
+    });
+
+    this.subscriptions.push(sub);
   }
 
-  private limpiarFormulario(): void {
-    this.email = '';
-    this.password = '';
-  }
+  // ── Fase 2: Verificación OTP ───────────────────────────────────
 
   handleOtpValidado(code: string): void {
-    // Cancela suscripciones previas para evitar llamadas duplicadas
-    this.subscriptions.forEach(s => s.unsubscribe());
-    this.subscriptions = [];
     this.errorMsg = '';
 
     const sub = this.authService.verify2FA(this.correoUsuario, code).subscribe({
       next: (response: LoginResponse) => {
-        if (response?.token && response?.rol) {
-          this.authService.guardarSesion(response.token, response.rol, this.correoUsuario);
+        if (!response?.token || !response?.role) {
+          this.errorMsg = 'Respuesta inválida del servidor.';
+          this.otpModal?.stopLoading();
+          return;
         }
+
+        this.authService.guardarSesion(response.token, response.role, this.correoUsuario);
+
+        if (response.mustChangePassword) {
+          localStorage.setItem('mustChangePassword', 'true');
+        } else {
+          localStorage.removeItem('mustChangePassword');
+        }
+
+        localStorage.removeItem('email_pendiente');
         this.otpModal?.showSuccess();
       },
       error: (err: unknown) => {
         const msg =
-          this.extraerMensajeError(err) ?? 'Código inválido, expirado o error en el servidor';
+          this.extraerMensajeError(err) ??
+          'Código inválido, expirado o error en el servidor';
 
         this.errorMsg = msg;
 
         const msgLower = msg.toLowerCase();
+
         const esBloqueo =
           msgLower.includes('espera 1 minuto') ||
           msgLower.includes('intenta nuevamente en 1 minuto') ||
           msgLower.includes('antes de volver a intentarlo');
 
         if (esBloqueo) {
-          this.otpModal?.showLocked(60);
+          this.otpModal?.showLocked(1);
           return;
         }
 
@@ -127,39 +260,36 @@ export class LoginPage implements OnDestroy {
         } else {
           this.otpModal?.showError();
         }
-      }
+      },
     });
 
     this.subscriptions.push(sub);
   }
 
+  // ── Redirección tras éxito del modal ───────────────────────────
+
   handleSuccessRedirect(): void {
-    let rol = localStorage.getItem('rol');
+    this.mostrarOtp = false;
+    const mustChange = localStorage.getItem('mustChangePassword') === 'true';
+    const role       = localStorage.getItem('rol') ?? '';
 
-    if (!rol) {
-      rol = 'ROLE_CLIENTE';
-      localStorage.setItem('rol', rol);
-    }
-
-    switch (rol) {
-      case 'ROLE_VETERINARIO':
-        this.router.navigate(['/dashboard-vet']);
-        break;
-
-      case 'ROLE_RECEPCIONISTA':
-        this.router.navigate(['/dashboard-recep']);
-        break;
-
-      case 'ROLE_ADMIN':
-        this.router.navigate(['/dashboard-admin']);
-        break;
-
-      case 'ROLE_CLIENTE':
-      default:
-        this.router.navigate(['/dashboard-cliente']);
-        break;
+    if (mustChange) {
+      this.router.navigate(['/change-password-first']);
+    } else {
+      this.redirigirPorRol(role);
     }
   }
+
+  private redirigirPorRol(role: string): void {
+    switch (role) {
+      case 'ROLE_VETERINARIO':   this.router.navigate(['/dashboard-vet']);     break;
+      case 'ROLE_RECEPCIONISTA': this.router.navigate(['/dashboard-rec']);     break;
+      case 'ROLE_ADMIN':         this.router.navigate(['/dashboard-admin']);   break;
+      default:                   this.router.navigate(['/dashboard-cliente']); break;
+    }
+  }
+
+  // ── Eventos del modal OTP ──────────────────────────────────────
 
   handleOtpCerrado(): void {
     this.mostrarOtp = false;
@@ -168,7 +298,6 @@ export class LoginPage implements OnDestroy {
 
   handleReenvio(): void {
     if (!this.correoUsuario) return;
-
     this.errorMsg = '';
     this.cargando = true;
 
@@ -178,44 +307,36 @@ export class LoginPage implements OnDestroy {
       },
       error: (err: unknown) => {
         this.cargando = false;
-        this.errorMsg =
-          this.extraerMensajeError(err) ?? 'Error al reenviar el código. Intenta más tarde.';
-      }
+        const msg = this.extraerMensajeError(err) ?? 'Error al reenviar el código. Intenta más tarde.';
+        this.errorMsg = msg;
+
+        const match = msg.match(/espera[r]?\s+(\d+)\s*s/i)
+          ?? msg.match(/(\d+)\s*segundo/i);
+        if (match) {
+          this.otpModal?.showCooldown(parseInt(match[1], 10));
+        }
+      },
     });
 
     this.subscriptions.push(sub);
   }
 
-  recuperarContrasena(): void {
-    void this.router.navigate(['/forgot-password']);
-  }
+  // ── Navegación auxiliar ────────────────────────────────────────
 
-  irRegistro(): void {
-    void this.router.navigate(['/register']);
-  }
+  recuperarContrasena(): void { void this.router.navigate(['/forgot-password']); }
+  irRegistro():          void { void this.router.navigate(['/register']); }
 
-  ngOnDestroy(): void {
-    this.subscriptions.forEach(s => s.unsubscribe());
-  }
+  // ── Utilidades ─────────────────────────────────────────────────
 
-  /**
-   * Extrae el mensaje de error del backend.
-   * Soporta respuestas JSON ({ message }) y texto plano (string).
-   */
   private extraerMensajeError(err: unknown): string | null {
-    const anyErr = err as { error?: unknown; message?: unknown } | null;
-
+    const anyErr  = err as { error?: unknown; message?: unknown } | null;
     const backend = anyErr?.error;
-
     if (backend && typeof backend === 'object') {
       const msg = (backend as { message?: unknown }).message;
       if (typeof msg === 'string' && msg.trim()) return msg;
     }
-
     if (typeof backend === 'string' && backend.trim()) return backend;
-
     if (typeof anyErr?.message === 'string' && anyErr.message.trim()) return anyErr.message;
-
     return null;
   }
 }

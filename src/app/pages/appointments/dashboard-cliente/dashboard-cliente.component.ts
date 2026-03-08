@@ -1,472 +1,423 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
+import { AppointmentService, AppointmentRequest, AppointmentResponse } from 'src/app/services/appointment.service';
+import { PetService } from 'src/app/services/pet.service';
+import { AdminUserService, AdminUser } from 'src/app/services/admin-user.service';
+import { PaymentService, PaymentResponse, ServicePrice } from 'src/app/services/Payment.service';
 
 interface Pet {
-  id: string;
-  name: string;
-  species: string;
-  breed: string;
-  age: number;
-  emoji: string;
-  gender: string;
-  birthDate: string;
-  color: string;
-  notes?: string;
+  id: string; name: string; species: string; breed: string;
+  emoji: string; gender: string; birthDate: string; photoUrl?: string;
 }
 
 interface CalendarDay {
-  date: number | null;
-  isToday: boolean;
-  isSelected: boolean;
-  isDisabled: boolean;
-  hasAvailableSlots: boolean;
-  fullDate?: Date;
+  date: number | null; isToday: boolean; isSelected: boolean;
+  isDisabled: boolean; hasAvailableSlots: boolean; fullDate?: Date;
 }
 
-interface TimeSlot {
-  time: string;
-  status: 'available' | 'taken' | 'selected';
+interface TimeSlot { time: string; status: 'available' | 'taken' | 'selected'; }
+
+interface AppointmentView {
+  id: string; petName: string; petEmoji: string; petPhotoUrl?: string;
+  date: string; time: string; reason: string; vetName: string;
+  status: 'upcoming' | 'completed' | 'cancelled'; canCancel: boolean;
 }
 
-interface Appointment {
-  id: string;
-  petName: string;
-  petEmoji: string;
-  date: string;
-  time: string;
-  reason: string;
-  status: 'upcoming' | 'completed' | 'cancelled';
-  canCancel: boolean;
-}
-
+/**
+ * Dashboard principal del cliente — Pawsoft.
+ *
+ * Muestra:
+ * - Sus citas próximas con opción de cancelar.
+ * - Su historial de pagos.
+ * - Flujo de 5 pasos para agendar una nueva cita.
+ *
+ * CORRECCIÓN: Los métodos loadMyPayments() y loadServicePrices() ahora usan
+ * los endpoints de /api/cliente/ en lugar de /api/admin/ y /api/recepcionista/,
+ * eliminando los errores 403 que ocurrían por llamar rutas sin permiso.
+ *
+ * Proyecto: Pawsoft — Universidad del Quindío — Software III
+ * Autoras: Valentina Porras Salazar · Helen Xiomara Giraldo Libreros
+ */
 @Component({
   selector: 'app-dashboard-cliente',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ReactiveFormsModule,
-    AppSidebarComponent
-  ],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AppSidebarComponent],
   templateUrl: './dashboard-cliente.component.html',
   styleUrls: ['./dashboard-cliente.component.scss']
 })
-export class DashboardClienteComponent implements OnInit {
-  // User data
-  userName: string = '';
-  userRole: string = '';
+export class DashboardClienteComponent implements OnInit, OnDestroy {
 
-  // Pets
+  userName = '';
+  userRole = '';
+
+  /* ── Mascotas ── */
   pets: Pet[] = [];
   selectedPet: Pet | null = null;
 
-  // Calendar
+  /* ── Veterinarios ── */
+  veterinarians: AdminUser[] = [];
+  selectedVet: AdminUser | null = null;
+  loadingVets = false;
+
+  /* ── Calendario ── */
   weekDays = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
   calendarDays: CalendarDay[] = [];
-  currentMonth: number = new Date().getMonth();
-  currentYear: number = new Date().getFullYear();
-  currentMonthYear: string = '';
+  currentMonth = new Date().getMonth();
+  currentYear  = new Date().getFullYear();
+  currentMonthYear = '';
   selectedDate: string | null = null;
   selectedDateObj: Date | null = null;
 
-  // Time slots
+  /* ── Horarios ── */
   timeSlots: TimeSlot[] = [];
   selectedTimeSlot: TimeSlot | null = null;
-  loadingSlots: boolean = false;
+  loadingSlots = false;
 
-  // Appointment
-  appointmentReason: string = '';
-  appointmentNotes: string = '';
-  confirmingAppointment: boolean = false;
+  /* ── Detalle cita ── */
+  appointmentReason = '';
+  appointmentNotes  = '';
+  confirmingAppointment = false;
 
-  // Appointments list
-  myAppointments: Appointment[] = [];
+  /* ── Mis citas ── */
+  myAppointments: AppointmentView[] = [];
 
-  // Pet modal
-  showCreatePetModal: boolean = false;
-  petForm: FormGroup;
-  savingPet: boolean = false;
+  /* ── Mis pagos ── */
+  myPayments: PaymentResponse[] = [];
+  loadingPayments = false;
 
-  // Cancel modal
-  showCancelModal: boolean = false;
-  appointmentToCancel: Appointment | null = null;
-  cancelReason: string = '';
-  cancelling: boolean = false;
+  /* ── Precio referencial al agendar ── */
+  servicePrices:  ServicePrice[] = [];
+  referencePrice: number | null  = null;
+
+  /* ── Modal cancelar ── */
+  showCancelModal = false;
+  appointmentToCancel: AppointmentView | null = null;
+  cancelling   = false;
+  cancelReason = '';
+
+  /* ── Toast ── */
+  toastVisible = false;
+  toastMessage = '';
+  private toastTimer: any;
 
   constructor(
-    private fb: FormBuilder,
-    private router: Router
-  ) {
-    this.petForm = this.fb.group({
-      name: ['', Validators.required],
-      species: ['', Validators.required],
-      breed: ['', Validators.required],
-      gender: ['', Validators.required],
-      birthDate: ['', Validators.required],
-      color: [''],
-      notes: ['']
-    });
-  }
+    private readonly fb: FormBuilder,
+    readonly router: Router,
+    private readonly appointmentService: AppointmentService,
+    private readonly petService: PetService,
+    private readonly adminUserService: AdminUserService,
+    private readonly paymentService: PaymentService,
+  ) {}
 
-  ngOnInit() {
-    this.loadUserData();
-    this.loadMockPets();
+  ngOnInit(): void {
+    this.userName = localStorage.getItem('email') || 'Usuario';
+    this.userRole = localStorage.getItem('rol')   || 'ROLE_CLIENTE';
+    this.loadPets();
+    this.loadVeterinarians();
     this.loadMyAppointments();
+    this.loadMyPayments();
+    this.loadServicePrices();
     this.generateCalendar();
     this.updateMonthYearLabel();
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // USER DATA
-  // ──────────────────────────────────────────────────────────────
-
-  loadUserData() {
-    this.userName = localStorage.getItem('email') || 'Usuario';
-    this.userRole = localStorage.getItem('rol') || 'ROLE_CLIENTE';
+  ngOnDestroy(): void {
+    clearTimeout(this.toastTimer);
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // APPOINTMENTS LIST
-  // ──────────────────────────────────────────────────────────────
+  /* ══════════════════════════════
+     TOAST
+  ══════════════════════════════ */
 
-  loadMyAppointments() {
-    // TODO: Replace with real API call
-    this.myAppointments = [
-      {
-        id: '1',
-        petName: 'Rocky',
-        petEmoji: '🐕',
-        date: '28 Feb 2026',
-        time: '10:00 AM',
-        reason: 'Consulta general',
-        status: 'upcoming',
-        canCancel: true
+  showToast(message: string): void {
+    this.toastMessage = message;
+    this.toastVisible = true;
+    clearTimeout(this.toastTimer);
+    this.toastTimer = setTimeout(() => { this.toastVisible = false; }, 3000);
+  }
+
+  /* ══════════════════════════════
+     CARGA DE DATOS
+  ══════════════════════════════ */
+
+  loadPets(): void {
+    this.petService.getMyPets().subscribe({
+      next: (data) => {
+        this.pets = data.map(p => ({
+          id: String(p.id), name: p.name, species: p.species,
+          breed: p.breed || '', emoji: this.getEmojiBySpecies(p.species),
+          gender: p.sex, birthDate: p.birthDate || '', photoUrl: p.photoUrl
+        }));
       },
-      {
-        id: '2',
-        petName: 'Luna',
-        petEmoji: '🐈',
-        date: '5 Mar 2026',
-        time: '15:30 PM',
-        reason: 'Vacunación',
-        status: 'upcoming',
-        canCancel: true
-      }
-    ];
+      error: () => {}
+    });
   }
 
-  openCancelModal(appointment: Appointment) {
-    this.appointmentToCancel = appointment;
-    this.cancelReason = '';
-    this.showCancelModal = true;
-  }
-
-  closeCancelModal() {
-    this.showCancelModal = false;
-    this.appointmentToCancel = null;
-    this.cancelReason = '';
-  }
-
-  confirmCancel() {
-    if (!this.appointmentToCancel) return;
-
-    this.cancelling = true;
-
-    const appointmentId = this.appointmentToCancel.id;
-
-    setTimeout(() => {
-      const appt = this.myAppointments.find(a => a.id === appointmentId);
-      if (appt) {
-        appt.status = 'cancelled';
-        appt.canCancel = false;
-      }
-
-      this.cancelling = false;
-      this.closeCancelModal();
-      console.log('Cita cancelada:', appointmentId);
-    }, 1000);
-  }
-
-  // ──────────────────────────────────────────────────────────────
-  // PETS
-  // ──────────────────────────────────────────────────────────────
-
-  loadMockPets() {
-    // TODO: Replace with real API call
-    this.pets = [
-      {
-        id: '1',
-        name: 'Rocky',
-        species: 'Perro',
-        breed: 'Labrador',
-        age: 4,
-        emoji: '🐕',
-        gender: 'M',
-        birthDate: '2022-01-15',
-        color: 'Dorado'
+  loadVeterinarians(): void {
+    this.loadingVets = true;
+    this.adminUserService.getVeterinarians().subscribe({
+      next: (data) => {
+        this.veterinarians = data.filter(v => v.enabled);
+        this.loadingVets = false;
       },
-      {
-        id: '2',
-        name: 'Luna',
-        species: 'Gato',
-        breed: 'Siamés',
-        age: 2,
-        emoji: '🐈',
-        gender: 'F',
-        birthDate: '2024-03-20',
-        color: 'Blanco con negro'
-      }
-    ];
+      error: () => { this.veterinarians = []; this.loadingVets = false; }
+    });
   }
 
-  selectPet(pet: Pet) {
+  loadMyAppointments(): void {
+    this.appointmentService.getMyAppointments().subscribe({
+      next: (data: AppointmentResponse[]) => {
+        this.myAppointments = data.map(a => {
+          const rawStatus  = (a.status ?? 'upcoming').toLowerCase() as AppointmentView['status'];
+          const aptDate    = new Date(a.date ?? a.dateFormatted ?? '');
+          const tomorrow   = new Date();
+          tomorrow.setHours(0, 0, 0, 0);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+          return {
+            id:          String(a.id),
+            petName:     a.petName     ?? 'Mi mascota',
+            petEmoji:    a.petEmoji    ?? '🐾',
+            petPhotoUrl: a.petPhotoUrl ?? undefined,
+            date:        this.formatearFecha(a.dateFormatted ?? a.date ?? ''),
+            time:        this.formatearHora(a.time ?? ''),
+            reason:      this.getReasonLabel(a.reason),
+            vetName:     a.vetName     ?? 'Veterinario',
+            status:      rawStatus,
+            canCancel:   rawStatus === 'upcoming' && aptDate >= tomorrow,
+          };
+        });
+      },
+      error: () => {}
+    });
+  }
+
+  /**
+   * Carga el historial de pagos del cliente autenticado.
+   *
+   * USA: GET /api/cliente/payments/my
+   * El backend extrae el email del JWT — sin pasar email como parámetro.
+   *
+   * ANTES (incorrecto — causaba 403):
+   *   this.paymentService.getByClient(email)  →  /api/admin/payments/client/{email}
+   */
+  loadMyPayments(): void {
+    this.loadingPayments = true;
+    this.paymentService.getMyPayments().subscribe({
+      next:  (data) => { this.myPayments = data; this.loadingPayments = false; },
+      error: ()     => { this.loadingPayments = false; }
+    });
+  }
+
+  /**
+   * Carga los precios de servicios para mostrar el precio referencial al agendar.
+   *
+   * USA: GET /api/cliente/payments/prices
+   *
+   * ANTES (incorrecto — causaba 403):
+   *   this.paymentService.getActivePrices()  →  /api/recepcionista/payments/prices
+   */
+  loadServicePrices(): void {
+    this.paymentService.getActivePricesCliente().subscribe({
+      next:  (data) => { this.servicePrices = data; },
+      error: ()     => {}
+    });
+  }
+
+  onReasonChange(): void {
+    if (!this.appointmentReason) { this.referencePrice = null; return; }
+    const found = this.servicePrices.find(p => p.serviceType === this.appointmentReason);
+    this.referencePrice = found ? found.price : null;
+  }
+
+  /* ══════════════════════════════
+     SELECCIÓN MASCOTA Y VET
+  ══════════════════════════════ */
+
+  selectPet(pet: Pet): void {
     this.selectedPet = pet;
     this.resetBookingState();
   }
 
-  resetBookingState() {
-    this.selectedDate = null;
-    this.selectedDateObj = null;
+  selectVet(vet: AdminUser): void {
+    this.selectedVet      = vet;
+    this.selectedDate     = null;
+    this.selectedDateObj  = null;
     this.selectedTimeSlot = null;
+    this.timeSlots        = [];
+    this.calendarDays.forEach(d => d.isSelected = false);
+  }
+
+  resetBookingState(): void {
+    this.selectedVet       = null;
+    this.selectedDate      = null;
+    this.selectedDateObj   = null;
+    this.selectedTimeSlot  = null;
     this.appointmentReason = '';
-    this.appointmentNotes = '';
-    this.timeSlots = [];
+    this.appointmentNotes  = '';
+    this.timeSlots         = [];
   }
 
-  openCreatePetModal() {
-    this.showCreatePetModal = true;
-    this.petForm.reset();
+  /* ══════════════════════════════
+     CALENDARIO
+  ══════════════════════════════ */
+
+  previousMonth(): void {
+    if (this.currentMonth === 0) { this.currentMonth = 11; this.currentYear--; }
+    else this.currentMonth--;
+    this.generateCalendar(); this.updateMonthYearLabel();
   }
 
-  closeCreatePetModal() {
-    this.showCreatePetModal = false;
+  nextMonth(): void {
+    if (this.currentMonth === 11) { this.currentMonth = 0; this.currentYear++; }
+    else this.currentMonth++;
+    this.generateCalendar(); this.updateMonthYearLabel();
   }
 
-  savePet() {
-    if (this.petForm.invalid) return;
-    this.savingPet = true;
-
-    setTimeout(() => {
-      const formValue = this.petForm.value;
-      const newPet: Pet = {
-        id: Date.now().toString(),
-        name: formValue.name,
-        species: formValue.species,
-        breed: formValue.breed,
-        age: this.calculateAge(formValue.birthDate),
-        emoji: this.getSpeciesEmoji(formValue.species),
-        gender: formValue.gender,
-        birthDate: formValue.birthDate,
-        color: formValue.color,
-        notes: formValue.notes
-      };
-
-      this.pets.push(newPet);
-      this.savingPet = false;
-      this.closeCreatePetModal();
-      this.selectPet(newPet);
-    }, 1000);
-  }
-
-  calculateAge(birthDate: string): number {
-    const today = new Date();
-    const birth = new Date(birthDate);
-    let age = today.getFullYear() - birth.getFullYear();
-    const monthDiff = today.getMonth() - birth.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    return Math.max(0, age);
-  }
-
-  getSpeciesEmoji(species: string): string {
-    const emojiMap: { [key: string]: string } = {
-      'Perro': '🐕',
-      'Gato': '🐈',
-      'Conejo': '🐰',
-      'Hamster': '🐹',
-      'Ave': '🦜',
-      'Otro': '🐾'
-    };
-    return emojiMap[species] || '🐾';
-  }
-
-  // ──────────────────────────────────────────────────────────────
-  // CALENDAR
-  // ──────────────────────────────────────────────────────────────
-
-  generateCalendar() {
+  generateCalendar(): void {
     const firstDay = new Date(this.currentYear, this.currentMonth, 1);
-    const lastDay = new Date(this.currentYear, this.currentMonth + 1, 0);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    let startDayOfWeek = firstDay.getDay();
-    startDayOfWeek = startDayOfWeek === 0 ? 6 : startDayOfWeek - 1;
-
+    const lastDay  = new Date(this.currentYear, this.currentMonth + 1, 0);
+    const today    = new Date(); today.setHours(0, 0, 0, 0);
+    let start = firstDay.getDay();
+    start = start === 0 ? 6 : start - 1;
     this.calendarDays = [];
-
-    for (let i = 0; i < startDayOfWeek; i++) {
-      this.calendarDays.push({
-        date: null,
-        isToday: false,
-        isSelected: false,
-        isDisabled: true,
-        hasAvailableSlots: false
-      });
-    }
-
+    for (let i = 0; i < start; i++)
+      this.calendarDays.push({ date: null, isToday: false, isSelected: false, isDisabled: true, hasAvailableSlots: false });
     for (let day = 1; day <= lastDay.getDate(); day++) {
-      const currentDate = new Date(this.currentYear, this.currentMonth, day);
-      currentDate.setHours(0, 0, 0, 0);
-
-      const isPast = currentDate < today;
-      const isToday = currentDate.getTime() === today.getTime();
-      const hasSlots = !isPast && Math.random() > 0.3;
-
+      const d = new Date(this.currentYear, this.currentMonth, day); d.setHours(0, 0, 0, 0);
       this.calendarDays.push({
-        date: day,
-        isToday,
-        isSelected: false,
-        isDisabled: isPast,
-        hasAvailableSlots: hasSlots,
-        fullDate: currentDate
+        date: day, isToday: d.getTime() === today.getTime(),
+        isSelected: false, isDisabled: d < today,
+        hasAvailableSlots: d >= today, fullDate: d
       });
     }
   }
 
-  updateMonthYearLabel() {
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
+  updateMonthYearLabel(): void {
+    const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+      'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
     this.currentMonthYear = `${months[this.currentMonth]} ${this.currentYear}`;
   }
 
-  previousMonth() {
-    if (this.currentMonth === 0) {
-      this.currentMonth = 11;
-      this.currentYear--;
-    } else {
-      this.currentMonth--;
-    }
-    this.generateCalendar();
-    this.updateMonthYearLabel();
-  }
-
-  nextMonth() {
-    if (this.currentMonth === 11) {
-      this.currentMonth = 0;
-      this.currentYear++;
-    } else {
-      this.currentMonth++;
-    }
-    this.generateCalendar();
-    this.updateMonthYearLabel();
-  }
-
-  selectDate(day: CalendarDay) {
-    if (!day.date || day.isDisabled || !day.hasAvailableSlots) return;
-
+  selectDate(day: CalendarDay): void {
+    if (!day.fullDate || day.isDisabled) return;
     this.calendarDays.forEach(d => d.isSelected = false);
-    day.isSelected = true;
-
-    const months = [
-      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
-      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
-    ];
-    this.selectedDate = `${day.date} de ${months[this.currentMonth]} ${this.currentYear}`;
-    this.selectedDateObj = day.fullDate || null;
-
-    this.selectedTimeSlot = null;
-    this.appointmentReason = '';
-    this.appointmentNotes = '';
-
+    day.isSelected      = true;
+    this.selectedDateObj = day.fullDate;
+    this.selectedDate    = day.fullDate.toLocaleDateString();
     this.loadTimeSlots();
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // TIME SLOTS
-  // ──────────────────────────────────────────────────────────────
-
-  loadTimeSlots() {
+  loadTimeSlots(): void {
+    if (!this.selectedVet || !this.selectedDateObj) return;
     this.loadingSlots = true;
-
-    setTimeout(() => {
-      const hours = [
-        '08:00', '08:30', '09:00', '09:30',
-        '10:00', '10:30', '11:00', '11:30',
-        '14:00', '14:30', '15:00', '15:30',
-        '16:00', '16:30', '17:00', '17:30'
-      ];
-
-      this.timeSlots = hours.map(time => ({
-        time,
-        status: Math.random() > 0.6 ? 'taken' : 'available'
-      }));
-
-      this.loadingSlots = false;
-    }, 800);
+    const year  = this.selectedDateObj.getFullYear();
+    const month = String(this.selectedDateObj.getMonth() + 1).padStart(2, '0');
+    const day   = String(this.selectedDateObj.getDate()).padStart(2, '0');
+    const allHours = ['08:00','08:30','09:00','09:30','10:00','10:30',
+      '11:00','11:30','14:00','14:30','15:00','15:30'];
+    this.appointmentService.getOccupiedSlots(Number(this.selectedVet.id), `${year}-${month}-${day}`).subscribe({
+      next: (occupied) => {
+        this.timeSlots = allHours.map(time => ({
+          time, status: occupied.some(o => o.startsWith(time)) ? 'taken' : 'available'
+        }));
+        this.loadingSlots = false;
+      },
+      error: () => {
+        this.timeSlots = allHours.map(time => ({ time, status: 'available' }));
+        this.loadingSlots = false;
+      }
+    });
   }
 
-  selectTimeSlot(slot: TimeSlot) {
-    if (slot.status === 'taken') return;
-
-    this.timeSlots.forEach(s => {
-      if (s.status === 'selected') s.status = 'available';
-    });
-
-    slot.status = 'selected';
+  selectTimeSlot(slot: TimeSlot): void {
+    this.timeSlots.forEach(s => { if (s.status === 'selected') s.status = 'available'; });
+    slot.status          = 'selected';
     this.selectedTimeSlot = slot;
   }
 
-  // ──────────────────────────────────────────────────────────────
-  // APPOINTMENT
-  // ──────────────────────────────────────────────────────────────
+  /* ══════════════════════════════
+     CONFIRMAR CITA
+  ══════════════════════════════ */
 
-  getReasonLabel(reason: string): string {
-    const labels: { [key: string]: string } = {
-      'consulta': 'Consulta general',
-      'vacunacion': 'Vacunación',
-      'desparasitacion': 'Desparasitación',
-      'control': 'Control de rutina',
-      'emergencia': 'Emergencia',
-      'cirugia': 'Cirugía programada',
-      'otro': 'Otro'
+  confirmAppointment(): void {
+    if (!this.selectedPet || !this.selectedVet || !this.selectedTimeSlot || !this.selectedDateObj || !this.appointmentReason) return;
+    this.confirmingAppointment = true;
+    const year  = this.selectedDateObj.getFullYear();
+    const month = String(this.selectedDateObj.getMonth() + 1).padStart(2, '0');
+    const day   = String(this.selectedDateObj.getDate()).padStart(2, '0');
+    const payload: AppointmentRequest = {
+      petId:  Number(this.selectedPet.id),
+      vetId:  Number(this.selectedVet.id),
+      date:   `${year}-${month}-${day}`,
+      time:   this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
+      reason: this.appointmentReason,
     };
-    return labels[reason] || reason;
+    // Optimistic UI — agrega la cita visualmente antes de confirmar el backend
+    this.myAppointments.unshift({
+      id: Date.now().toString(), petName: this.selectedPet.name, petEmoji: this.selectedPet.emoji,
+      date: this.selectedDateObj.toLocaleDateString(), time: this.selectedTimeSlot.time,
+      reason: this.getReasonLabel(this.appointmentReason), vetName: this.selectedVet.name,
+      status: 'upcoming', canCancel: true,
+    });
+    this.appointmentService.createAppointment(payload).subscribe({
+      next:  () => { this.loadMyAppointments(); },
+      error: (err) => { console.warn('Backend falló al crear cita', err); },
+    });
+    this.confirmingAppointment = false;
+    this.resetBookingState();
+    this.showToast('¡Cita agendada con éxito! 🐾');
   }
 
-  confirmAppointment() {
-    if (!this.selectedPet || !this.selectedTimeSlot || !this.appointmentReason) {
-      return;
-    }
+  /* ══════════════════════════════
+     CANCELAR CITA
+  ══════════════════════════════ */
 
-    this.confirmingAppointment = true;
+  openCancelModal(appt: AppointmentView): void { this.appointmentToCancel = appt; this.showCancelModal = true; }
+  closeCancelModal(): void { this.showCancelModal = false; this.appointmentToCancel = null; this.cancelReason = ''; }
 
-    setTimeout(() => {
-      const newAppointment: Appointment = {
-        id: Date.now().toString(),
-        petName: this.selectedPet!.name,
-        petEmoji: this.selectedPet!.emoji,
-        date: this.selectedDate!,
-        time: this.selectedTimeSlot!.time,
-        reason: this.getReasonLabel(this.appointmentReason),
-        status: 'upcoming',
-        canCancel: true
-      };
+  confirmCancel(): void {
+    if (!this.appointmentToCancel) return;
+    this.cancelling = true;
+    this.appointmentService.cancelAppointment(this.appointmentToCancel.id).subscribe({
+      next:  () => { this.loadMyAppointments(); this.cancelling = false; this.closeCancelModal(); },
+      error: () => { this.cancelling = false; }
+    });
+  }
 
-      this.myAppointments.unshift(newAppointment);
+  /* ══════════════════════════════
+     HELPERS
+  ══════════════════════════════ */
 
-      this.confirmingAppointment = false;
-      this.resetBookingState();
-      this.selectedPet = null;
+  getEmojiBySpecies(species: string): string {
+    return ({ Perro:'🐕', Gato:'🐈', Conejo:'🐰', Hamster:'🐹', Ave:'🦜' } as Record<string,string>)[species] || '🐾';
+  }
 
-      console.log('Cita confirmada:', newAppointment);
-      alert('¡Cita agendada exitosamente!');
-    }, 1500);
+  getReasonLabel(reason: string): string {
+    return ({
+      consulta:'Consulta general', vacunacion:'Vacunación', desparasitacion:'Desparasitación',
+      control:'Control de rutina', emergencia:'Emergencia', cirugia:'Cirugía programada', otro:'Otro'
+    } as Record<string,string>)[reason] || reason;
+  }
+
+  private formatearFecha(fecha: string): string {
+    if (!fecha) return '';
+    const [year, month, day] = fecha.split('-');
+    const m = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+    return `${parseInt(day)} de ${m[parseInt(month) - 1]} de ${year}`;
+  }
+
+  private formatearHora(hora: string): string {
+    if (!hora) return '';
+    const [h, min] = hora.split(':');
+    const hNum = parseInt(h);
+    return `${hNum % 12 || 12}:${min} ${hNum >= 12 ? 'PM' : 'AM'}`;
+  }
+
+  getVetInitials(vet: AdminUser): string {
+    const parts = vet.name.trim().split(' ');
+    return `${parts[0]?.[0] ?? ''}${parts[1]?.[0] ?? ''}`.toUpperCase();
   }
 }

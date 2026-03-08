@@ -11,24 +11,24 @@
     <div
       *ngFor="let item of menuItems"
       class="menu-item"
+      [class.active]="isActive(item)"
       [class.disabled]="item.disabled"
-      [routerLink]="!item.disabled ? item.route : null"
-      routerLinkActive="active"
+      (click)="onItemClick(item)"
     >
       <span class="icon">{{ item.icon }}</span>
       <span class="label">{{ item.label }}</span>
+      <span class="lock-icon" *ngIf="item.disabled">🔒</span>
     </div>
   </div>
 
   <!-- User Info -->
   <div class="user-section">
-    <div class="avatar">
-      {{ userInitials }}
-    </div>
+    <div class="avatar">{{ userInitials }}</div>
     <div class="user-info">
       <div class="name">{{ userName }}</div>
       <div class="role">{{ getRoleLabel() }}</div>
     </div>
+    <button class="logout-btn" title="Cerrar sesión" (click)="logout()">⏻</button>
   </div>
 
 </div>

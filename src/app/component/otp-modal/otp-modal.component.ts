@@ -16,7 +16,8 @@ import {
   mailOutline,
   alertCircleOutline,
   closeOutline,
-  checkmarkCircleOutline
+  checkmarkCircleOutline,
+  timeOutline
 } from 'ionicons/icons';
 
 /**
@@ -26,11 +27,21 @@ import {
  * 1. El padre muestra el modal con [isVisible]="true".
  * 2. El usuario ingresa el código de 6 dígitos.
  * 3. Al presionar Validar, emite (validate) con el código.
- * 4. El padre llama al backend y según la respuesta:
- *    - Correcto            → llama showSuccess()
- *    - Incorrecto con N intentos restantes → llama showErrorConIntentos(N)
- *    - Incorrecto sin info → llama showError()
- *    - Bloqueado           → llama showLocked(segundos)
+ * 4. El padre llama al backend y según la respuesta llama al método correspondiente:
+ *
+ *    ✅ Correcto                       → showSuccess()
+ *    ❌ Incorrecto con intentos info   → showErrorConIntentos(restantes)
+ *    ❌ Incorrecto sin info            → showError()
+ *    🔒 Bloqueado (minutos)           → showLocked(minutos)
+ *    ⏳ Cooldown entre reenvíos        → showCooldown(segundosRestantes)
+ *    📵 Límite de reenvíos alcanzado  → showReenviosBloqueados(minutos)
+ *
+ * Reglas de negocio alineadas con el backend:
+ * - El código expira en 3 minutos.
+ * - El usuario puede reenviar pasados 60 segundos.
+ * - Máximo 5 reenvíos antes de bloqueo gradual.
+ * - Máximo 3 intentos fallidos antes de bloqueo gradual.
+ * - Bloqueo gradual: 5 min × número de bloqueos acumulados.
  */
 @Component({
   selector: 'app-otp-modal',
@@ -48,13 +59,13 @@ export class OtpModalComponent implements OnInit, OnDestroy {
   @Input() email = '';
 
   /** Emite el código OTP completo al presionar Validar */
-  @Output() validate = new EventEmitter<string>();
+  @Output() validate       = new EventEmitter<string>();
 
   /** Emite cuando el usuario cierra el modal */
-  @Output() closed = new EventEmitter<void>();
+  @Output() closed         = new EventEmitter<void>();
 
   /** Emite cuando el usuario solicita reenviar el código */
-  @Output() resend = new EventEmitter<void>();
+  @Output() resend         = new EventEmitter<void>();
 
   /** Emite cuando termina la animación de éxito y hay que navegar */
   @Output() successRedirect = new EventEmitter<void>();
@@ -62,22 +73,49 @@ export class OtpModalComponent implements OnInit, OnDestroy {
   @ViewChildren('otpInputs') otpInputs!: QueryList<ElementRef<HTMLInputElement>>;
 
   otpValues: string[] = ['', '', '', '', '', ''];
-  hasError  = false;
-  isLoading = false;
-  isSuccess = false;
-  isLocked  = false;
 
-  /** Mensaje de error dinámico — muestra intentos restantes si el backend los envía */
+  hasError   = false;
+  isLoading  = false;
+  isSuccess  = false;
+
+  /**
+   * true cuando el usuario está bloqueado por exceso de intentos fallidos
+   * o por exceso de reenvíos. Durante este estado los inputs se deshabilitan.
+   */
+  isLocked   = false;
+
+  /**
+   * true durante el cooldown entre reenvíos (espera de 60 s).
+   * Solo bloquea el botón de reenvío, no los inputs.
+   */
+  isCooldown = false;
+
+  randomId = Math.random().toString(36).substring(2);
+
+  /** Mensaje dinámico mostrado en el área de error de los inputs */
   errorMessage = 'Código incorrecto. Intenta de nuevo.';
 
+  /** Mensaje mostrado cuando hay bloqueo (intentos o reenvíos) */
+  lockMessage  = '';
+
+  /** Mensaje mostrado durante cooldown de reenvío */
+  cooldownMessage = '';
+
+  /** Segundos restantes para el countdown de reenvío (60 s) */
   countdown   = 60;
+
+  /** Segundos restantes del bloqueo activo — se muestra en pantalla */
   lockSeconds = 0;
+
+  /** Segundos restantes del cooldown de reenvío — se muestra en pantalla */
+  cooldownSeconds = 0;
 
   private countdownInterval: ReturnType<typeof setInterval> | null = null;
   private lockInterval:      ReturnType<typeof setInterval> | null = null;
+  private cooldownInterval:  ReturnType<typeof setInterval> | null = null;
 
   constructor() {
-    addIcons({ mailOutline, alertCircleOutline, closeOutline, checkmarkCircleOutline });
+    addIcons({ mailOutline, alertCircleOutline, closeOutline, checkmarkCircleOutline, timeOutline });
   }
 
   ngOnInit(): void {
@@ -87,6 +125,7 @@ export class OtpModalComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.clearCountdown();
     this.clearLock();
+    this.clearCooldownInterval();
   }
 
   // ─── Computed ───────────────────────────────────────────
@@ -174,6 +213,7 @@ export class OtpModalComponent implements OnInit, OnDestroy {
     this.isSuccess = true;
     this.clearCountdown();
     this.clearLock();
+    this.clearCooldownInterval();
 
     setTimeout(() => {
       this.successRedirect.emit();
@@ -192,7 +232,7 @@ export class OtpModalComponent implements OnInit, OnDestroy {
 
   /**
    * Llamar desde el padre cuando el código es INCORRECTO
-   * y el backend informa cuántos intentos quedan.
+   * y el backend informa cuántos intentos quedan antes de bloqueo.
    *
    * @param restantes número de intentos restantes que devuelve el backend
    */
@@ -202,25 +242,90 @@ export class OtpModalComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Llamar desde el padre cuando la cuenta queda bloqueada temporalmente.
+   * Llamar desde el padre cuando la cuenta queda bloqueada temporalmente
+   * por exceso de intentos fallidos de verificación.
    *
-   * @param seconds segundos de bloqueo
+   * El bloqueo es gradual: el backend envía los minutos exactos
+   * (5 × bloqueosAcumulados). Se muestra cuenta regresiva en pantalla.
+   *
+   * @param minutos minutos de bloqueo que devuelve el backend
    */
-  showLocked(seconds: number): void {
-    this.isLoading = false;
-    this.isLocked  = true;
+  showLocked(minutos: number): void {
+    this.isLoading  = false;
+    this.isLocked   = true;
+    this.lockSeconds = Math.max(1, minutos * 60);
+    this.lockMessage = `Demasiados intentos fallidos. Bloqueado por ${minutos} minuto(s).`;
 
-    this.otpValues = ['', '', '', '', '', ''];
-    this.syncInputsFromValues();
-
-    this.lockSeconds = Math.max(1, Math.floor(seconds));
+    this.limpiarInputs();
     this.clearLock();
 
     this.lockInterval = setInterval(() => {
       this.lockSeconds--;
       if (this.lockSeconds <= 0) {
         this.clearLock();
-        this.isLocked = false;
+        this.isLocked    = false;
+        this.lockMessage = '';
+      }
+    }, 1000);
+  }
+
+  /**
+   * Llamar desde el padre cuando el usuario intenta reenviar demasiado pronto.
+   * El backend responde con los segundos exactos que debe esperar.
+   *
+   * Durante este cooldown solo se bloquea el botón de reenvío,
+   * los inputs de código siguen activos.
+   *
+   * @param segundos segundos de espera que devuelve el backend
+   */
+  showCooldown(segundos: number): void {
+    this.isLoading       = false;
+    this.isCooldown      = true;
+    this.cooldownSeconds = Math.max(1, segundos);
+    this.cooldownMessage = `Debes esperar ${this.cooldownSeconds}s para reenviar.`;
+
+    this.clearCooldownInterval();
+
+    this.cooldownInterval = setInterval(() => {
+      this.cooldownSeconds--;
+      this.cooldownMessage = `Debes esperar ${this.cooldownSeconds}s para reenviar.`;
+
+      if (this.cooldownSeconds <= 0) {
+        this.clearCooldownInterval();
+        this.isCooldown      = false;
+        this.cooldownMessage = '';
+        // Reinicia el countdown visual del botón reenviar
+        this.startCountdown();
+      }
+    }, 1000);
+  }
+
+  /**
+   * Llamar desde el padre cuando el usuario supera el límite de reenvíos
+   * y el backend aplica un bloqueo gradual.
+   *
+   * A diferencia de showLocked(), aquí el bloqueo fue causado por reenvíos,
+   * no por intentos fallidos — el mensaje es diferente.
+   *
+   * @param minutos minutos de bloqueo gradual que devuelve el backend
+   */
+  showReenviosBloqueados(minutos: number): void {
+    this.isLoading   = false;
+    this.isLocked    = true;
+    this.lockSeconds = Math.max(1, minutos * 60);
+    this.lockMessage = `Límite de reenvíos alcanzado. Bloqueado por ${minutos} minuto(s).`;
+
+    this.limpiarInputs();
+    this.clearCountdown();
+    this.clearLock();
+
+    this.lockInterval = setInterval(() => {
+      this.lockSeconds--;
+      if (this.lockSeconds <= 0) {
+        this.clearLock();
+        this.isLocked    = false;
+        this.lockMessage = '';
+        this.startCountdown();
       }
     }, 1000);
   }
@@ -235,13 +340,14 @@ export class OtpModalComponent implements OnInit, OnDestroy {
   }
 
   reenviarCodigo(): void {
-    if (this.isLocked) return;
+    if (this.isLocked || this.isCooldown || this.countdown > 0) return;
 
-    this.otpValues = ['', '', '', '', '', ''];
-    this.syncInputsFromValues();
+    this.limpiarInputs();
+    this.hasError        = false;
+    this.cooldownMessage = '';
 
-    this.hasError = false;
-    this.startCountdown();
+    // El countdown visual se reiniciará cuando el padre confirme el reenvío
+    // o cuando showCooldown() lo gestione si hay restricción del backend.
     this.resend.emit();
 
     setTimeout(() => this.focusInput(0), 100);
@@ -257,17 +363,21 @@ export class OtpModalComponent implements OnInit, OnDestroy {
 
   /**
    * Lógica común para mostrar estado de error en los inputs.
-   * Se llama desde showError() y showErrorConIntentos().
+   * Limpia los dígitos, activa la animación shake y la apaga tras 3 s.
    */
   private aplicarError(): void {
     this.isLoading = false;
     this.hasError  = true;
 
-    this.otpValues = ['', '', '', '', '', ''];
-    this.syncInputsFromValues();
-
+    this.limpiarInputs();
     setTimeout(() => this.focusInput(0), 100);
     setTimeout(() => (this.hasError = false), 3000);
+  }
+
+  /** Vacía los inputs tanto en el modelo como en el DOM */
+  private limpiarInputs(): void {
+    this.otpValues = ['', '', '', '', '', ''];
+    this.syncInputsFromValues();
   }
 
   private focusInput(index: number): void {
@@ -287,6 +397,7 @@ export class OtpModalComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Inicia el countdown visual de 60 s antes de habilitar el botón reenviar */
   private startCountdown(): void {
     this.clearCountdown();
     this.countdown = 60;
@@ -301,6 +412,7 @@ export class OtpModalComponent implements OnInit, OnDestroy {
       clearInterval(this.countdownInterval);
       this.countdownInterval = null;
     }
+    this.countdown = 0;
   }
 
   private clearLock(): void {
@@ -310,15 +422,26 @@ export class OtpModalComponent implements OnInit, OnDestroy {
     }
   }
 
+  private clearCooldownInterval(): void {
+    if (this.cooldownInterval) {
+      clearInterval(this.cooldownInterval);
+      this.cooldownInterval = null;
+    }
+  }
+
   private resetModal(): void {
-    this.otpValues    = ['', '', '', '', '', ''];
-    this.hasError     = false;
-    this.isLoading    = false;
-    this.isSuccess    = false;
-    this.isLocked     = false;
-    this.lockSeconds  = 0;
-    this.errorMessage = 'Código incorrecto. Intenta de nuevo.';
-    this.syncInputsFromValues();
+    this.limpiarInputs();
+    this.hasError        = false;
+    this.isLoading       = false;
+    this.isSuccess       = false;
+    this.isLocked        = false;
+    this.isCooldown      = false;
+    this.lockSeconds     = 0;
+    this.cooldownSeconds = 0;
+    this.lockMessage     = '';
+    this.cooldownMessage = '';
+    this.errorMessage    = 'Código incorrecto. Intenta de nuevo.';
     this.clearLock();
+    this.clearCooldownInterval();
   }
 }

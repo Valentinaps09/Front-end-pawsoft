@@ -1,16 +1,7 @@
-<!-- DASHBOARD CLIENTE - Vista unificada -->
 <div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
 
-  <!-- SIDEBAR -->
-  <app-sidebar
-    [userRole]="userRole"
-    [userName]="userName">
-  </app-sidebar>
-
-  <!-- MAIN CONTENT -->
   <main class="main-content">
-
-    <!-- TOPBAR -->
     <div class="topbar">
       <div>
         <div class="topbar-title">Mis Citas</div>
@@ -18,44 +9,39 @@
       </div>
     </div>
 
-    <!-- CONTENT AREA -->
     <div class="content-area">
-
-      <!-- TWO COLUMN LAYOUT -->
       <div class="two-columns">
 
-        <!-- LEFT COLUMN: Appointments List -->
+        <!-- COLUMNA IZQUIERDA: Mis citas + Mis pagos -->
         <div class="left-column">
 
-          <!-- MY APPOINTMENTS -->
+          <!-- MIS CITAS -->
           <div class="section-card">
             <div class="section-header">
               <h3>📅 Mis Próximas Citas</h3>
             </div>
 
             <div class="appointments-list" *ngIf="myAppointments.length > 0">
-              <div
-                class="appointment-item"
-                *ngFor="let appt of myAppointments"
-                [class.cancelled]="appt.status === 'cancelled'">
-
-                <div class="appt-icon">{{ appt.petEmoji }}</div>
-
+              <div class="appointment-item" *ngFor="let appt of myAppointments"
+                   [class.cancelled]="appt.status === 'cancelled'">
+                <div class="appt-icon">
+                  <img *ngIf="appt.petPhotoUrl"
+                       [src]="appt.petPhotoUrl"
+                       [alt]="appt.petName"
+                       style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                  <span *ngIf="!appt.petPhotoUrl">{{ appt.petEmoji }}</span>
+                </div>
                 <div class="appt-info">
                   <div class="appt-pet-name">{{ appt.petName }}</div>
                   <div class="appt-datetime">{{ appt.date }} · {{ appt.time }}</div>
                   <div class="appt-reason">{{ appt.reason }}</div>
+                  <div class="appt-vet" *ngIf="appt.vetName">🩺 {{ appt.vetName }}</div>
                 </div>
-
-                <button
-                  class="btn-cancel-small"
-                  *ngIf="appt.canCancel && appt.status === 'upcoming'"
-                  (click)="openCancelModal(appt)">
-                  Cancelar
-                </button>
-
-                <div class="appt-cancelled-label" *ngIf="appt.status === 'cancelled'">
-                  Cancelada
+                <div class="appt-actions">
+                  <button class="btn-cancel-small"
+                          *ngIf="appt.canCancel && appt.status === 'upcoming'"
+                          (click)="openCancelModal(appt)">Cancelar</button>
+                  <div class="appt-cancelled-label" *ngIf="appt.status === 'cancelled'">Cancelada</div>
                 </div>
               </div>
             </div>
@@ -65,134 +51,198 @@
             </div>
           </div>
 
-        </div>
-
-        <!-- RIGHT COLUMN: Book New Appointment -->
-        <div class="right-column">
-
-          <!-- SELECT PET -->
+          <!-- MIS PAGOS -->
           <div class="section-card">
             <div class="section-header">
-              <h3>🐾 Selecciona tu Mascota</h3>
-              <button class="btn-link" (click)="openCreatePetModal()">
-                + Agregar
-              </button>
+              <h3>💳 Mis Pagos</h3>
+            </div>
+
+            <div class="loading-slots" *ngIf="loadingPayments">
+              <div class="spinner"></div>
+              <p>Cargando historial...</p>
+            </div>
+
+            <div class="payments-list" *ngIf="!loadingPayments && myPayments.length > 0">
+              <div class="pay-item" *ngFor="let pay of myPayments">
+                <div class="pay-icon">🧾</div>
+                <div class="pay-info">
+                  <div class="appt-pet-name">{{ pay.concept }}</div>
+                  <div class="appt-datetime">{{ pay.petName }} · Dr. {{ pay.vetName }}</div>
+                  <div class="appt-reason">{{ pay.appointmentDate }}</div>
+                </div>
+                <div class="pay-right">
+                  <div class="pay-amount">$ {{ pay.amount | number:'1.0-0' }}</div>
+                  <span class="pay-badge"
+                        [class.paid]="pay.status === 'PAID'"
+                        [class.pending]="pay.status === 'PENDING'">
+                    {{ pay.status === 'PAID' ? 'Pagado' : 'Pendiente' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="no-appointments" *ngIf="!loadingPayments && myPayments.length === 0">
+              <p>No tienes pagos registrados aún</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- COLUMNA DERECHA: Agendar -->
+        <div class="right-column">
+
+          <!-- PASO 1: Mascota -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>🐾 Paso 1 · Selecciona tu Mascota</h3>
             </div>
 
             <div class="no-pets" *ngIf="pets.length === 0">
               <p>No tienes mascotas registradas</p>
-              <button class="btn-primary" (click)="openCreatePetModal()">
+              <button class="btn-link" (click)="router.navigate(['/pet'], { queryParams: { action: 'create' } })">
                 + Registrar mascota
               </button>
             </div>
 
             <div class="pets-grid" *ngIf="pets.length > 0">
-              <div
-                class="pet-chip"
-                *ngFor="let pet of pets"
-                [class.selected]="selectedPet?.id === pet.id"
-                (click)="selectPet(pet)">
-                <span class="pet-emoji">{{ pet.emoji }}</span>
+              <div class="pet-chip" *ngFor="let pet of pets"
+                   [class.selected]="selectedPet?.id === pet.id"
+                   (click)="selectPet(pet)">
+                <div class="pet-chip-avatar">
+                  <img *ngIf="pet.photoUrl" [src]="pet.photoUrl" [alt]="pet.name" class="pet-chip-img">
+                  <span *ngIf="!pet.photoUrl" class="pet-emoji">{{ pet.emoji }}</span>
+                </div>
                 <span class="pet-name">{{ pet.name }}</span>
               </div>
             </div>
           </div>
 
-          <!-- CALENDAR & TIME SLOTS (only if pet selected) -->
+          <!-- PASO 2: Veterinario -->
           <div class="section-card" *ngIf="selectedPet">
             <div class="section-header">
-              <h3>📅 Selecciona Fecha</h3>
+              <h3>🩺 Paso 2 · Elige tu Veterinario</h3>
             </div>
 
+            <div class="loading-slots" *ngIf="loadingVets">
+              <div class="spinner"></div>
+              <p>Cargando veterinarios...</p>
+            </div>
+
+            <div class="vets-grid" *ngIf="!loadingVets">
+              <div class="vet-card" *ngFor="let vet of veterinarians"
+                   [class.selected]="selectedVet?.id === vet.id"
+                   (click)="selectVet(vet)">
+                <div class="vet-avatar">
+                  <img *ngIf="vet.photoUrl" [src]="vet.photoUrl" [alt]="vet.name" class="vet-photo">
+                  <span *ngIf="!vet.photoUrl">{{ getVetInitials(vet) }}</span>
+                </div>
+                <div class="vet-info">
+                  <div class="vet-name">Dr. {{ vet.name }}</div>
+                  <div class="vet-specialty">Veterinario</div>
+                </div>
+                <div class="vet-selected-check" *ngIf="selectedVet?.id === vet.id">✓</div>
+              </div>
+
+              <div class="no-vets" *ngIf="veterinarians.length === 0">
+                <p>No hay veterinarios disponibles en este momento</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- PASO 3: Fecha -->
+          <div class="section-card" *ngIf="selectedVet">
+            <div class="section-header">
+              <h3>📅 Paso 3 · Selecciona Fecha</h3>
+            </div>
             <div class="calendar-widget">
               <div class="cal-header">
                 <button class="cal-nav-btn" (click)="previousMonth()">‹</button>
                 <span class="cal-month">{{ currentMonthYear }}</span>
                 <button class="cal-nav-btn" (click)="nextMonth()">›</button>
               </div>
-
               <div class="cal-grid">
-                <div class="cal-day-name" *ngFor="let day of weekDays">
-                  {{ day }}
-                </div>
-
-                <div
-                  class="cal-day"
-                  *ngFor="let day of calendarDays"
-                  [class.empty]="!day.date"
-                  [class.today]="day.isToday"
-                  [class.selected]="day.isSelected"
-                  [class.disabled]="day.isDisabled"
-                  [class.available]="day.hasAvailableSlots && !day.isDisabled"
-                  [class.has-slots]="day.hasAvailableSlots"
-                  (click)="day.date && !day.isDisabled && selectDate(day)"
-                  tabindex="0"
-                  role="button"
-                  [attr.aria-label]="'Seleccionar día ' + day.date">
+                <div class="cal-day-name" *ngFor="let d of weekDays">{{ d }}</div>
+                <div class="cal-day" *ngFor="let day of calendarDays"
+                     [class.today]="day.isToday"
+                     [class.selected]="day.isSelected"
+                     [class.disabled]="day.isDisabled"
+                     [class.available]="day.hasAvailableSlots && !day.isDisabled"
+                     (click)="day.date && !day.isDisabled && selectDate(day)"
+                     tabindex="0" role="button">
                   {{ day.date }}
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- TIME SLOTS -->
+          <!-- PASO 4: Horario -->
           <div class="section-card" *ngIf="selectedDate">
             <div class="section-header">
-              <h3>🕐 Horarios Disponibles</h3>
+              <h3>🕐 Paso 4 · Horarios Disponibles</h3>
               <span class="selected-date-label">{{ selectedDate }}</span>
             </div>
-
             <div class="loading-slots" *ngIf="loadingSlots">
               <div class="spinner"></div>
               <p>Cargando horarios...</p>
             </div>
-
             <div class="time-slots-grid" *ngIf="!loadingSlots">
-              <button
-                class="time-slot"
-                *ngFor="let slot of timeSlots"
-                [class.taken]="slot.status === 'taken'"
-                [class.selected]="slot.status === 'selected'"
-                [disabled]="slot.status === 'taken'"
-                (click)="selectTimeSlot(slot)">
+              <button class="time-slot" *ngFor="let slot of timeSlots"
+                      [class.selected]="slot.status === 'selected'"
+                      [disabled]="slot.status === 'taken'"
+                      (click)="selectTimeSlot(slot)">
                 {{ slot.time }}
               </button>
             </div>
           </div>
 
-          <!-- APPOINTMENT DETAILS -->
+          <!-- PASO 5: Detalles -->
           <div class="section-card" *ngIf="selectedTimeSlot">
             <div class="section-header">
-              <h3>📋 Detalles de la Cita</h3>
+              <h3>📋 Paso 5 · Detalles de la Cita</h3>
             </div>
 
             <div class="form-group">
               <label class="form-label">Motivo de la consulta</label>
-              <select class="form-select" [(ngModel)]="appointmentReason">
+              <select class="form-select" [(ngModel)]="appointmentReason" (change)="onReasonChange()">
                 <option value="">Selecciona un motivo...</option>
-                <option value="consulta">Consulta general</option>
-                <option value="vacunacion">Vacunación</option>
-                <option value="desparasitacion">Desparasitación</option>
-                <option value="control">Control de rutina</option>
-                <option value="emergencia">Emergencia</option>
-                <option value="cirugia">Cirugía programada</option>
-                <option value="otro">Otro</option>
+                <option *ngFor="let sp of servicePrices" [value]="sp.serviceType">
+                  {{ sp.displayName }}
+                </option>
               </select>
+            </div>
+
+            <!-- PRECIO REFERENCIAL -->
+            <div class="price-hint-box" *ngIf="appointmentReason && referencePrice !== null">
+              <div class="price-hint-row">
+                <span class="price-hint-label">💰 Precio referencial</span>
+                <span class="price-hint-amount">$ {{ referencePrice | number:'1.0-0' }} COP</span>
+              </div>
+              <p class="price-hint-disclaimer">
+                Este es el precio base de la consulta. El costo final puede variar según los procedimientos,
+                medicamentos o exámenes que el veterinario realice durante la cita.
+              </p>
+            </div>
+
+            <div class="price-hint-box price-hint-no-price" *ngIf="appointmentReason && referencePrice === null">
+              <p class="price-hint-disclaimer">
+                ℹ️ No hay precio base registrado para este servicio. Consulta con la clínica antes de la cita.
+              </p>
             </div>
 
             <div class="form-group">
               <label class="form-label">Notas adicionales (opcional)</label>
-              <textarea
-                class="form-textarea"
-                [(ngModel)]="appointmentNotes"
-                placeholder="Detalles adicionales..."
-                rows="3"></textarea>
+              <textarea class="form-textarea" [(ngModel)]="appointmentNotes"
+                        placeholder="Detalles..." rows="3"></textarea>
             </div>
 
             <div class="appointment-summary" *ngIf="appointmentReason">
               <div class="summary-row">
                 <span>Mascota:</span>
                 <strong>{{ selectedPet?.name }}</strong>
+              </div>
+              <div class="summary-row">
+                <span>Veterinario:</span>
+                <strong>Dr. {{ selectedVet?.name }}</strong>
               </div>
               <div class="summary-row">
                 <span>Fecha:</span>
@@ -208,148 +258,40 @@
               </div>
             </div>
 
-            <button
-              class="btn-confirm"
-              *ngIf="appointmentReason"
-              (click)="confirmAppointment()"
-              [disabled]="confirmingAppointment">
+            <button class="btn-confirm" *ngIf="appointmentReason"
+                    (click)="confirmAppointment()"
+                    [disabled]="confirmingAppointment">
               <span *ngIf="!confirmingAppointment">✓ Confirmar Cita</span>
               <span *ngIf="confirmingAppointment">Confirmando...</span>
             </button>
           </div>
 
         </div>
-
       </div>
-
     </div>
-
   </main>
-
 </div>
 
-<!-- CREATE PET MODAL -->
-<div class="modal-overlay" *ngIf="showCreatePetModal" (click)="closeCreatePetModal()">
-  <div class="modal-card" (click)="$event.stopPropagation()">
-
-    <div class="modal-header">
-      <h3>Registrar Nueva Mascota</h3>
-      <button class="modal-close" (click)="closeCreatePetModal()">✕</button>
-    </div>
-
-    <div class="modal-body">
-      <form [formGroup]="petForm">
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Nombre</label>
-            <input
-              type="text"
-              class="form-input"
-              formControlName="name"
-              placeholder="Ej: Rocky, Luna...">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Especie</label>
-            <select class="form-select" formControlName="species">
-              <option value="">Selecciona...</option>
-              <option value="Perro">🐕 Perro</option>
-              <option value="Gato">🐈 Gato</option>
-              <option value="Conejo">🐰 Conejo</option>
-              <option value="Hamster">🐹 Hámster</option>
-              <option value="Ave">🦜 Ave</option>
-              <option value="Otro">🐾 Otro</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Raza</label>
-            <input
-              type="text"
-              class="form-input"
-              formControlName="breed"
-              placeholder="Ej: Labrador...">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Sexo</label>
-            <select class="form-select" formControlName="gender">
-              <option value="">Selecciona...</option>
-              <option value="M">Macho</option>
-              <option value="F">Hembra</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">Fecha de Nacimiento</label>
-            <input
-              type="date"
-              class="form-input"
-              formControlName="birthDate">
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Color</label>
-            <input
-              type="text"
-              class="form-input"
-              formControlName="color"
-              placeholder="Ej: Dorado...">
-          </div>
-        </div>
-
-        <div class="form-group full">
-          <label class="form-label">Observaciones (opcional)</label>
-          <textarea
-            class="form-textarea"
-            formControlName="notes"
-            placeholder="Alergias, condiciones..."
-            rows="3"></textarea>
-        </div>
-
-      </form>
-    </div>
-
-    <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeCreatePetModal()">
-        Cancelar
-      </button>
-      <button
-        class="btn-primary"
-        (click)="savePet()"
-        [disabled]="!petForm.valid || savingPet">
-        <span *ngIf="!savingPet">💾 Guardar</span>
-        <span *ngIf="savingPet">Guardando...</span>
-      </button>
-    </div>
-
-  </div>
-</div>
-
-<!-- CANCEL MODAL -->
+<!-- MODAL CANCELAR -->
 <div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
   <div class="modal-card" (click)="$event.stopPropagation()">
-
     <div class="modal-header">
       <h3>Cancelar Cita</h3>
       <button class="modal-close" (click)="closeCancelModal()">✕</button>
     </div>
-
     <div class="modal-body">
       <div class="cancel-warning-box">
-        <div class="warning-icon">⚠️</div>
+        <span class="warning-icon">⚠️</span>
         <p>¿Estás seguro de que deseas cancelar esta cita?</p>
       </div>
-
       <div class="cancel-details" *ngIf="appointmentToCancel">
         <div class="detail-row">
           <span>Mascota:</span>
           <strong>{{ appointmentToCancel.petName }}</strong>
+        </div>
+        <div class="detail-row">
+          <span>Veterinario:</span>
+          <strong>{{ appointmentToCancel.vetName }}</strong>
         </div>
         <div class="detail-row">
           <span>Fecha:</span>
@@ -360,29 +302,24 @@
           <strong>{{ appointmentToCancel.time }}</strong>
         </div>
       </div>
-
       <div class="form-group">
         <label class="form-label">Motivo (opcional)</label>
-        <textarea
-          class="form-textarea"
-          [(ngModel)]="cancelReason"
-          placeholder="¿Por qué cancelas?"
-          rows="3"></textarea>
+        <textarea class="form-textarea" [(ngModel)]="cancelReason"
+                  placeholder="¿Por qué cancelas?" rows="3"></textarea>
       </div>
     </div>
-
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="closeCancelModal()">
-        Volver
-      </button>
-      <button
-        class="btn-danger"
-        (click)="confirmCancel()"
-        [disabled]="cancelling">
+      <button class="btn-secondary" (click)="closeCancelModal()">Volver</button>
+      <button class="btn-danger" (click)="confirmCancel()" [disabled]="cancelling">
         <span *ngIf="!cancelling">🚫 Cancelar Cita</span>
         <span *ngIf="cancelling">Cancelando...</span>
       </button>
     </div>
-
   </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast toast-success" [class.visible]="toastVisible">
+  <span class="toast-icon">✅</span>
+  <span>{{ toastMessage }}</span>
 </div>

@@ -12,6 +12,13 @@
       <div class="login-card">
         <h2>Iniciar Sesión</h2>
 
+        <!-- Aviso sesión expirada por inactividad -->
+        <div class="session-expired-msg" *ngIf="sessionExpiredMsg">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ sessionExpiredMsg }}
+        </div>
+
+        <!-- Email -->
         <ion-item lines="none" class="input-item">
           <ion-label position="stacked">Correo electrónico</ion-label>
           <ion-input
@@ -22,31 +29,70 @@
           </ion-input>
         </ion-item>
 
-        <ion-item lines="none" class="input-item">
+        <!-- Contraseña con ojito -->
+        <ion-item lines="none" class="input-item password-item">
           <ion-label position="stacked">Contraseña</ion-label>
           <ion-input
-            type="password"
+            [type]="mostrarPass ? 'text' : 'password'"
             placeholder="••••••••"
             [(ngModel)]="password"
             [disabled]="cargando">
           </ion-input>
+          <ion-icon
+            slot="end"
+            class="eye-icon"
+            [name]="mostrarPass ? 'eye-off-outline' : 'eye-outline'"
+            (click)="mostrarPass = !mostrarPass">
+          </ion-icon>
         </ion-item>
 
-        <!-- Spinner mientras carga -->
+        <!-- reCAPTCHA -->
+        <div class="recaptcha-wrap">
+          <div id="recaptcha-container"></div>
+        </div>
+
+        <!-- Spinner -->
         <div class="loading" *ngIf="cargando">
           <ion-spinner name="crescent"></ion-spinner>
           <span>Cargando...</span>
         </div>
 
+        <!-- Error de credenciales -->
         <p *ngIf="errorMsg && !cargando" class="error-message">
           {{ errorMsg }}
         </p>
+
+        <!--
+          Bloque de reenvío de verificación.
+          Solo aparece cuando el error es "debes verificar tu correo".
+        -->
+        <div class="verify-resend-block" *ngIf="correoSinVerificar && !cargando">
+          <p class="verify-hint">
+            <ion-icon name="mail-outline"></ion-icon>
+            ¿No recibiste el correo de verificación?
+          </p>
+          <ion-button
+            expand="block"
+            class="resend-verif-btn"
+            (click)="reenviarVerificacionDesdeLogin()"
+            [disabled]="reenviandoVerif">
+            <ion-spinner *ngIf="reenviandoVerif" name="crescent" slot="start"></ion-spinner>
+            <ion-icon *ngIf="!reenviandoVerif" name="refresh-outline" slot="start"></ion-icon>
+            {{ reenviandoVerif ? 'Reenviando...' : 'Reenviar correo de verificación' }}
+          </ion-button>
+          <p *ngIf="mensajeReenvioVerif"
+             class="resend-verif-msg"
+             [class.ok]="mensajeReenvioVerif.startsWith('✅')"
+             [class.error]="mensajeReenvioVerif.startsWith('❌')">
+            {{ mensajeReenvioVerif }}
+          </p>
+        </div>
 
         <ion-button
           expand="block"
           class="login-btn"
           (click)="login()"
-          [disabled]="cargando || !email || !password.trim()">
+          [disabled]="cargando || !email || !password.trim() || !recaptchaToken">
           {{ cargando ? 'Ingresando...' : 'Ingresar' }}
         </ion-button>
 
@@ -57,19 +103,27 @@
         <div class="register" (click)="irRegistro()" [class.disabled]="cargando">
           ¿No tienes cuenta? <span>Regístrate</span>
         </div>
+
+      </div>
+
+      <!-- Contáctanos -->
+      <div class="contact-footer">
+        <a href="mailto:pawsoft.vet@gmail.com" class="contact-link">
+          ✉️ Contáctanos: <span>pawsoft.vet@gmail.com</span>
+        </a>
       </div>
     </div>
   </div>
 
-
-
   <!-- OTP Modal -->
   <app-otp-modal
-    [isVisible]="mostrarOtp"
+    *ngIf="mostrarOtp"
+    [isVisible]="true"
     [email]="correoUsuario"
     (validate)="handleOtpValidado($event)"
-    (successRedirect)="handleSuccessRedirect()"
     (closed)="handleOtpCerrado()"
-    (resend)="handleReenvio()">
+    (resend)="handleReenvio()"
+    (successRedirect)="handleSuccessRedirect()">
   </app-otp-modal>
+
 </ion-content>

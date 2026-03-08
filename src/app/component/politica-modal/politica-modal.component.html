@@ -1,0 +1,236 @@
+<div class="politica-overlay" *ngIf="isVisible" (click)="cerrar()">
+  <div class="politica-card" (click)="$event.stopPropagation()">
+
+    <!-- Cabecera institucional -->
+    <div class="politica-header">
+      <div class="header-marca">
+        <div class="header-marca-texto">
+          <span class="marca-nombre">PawSoft</span>
+          <span class="marca-sub">Sistema de Gestión Veterinaria</span>
+        </div>
+        <ion-icon name="close-outline" class="close-icon" (click)="cerrar()"></ion-icon>
+      </div>
+      <div class="header-titulo-bloque">
+        <p class="header-proceso">PROCESO: GESTIÓN DE LA PLATAFORMA</p>
+        <h2>Política de Tratamiento y Protección de Datos Personales</h2>
+        <div class="header-meta-fila">
+          <span class="meta-item">Versión 1.0</span>
+          <span class="meta-sep">·</span>
+          <span class="meta-item">Vigente desde enero de 2026</span>
+          <span class="meta-sep">·</span>
+          <span class="meta-item">Vigencia indefinida</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuerpo del documento -->
+    <div class="politica-body">
+
+      <!-- Introducción -->
+      <div class="intro-bloque">
+        <p>
+          En cumplimiento del <strong>artículo 15 de la Constitución Política de Colombia</strong>,
+          la <strong>Ley Estatutaria 1581 de 2012</strong> y el <strong>Decreto 1377 de 2013</strong>,
+          PawSoft establece la presente Política de Tratamiento y Protección de Datos Personales,
+          con el propósito de normar la responsabilidad en el tratamiento de la información personal
+          de los titulares registrados en la plataforma.
+        </p>
+      </div>
+
+      <!-- Sección 1 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">1.</span>
+          <h3>Responsable del Tratamiento</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>
+            <strong>PawSoft – Sistema de Gestión Veterinaria</strong>, con domicilio en la
+            República de Colombia, actúa como responsable del tratamiento de los datos personales
+            recopilados a través de esta plataforma, comprometiéndose al cumplimiento de las
+            obligaciones previstas en la Ley 1581 de 2012 y su Decreto reglamentario 1377 de 2013.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sección 2 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">2.</span>
+          <h3>Datos Objeto de Tratamiento</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>PawSoft recopila y trata los siguientes datos personales de los usuarios registrados:</p>
+          <table class="tabla-datos">
+            <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Dato</th>
+              <th>Clasificación</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+              <td>Titular (dueño)</td>
+              <td>Nombre completo</td>
+              <td><span class="badge-dato publico">Público</span></td>
+            </tr>
+            <tr>
+              <td>Titular (dueño)</td>
+              <td>Correo electrónico</td>
+              <td><span class="badge-dato semiprivado">semiprivado</span></td>
+            </tr>
+            <tr>
+              <td>Titular (dueño)</td>
+              <td>Número de teléfono</td>
+              <td><span class="badge-dato semiprivado">Semiprivado</span></td>
+            </tr>
+            <tr>
+              <td>Mascota</td>
+              <td>Nombre, especie, raza, edad</td>
+              <td><span class="badge-dato publico">Público</span></td>
+            </tr>
+            <tr>
+              <td>Mascota</td>
+              <td>Fotografía de la mascota</td>
+              <td><span class="badge-dato privado">Privado</span></td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Sección 3 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">3.</span>
+          <h3>Finalidad del Tratamiento</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>Los datos personales recopilados serán tratados exclusivamente para las siguientes finalidades:</p>
+          <ul class="lista-doc">
+            <li>Gestionar el registro, autenticación y acceso a la plataforma.</li>
+            <li>Agendar, administrar y realizar seguimiento de citas veterinarias.</li>
+            <li>Mantener y consultar el historial clínico de la mascota.</li>
+            <li>Enviar notificaciones y comunicaciones relacionadas con el servicio.</li>
+            <li>Contactar al titular ante necesidades relacionadas con su mascota.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sección 4 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">4.</span>
+          <h3>Autorización</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>
+            PawSoft solicitará autorización expresa del titular en el momento del registro.
+            Dicha autorización será obtenida mediante mecanismo electrónico que permita
+            su posterior consulta. En ningún caso el silencio será asimilado como autorización.
+            PawSoft conservará prueba de la autorización otorgada por cada titular.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sección 5 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">5.</span>
+          <h3>Derechos del Titular</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>En virtud de la Ley 1581 de 2012, el titular tiene derecho a:</p>
+          <ul class="lista-doc">
+            <li>Acceder de forma gratuita a los datos que hayan sido objeto de tratamiento.</li>
+            <li>Conocer, actualizar y rectificar información parcial, inexacta o incompleta.</li>
+            <li>Solicitar prueba de la autorización otorgada al responsable del tratamiento.</li>
+            <li>Presentar quejas ante la <strong>Superintendencia de Industria y Comercio (SIC)</strong>.</li>
+            <li>Revocar la autorización y/o solicitar la supresión de sus datos personales.</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Sección 6 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">6.</span>
+          <h3>Transferencia y Compartición de Datos</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>
+            Los datos personales <strong>no serán vendidos ni cedidos a terceros</strong> con fines
+            comerciales. Únicamente podrán ser accedidos por el personal autorizado de la veterinaria
+            vinculada a la plataforma para los fines descritos en esta política, o cuando medie
+            obligación legal o requerimiento de autoridad competente.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sección 7 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">7.</span>
+          <h3>Seguridad y Conservación de los Datos</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>
+            PawSoft implementará medidas técnicas y administrativas adecuadas para garantizar
+            la seguridad de los datos personales. Los datos se conservarán mientras el usuario
+            mantenga una cuenta activa en la plataforma o hasta que solicite formalmente
+            su eliminación. Una vez cumplida la finalidad del tratamiento y sin que exista
+            deber legal de conservación, los datos podrán ser suprimidos de las bases de datos.
+          </p>
+        </div>
+      </div>
+
+      <!-- Sección 8 -->
+      <div class="articulo">
+        <div class="articulo-encabezado">
+          <span class="articulo-num">8.</span>
+          <h3>Atención de Solicitudes</h3>
+        </div>
+        <div class="articulo-cuerpo">
+          <p>
+            Para ejercer sus derechos o presentar quejas relacionadas con el tratamiento
+            de sus datos personales, el titular podrá comunicarse a través de los canales
+            de atención habilitados dentro de la plataforma PawSoft. El término máximo
+            para resolver solicitudes es de <strong>quince (15) días hábiles</strong> contados
+            a partir del día siguiente a su recibo.
+          </p>
+        </div>
+      </div>
+
+      <!-- Pie del documento -->
+      <div class="doc-pie">
+        <div class="pie-linea"></div>
+        <div class="pie-contenido">
+          <div class="pie-col">
+            <span class="pie-label">Elaboró</span>
+            <span class="pie-valor">Equipo de Desarrollo PawSoft</span>
+          </div>
+          <div class="pie-divisor"></div>
+          <div class="pie-col">
+            <span class="pie-label">Vigencia</span>
+            <span class="pie-valor">Enero 2026 — Indefinida</span>
+          </div>
+          <div class="pie-divisor"></div>
+          <div class="pie-col">
+            <span class="pie-label">Norma base</span>
+            <span class="pie-valor">Ley 1581 de 2012 · Colombia</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer del modal -->
+    <div class="politica-footer">
+      <ion-button expand="block" class="cerrar-btn" (click)="aceptarYCerrar()">
+        He leído y entendido esta política
+      </ion-button>
+    </div>
+
+  </div>
+</div>

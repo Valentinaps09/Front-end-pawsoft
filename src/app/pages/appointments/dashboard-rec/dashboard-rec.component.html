@@ -1,0 +1,960 @@
+<!-- DASHBOARD RECEPCIONISTA -->
+<div class="dashboard-layout">
+
+  <app-sidebar
+    [userRole]="userRole"
+    [userName]="userName"
+    [activeTab]="activeTab"
+    (tabChange)="setTab($event)">
+  </app-sidebar>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{ getActiveTabLabel() }}</div>
+        <div class="topbar-sub">{{ getActiveTabSub() }}</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-primary" *ngIf="activeTab === 'inicio'" (click)="setTab('nueva-cita')">+ Nueva Cita</button>
+      </div>
+    </div>
+
+    <!-- TAB NAV -->
+    <div class="tab-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'inicio'"      (click)="setTab('inicio')">🏠 Inicio</button>
+      <button class="tab-btn" [class.active]="activeTab === 'nueva-cita'"  (click)="setTab('nueva-cita')">📅 Crear Cita</button>
+      <button class="tab-btn" [class.active]="activeTab === 'todas-citas'" (click)="setTab('todas-citas')">📋 Todas las Citas</button>
+      <button class="tab-btn" [class.active]="activeTab === 'pagos'"       (click)="setTab('pagos')">💳 Pagos</button>
+      <button class="tab-btn" [class.active]="activeTab === 'clientes'"    (click)="setTab('clientes')">👥 Clientes</button>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ===== TAB: INICIO ===== -->
+      <div *ngIf="activeTab === 'inicio'" class="tab-content">
+        <div class="stats-strip">
+          <div class="stat-card" *ngFor="let stat of todayStats">
+            <div class="stat-icon-wrap">{{ stat.icon }}</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="section-card table-card">
+          <div class="table-header-row">
+            <div class="table-section-title">📅 Citas de Hoy — {{ todayLabel }}</div>
+            <div class="filters-row-inline">
+              <input type="text" class="form-input search-input-sm" placeholder="Buscar cliente o mascota..."
+                     [(ngModel)]="todaySearch" (input)="filterTodayAppointments()">
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>Hora</th><th>Cliente</th><th>Mascota</th><th>Veterinario</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+              <tr *ngFor="let apt of filteredTodayAppointments" class="table-row">
+                <td><div class="time-cell"><span class="time-badge">{{ apt.time }}</span></div></td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small">{{ getUserInitials(apt.clientFirstName, apt.clientLastName) }}</div>
+                    <div><div class="cell-name">{{ apt.clientFirstName }} {{ apt.clientLastName }}</div><div class="cell-sub">{{ apt.clientEmail }}</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="pet-avatar-cell">{{ apt.petEmoji }}</div>
+                    <div><div class="cell-name">{{ apt.petName }}</div><div class="cell-sub">{{ apt.petSpecies }}</div></div>
+                  </div>
+                </td>
+                <td><div class="cell-name">Dr. {{ apt.vetFirstName }} {{ apt.vetLastName }}</div></td>
+                <td class="cell-text">{{ apt.reason }}</td>
+                <td><span class="apt-status-badge" [ngClass]="getStatusClass(apt.status)">{{ getStatusLabel(apt.status) }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-action confirm"    *ngIf="apt.status === 'UPCOMING'"  (click)="confirmAppointment(apt)">Confirmar</button>
+                    <button class="btn-action no-show"    *ngIf="apt.status === 'CONFIRMED'" (click)="markNoShow(apt)">No asistió</button>
+                    <button class="btn-action cobrar"     *ngIf="apt.status === 'CONFIRMED' && !getPaymentForApt(apt.id)" (click)="openPaymentModal(apt)">💳 Cobrar</button>
+                    <button class="btn-action edit"                                           (click)="openEditAppointmentModal(apt)">Editar</button>
+                    <button class="btn-action deactivate" *ngIf="apt.status !== 'CANCELLED'" (click)="openCancelModal(apt)">Cancelar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredTodayAppointments.length === 0"><td colspan="7" class="empty-row">No hay citas para hoy</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="stats-panels-grid">
+          <div class="section-card panel-card">
+            <div class="panel-title">📅 Citas por Día</div>
+            <div class="panel-subtitle">Esta semana</div>
+            <div class="bar-chart">
+              <div class="bar-item" *ngFor="let d of weeklyData">
+                <div class="bar-track"><div class="bar-fill" [style.height.%]="d.pct" [class.today-bar]="d.isToday" [class.bar-empty]="d.count === 0"></div></div>
+                <div class="bar-label" [class.today-label]="d.isToday">{{ d.day }}</div>
+                <div class="bar-value">{{ d.count }}</div>
+              </div>
+            </div>
+            <div class="chart-legend">
+              <span class="legend-dot legend-today"></span><span class="legend-text">Hoy</span>
+              <span class="legend-dot legend-other"></span><span class="legend-text">Otros días</span>
+            </div>
+          </div>
+          <div class="section-card panel-card">
+            <div class="panel-title">📊 Citas Canceladas</div>
+            <div class="panel-subtitle">Esta semana</div>
+            <div class="cancelled-list">
+              <div class="cancelled-item" *ngFor="let item of cancelledThisWeek">
+                <div class="cancelled-dot"></div>
+                <div class="cancelled-info">
+                  <div class="cancelled-client">{{ item.clientFirstName }} {{ item.clientLastName }}</div>
+                  <div class="cancelled-detail">{{ item.petName }} · {{ item.date }} {{ item.time }}</div>
+                </div>
+                <div class="cancelled-reason">{{ item.cancelReason || 'Sin motivo' }}</div>
+              </div>
+              <div class="no-cancelled" *ngIf="cancelledThisWeek.length === 0">✅ Sin cancelaciones esta semana</div>
+            </div>
+          </div>
+          <div class="section-card panel-card">
+            <div class="panel-title">👨‍⚕️ Citas por Veterinario</div>
+            <div class="panel-subtitle">Esta semana</div>
+            <div class="vet-list">
+              <div class="vet-stat-row" *ngFor="let vet of vetStats">
+                <div class="user-cell">
+                  <div class="user-avatar-small">{{ getUserInitials(vet.firstName, vet.lastName) }}</div>
+                  <div class="cell-name">Dr. {{ vet.firstName }} {{ vet.lastName }}</div>
+                </div>
+                <div class="vet-bar-wrap">
+                  <div class="vet-bar-track"><div class="vet-bar-fill" [style.width.%]="vet.pct"></div></div>
+                  <span class="vet-count">{{ vet.count }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB: CREAR CITA ===== -->
+      <div *ngIf="activeTab === 'nueva-cita'" class="tab-content">
+        <div class="section-card create-apt-card">
+          <div class="create-apt-header">
+            <div class="create-steps">
+              <div class="step-dot" [class.active]="newAptStep >= 1" [class.done]="newAptStep > 1"><span>1</span></div>
+              <div class="step-line" [class.done]="newAptStep > 1"></div>
+              <div class="step-dot" [class.active]="newAptStep >= 2" [class.done]="newAptStep > 2"><span>2</span></div>
+              <div class="step-line" [class.done]="newAptStep > 2"></div>
+              <div class="step-dot" [class.active]="newAptStep >= 3"><span>3</span></div>
+            </div>
+            <div class="step-labels">
+              <span [class.active-label]="newAptStep === 1">Cliente</span>
+              <span [class.active-label]="newAptStep === 2">Mascota</span>
+              <span [class.active-label]="newAptStep === 3">Cita</span>
+            </div>
+          </div>
+
+          <!-- PASO 1 -->
+          <div *ngIf="newAptStep === 1" class="step-content">
+            <div class="step-title">Seleccionar o crear cliente</div>
+            <div class="client-type-toggle">
+              <button class="toggle-btn" [class.selected]="clientMode === 'existing'" (click)="clientMode = 'existing'">👤 Cliente existente</button>
+              <button class="toggle-btn" [class.selected]="clientMode === 'new'"      (click)="clientMode = 'new'">➕ Nuevo cliente</button>
+            </div>
+
+            <!-- Buscar cliente existente -->
+            <div *ngIf="clientMode === 'existing'" class="client-search-wrap">
+              <input type="text" class="form-input" placeholder="Buscar por nombre o email..."
+                     [(ngModel)]="clientSearchQuery" (input)="searchExistingClients()">
+              <div class="client-results" *ngIf="clientSearchResults.length > 0 && !selectedExistingClient">
+                <div class="client-result-item" *ngFor="let c of clientSearchResults" (click)="selectExistingClient(c)">
+                  <div class="user-avatar-small client">{{ getUserInitials(c.firstName, c.lastName) }}</div>
+                  <div>
+                    <div class="cell-name">{{ c.firstName }} {{ c.lastName }}</div>
+                    <div class="cell-sub">{{ c.email }} · {{ countPetsForClient(c.email) }} mascota(s)</div>
+                  </div>
+                </div>
+              </div>
+              <div class="no-results-hint" *ngIf="showNoResults">Sin resultados. ¿Quieres crear un nuevo cliente?</div>
+              <div class="selected-client-card" *ngIf="selectedExistingClient">
+                <div class="user-cell">
+                  <div class="user-avatar-small client">{{ getUserInitials(selectedExistingClient.firstName, selectedExistingClient.lastName) }}</div>
+                  <div>
+                    <div class="cell-name">{{ selectedExistingClient.firstName }} {{ selectedExistingClient.lastName }}</div>
+                    <div class="cell-sub">{{ selectedExistingClient.email }} · {{ selectedExistingClient.pets.length }} mascota(s)</div>
+                  </div>
+                  <button class="btn-change-client" (click)="clearSelectedClient()">✕ Cambiar</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Nuevo cliente -->
+            <div *ngIf="clientMode === 'new'" class="new-client-form">
+              <form [formGroup]="newClientForm">
+                <div class="form-group full" style="margin-bottom:16px">
+                  <label class="form-label">Nombre completo *
+                    <span style="font-weight:400;color:#7A9A8C;font-size:0.72rem;margin-left:4px">(exactamente nombre y apellido)</span>
+                  </label>
+                  <input type="text" class="form-input" formControlName="name"
+                         placeholder="Ej: Carlos García"
+                         maxlength="60"
+                         autocomplete="off"
+                         [class.invalid]="isClientFieldInvalid('name')"
+                         (keydown)="onClientNameKeydown($event)"
+                         (paste)="onClientNamePaste($event)">
+                  <span class="field-error" *ngIf="newClientForm.get('name')?.hasError('required') && isClientFieldInvalid('name')">El nombre es obligatorio.</span>
+                  <span class="field-error" *ngIf="newClientForm.get('name')?.hasError('pattern') && isClientFieldInvalid('name')">Ingresa exactamente nombre y apellido (dos palabras).</span>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Correo electrónico *</label>
+                    <input type="email" class="form-input" formControlName="email" placeholder="correo@ejemplo.com" [class.invalid]="isClientFieldInvalid('email')">
+                    <span class="field-error" *ngIf="isClientFieldInvalid('email')">Correo inválido</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Teléfono *</label>
+                    <input type="tel" class="form-input" formControlName="phone"
+                           placeholder="3001234567" maxlength="10"
+                           [class.invalid]="isClientFieldInvalid('phone')">
+                    <span class="field-error" *ngIf="isClientFieldInvalid('phone')">
+                      Debe ser un número colombiano válido (ej: 3001234567)
+                    </span>
+                  </div>
+                </div>
+                <div style="background:#E8F3FD;border:1px solid #BDD7F0;border-radius:8px;
+                            padding:10px 14px;font-size:0.8rem;color:#1a5f96;font-weight:600">
+                  📧 Se enviará una contraseña temporal al correo del cliente automáticamente.
+                </div>
+              </form>
+            </div>
+
+            <div class="step-footer">
+              <button class="btn-primary" (click)="goToStep2()" [disabled]="!canProceedStep1()">Siguiente →</button>
+            </div>
+          </div>
+
+          <!-- PASO 2 -->
+          <div *ngIf="newAptStep === 2" class="step-content">
+            <div class="step-title">Seleccionar o agregar mascota</div>
+            <div *ngIf="clientMode === 'existing' && selectedExistingClient && selectedExistingClient.pets.length > 0">
+              <div class="pet-type-toggle">
+                <button class="toggle-btn" [class.selected]="petMode === 'existing'" (click)="petMode = 'existing'">🐾 Mascota registrada</button>
+                <button class="toggle-btn" [class.selected]="petMode === 'new'"      (click)="petMode = 'new'">➕ Nueva mascota</button>
+              </div>
+              <div *ngIf="petMode === 'existing'" class="pets-grid">
+                <div class="pet-select-card" *ngFor="let pet of selectedExistingClient.pets"
+                     [class.selected]="selectedPet?.id === pet.id" (click)="selectPet(pet)">
+                  <div class="pet-select-emoji">{{ pet.emoji }}</div>
+                  <div class="pet-select-name">{{ pet.name }}</div>
+                  <div class="pet-select-sub">{{ pet.species }} · {{ pet.breed }}</div>
+                  <div class="pet-select-check" *ngIf="selectedPet?.id === pet.id">✓</div>
+                </div>
+              </div>
+            </div>
+            <div *ngIf="clientMode === 'new' || (selectedExistingClient && selectedExistingClient.pets.length === 0) || petMode === 'new'">
+              <div class="new-pet-notice" *ngIf="clientMode === 'new'">ℹ️ Se creará la mascota junto al nuevo cliente</div>
+              <form [formGroup]="newPetForm" class="new-pet-form">
+                <div class="form-group full">
+                  <label class="form-label">Foto de la mascota</label>
+                  <div class="photo-upload-wrap">
+                    <div class="photo-preview" [style.background-image]="petPhotoPreview ? 'url(' + petPhotoPreview + ')' : ''">
+                      <span *ngIf="!petPhotoPreview">{{ getPetEmojiForSpecies() }}</span>
+                    </div>
+                    <div class="photo-actions">
+                      <label class="btn-secondary photo-label">📷 Subir foto<input type="file" accept="image/*" hidden (change)="onPetPhotoChange($event)"></label>
+                      <button type="button" class="btn-secondary" *ngIf="petPhotoPreview" (click)="removePetPhoto()">Quitar</button>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Nombre *</label>
+                    <input type="text" class="form-input" formControlName="name" placeholder="Ej: Rocky" [class.invalid]="isPetFieldInvalid('name')">
+                    <span class="field-error" *ngIf="isPetFieldInvalid('name')">Campo requerido</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Especie *</label>
+                    <select class="form-select" formControlName="species" [class.invalid]="isPetFieldInvalid('species')" (change)="onSpeciesChange()">
+                      <option value="">Seleccionar...</option>
+                      <option value="Perro">Perro</option><option value="Gato">Gato</option>
+                      <option value="Conejo">Conejo</option><option value="Ave">Ave</option><option value="Otro">Otro</option>
+                    </select>
+                    <span class="field-error" *ngIf="isPetFieldInvalid('species')">Campo requerido</span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Raza *</label>
+                    <input type="text" class="form-input" formControlName="breed" placeholder="Ej: Labrador" [class.invalid]="isPetFieldInvalid('breed')">
+                    <span class="field-error" *ngIf="isPetFieldInvalid('breed')">Campo requerido</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Fecha de nacimiento *</label>
+                    <div class="date-picker-wrapper" (click)="$event.stopPropagation()">
+                      <div class="date-display"
+                           [class.date-has-value]="newPetForm.get('birthDate')?.value"
+                           [class.invalid]="isPetFieldInvalid('birthDate')"
+                           (click)="toggleCalendarPetBirth($event); syncCalendarPetBirthToForm()">
+                        <span *ngIf="!newPetForm.get('birthDate')?.value" class="date-placeholder">Seleccionar fecha</span>
+                        <span *ngIf="newPetForm.get('birthDate')?.value">{{ newPetForm.get('birthDate')?.value | date:'dd/MM/yyyy' }}</span>
+                        <span class="date-arrow">▾</span>
+                      </div>
+                      <div class="calendar-popup" *ngIf="showCalendarPetBirth" (click)="$event.stopPropagation()">
+                        <div class="cal-header">
+                          <button type="button" class="cal-nav" (click)="prevMonthPetBirth()">‹</button>
+                          <div class="cal-title">
+                            <select class="cal-select" [(ngModel)]="calMonthPetBirth" [ngModelOptions]="{standalone:true}" (change)="buildCalendarPetBirth()">
+                              <option *ngFor="let m of meses; let i = index" [value]="i">{{ m }}</option>
+                            </select>
+                            <select class="cal-select" [(ngModel)]="calYearPetBirth" [ngModelOptions]="{standalone:true}" (change)="buildCalendarPetBirth()">
+                              <option *ngFor="let y of petBirthYears" [value]="y">{{ y }}</option>
+                            </select>
+                          </div>
+                          <button type="button" class="cal-nav"
+                                  [disabled]="isNextPetBirthMonthDisabled()"
+                                  [style.opacity]="isNextPetBirthMonthDisabled() ? '0.3' : '1'"
+                                  [style.cursor]="isNextPetBirthMonthDisabled() ? 'not-allowed' : 'pointer'"
+                                  (click)="nextMonthPetBirth()">›</button>
+                        </div>
+                        <div class="cal-weekdays"><span>Do</span><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span></div>
+                        <div class="cal-days">
+                          <span *ngFor="let day of calDaysPetBirth" class="cal-day"
+                                [class.empty]="day === 0"
+                                [class.selected]="isCalDaySelected(day, calYearPetBirth, calMonthPetBirth, newPetForm.get('birthDate')?.value)"
+                                [class.disabled]="isPetBirthDayDisabled(day)"
+                                [class.today]="isCalDayToday(day, calYearPetBirth, calMonthPetBirth)"
+                                (click)="selectDayPetBirth(day)">{{ day || '' }}</span>
+                        </div>
+                        <div style="text-align:center;font-size:0.68rem;color:#7A9A8C;margin-top:6px;padding-top:6px;border-top:1px solid #EEF3EF">
+                          Solo fechas pasadas · Hasta 30 años atrás
+                        </div>
+                      </div>
+                    </div>
+                    <span class="field-error" *ngIf="isPetFieldInvalid('birthDate')">Campo requerido</span>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Sexo *</label>
+                    <select class="form-select" formControlName="gender" [class.invalid]="isPetFieldInvalid('gender')">
+                      <option value="">Seleccionar...</option><option value="M">Macho</option><option value="F">Hembra</option>
+                    </select>
+                    <span class="field-error" *ngIf="isPetFieldInvalid('gender')">Campo requerido</span>
+                  </div>
+                </div>
+              </form>
+            </div>
+            <div class="step-footer">
+              <button class="btn-secondary" (click)="newAptStep = 1">← Anterior</button>
+              <button class="btn-primary" (click)="goToStep3()" [disabled]="!canProceedStep2()">Siguiente →</button>
+            </div>
+          </div>
+
+          <!-- PASO 3 -->
+          <div *ngIf="newAptStep === 3" class="step-content">
+            <div class="step-title">Detalles de la cita</div>
+            <div class="apt-summary-row">
+              <div class="apt-summary-chip">
+                <div class="user-avatar-small">{{ getUserInitials(getClientForSummary()?.firstName || '', getClientForSummary()?.lastName || '') }}</div>
+                <span>{{ getClientForSummary()?.firstName }} {{ getClientForSummary()?.lastName }}</span>
+              </div>
+              <div class="apt-summary-sep">→</div>
+              <div class="apt-summary-chip pet-chip"><span>{{ getPetEmojiForSpecies() }}</span><span>{{ getPetNameForSummary() }}</span></div>
+            </div>
+            <form [formGroup]="newAptForm">
+              <div class="form-row">
+                <div class="form-group" (click)="$event.stopPropagation()">
+                  <label class="form-label">Fecha *</label>
+                  <div class="date-picker-wrapper">
+                    <div class="date-display" [class.date-has-value]="newAptForm.get('date')?.value" [class.invalid]="isAptFieldInvalid('date')"
+                         (click)="toggleCalendarApt($event); syncCalendarAptToForm()">
+                      <span *ngIf="!newAptForm.get('date')?.value" class="date-placeholder">Seleccionar fecha</span>
+                      <span *ngIf="newAptForm.get('date')?.value">{{ newAptForm.get('date')?.value | date:'dd/MM/yyyy' }}</span>
+                      <span class="date-arrow">▾</span>
+                    </div>
+                    <div class="calendar-popup" *ngIf="showCalendarApt" (click)="$event.stopPropagation()">
+                      <div class="cal-header">
+                        <button type="button" class="cal-nav" (click)="prevMonthApt()">‹</button>
+                        <div class="cal-title">
+                          <select class="cal-select" [(ngModel)]="calMonthApt" [ngModelOptions]="{standalone:true}" (change)="buildCalendarApt()">
+                            <option *ngFor="let m of meses; let i = index" [value]="i">{{ m }}</option>
+                          </select>
+                          <select class="cal-select" [(ngModel)]="calYearApt" [ngModelOptions]="{standalone:true}" (change)="buildCalendarApt()">
+                            <option *ngFor="let y of calYears" [value]="y">{{ y }}</option>
+                          </select>
+                        </div>
+                        <button type="button" class="cal-nav" (click)="nextMonthApt()">›</button>
+                      </div>
+                      <div class="cal-weekdays"><span>Do</span><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span></div>
+                      <div class="cal-days">
+                        <span *ngFor="let day of calDaysApt" class="cal-day"
+                              [class.empty]="day === 0" [class.selected]="isCalDaySelected(day, calYearApt, calMonthApt, newAptForm.get('date')?.value)"
+                              [class.disabled]="isCalDayDisabled(day, calYearApt, calMonthApt, true)" [class.today]="isCalDayToday(day, calYearApt, calMonthApt)"
+                              (click)="selectDayApt(day)">{{ day || '' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <span class="field-error" *ngIf="isAptFieldInvalid('date')">Campo requerido</span>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Hora *</label>
+                  <div class="slots-loading" *ngIf="loadingSlots"><span class="spinner-sm-inline"></span> Cargando horarios...</div>
+                  <div class="slots-hint" *ngIf="!loadingSlots && timeSlots.length === 0">Selecciona veterinario y fecha para ver los horarios disponibles.</div>
+                  <div class="time-slots-grid" *ngIf="!loadingSlots && timeSlots.length > 0">
+                    <button *ngFor="let slot of timeSlots" type="button" class="time-slot-btn"
+                            [class.available]="slot.status === 'available'" [class.taken]="slot.status === 'taken'" [class.past]="slot.status === 'past'"
+                            [class.slot-selected]="newAptForm.get('time')?.value === slot.time"
+                            [disabled]="slot.status === 'taken' || slot.status === 'past'"
+                            (click)="slot.status === 'available' && newAptForm.get('time')?.setValue(slot.time)">{{ slot.time }}</button>
+                    <div class="slots-empty" *ngIf="noSlotsAvailable">⚠️ No hay horarios disponibles.</div>
+                  </div>
+                  <span class="field-error" *ngIf="isAptFieldInvalid('time')">Selecciona una hora</span>
+                </div>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Veterinario *</label>
+                <select class="form-select" formControlName="vetId" [class.invalid]="isAptFieldInvalid('vetId')" (change)="loadAvailableSlots()">
+                  <option value="">Seleccionar veterinario...</option>
+                  <option *ngFor="let vet of vets" [value]="vet.id">Dr. {{ vet.firstName }} {{ vet.lastName }}</option>
+                </select>
+                <span class="field-error" *ngIf="isAptFieldInvalid('vetId')">Campo requerido</span>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Motivo de consulta *</label>
+                <select class="form-select" formControlName="reason" [class.invalid]="isAptFieldInvalid('reason')" [disabled]="loadingServices">
+                  <option value="">{{ loadingServices ? 'Cargando servicios...' : 'Seleccionar motivo...' }}</option>
+                  <option *ngFor="let service of availableServices" [value]="service.displayName">{{ service.displayName }}</option>
+                  <option *ngIf="!loadingServices && availableServices.length === 0" value="" disabled>No hay servicios disponibles</option>
+                </select>
+                <span class="field-error" *ngIf="isAptFieldInvalid('reason')">Campo requerido</span>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Notas adicionales</label>
+                <textarea class="form-textarea" formControlName="notes" placeholder="Información adicional..." rows="3"></textarea>
+              </div>
+              <div class="apt-status-note">
+                <span class="apt-status-badge status-pendiente">PENDIENTE</span>
+                <span class="status-note-text">El estado inicial de la cita es siempre Pendiente</span>
+              </div>
+            </form>
+            <div class="step-footer">
+              <button class="btn-secondary" (click)="newAptStep = 2">← Anterior</button>
+              <button class="btn-primary" (click)="saveNewAppointment()" [disabled]="!newAptForm.valid || savingApt">
+                <span *ngIf="!savingApt">✅ Crear Cita</span>
+                <span *ngIf="savingApt">Guardando...</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB: TODAS LAS CITAS ===== -->
+      <div *ngIf="activeTab === 'todas-citas'" class="tab-content">
+        <div class="section-card">
+          <div class="filters-row">
+            <input type="text" class="form-input search-input" placeholder="Buscar cliente, mascota o veterinario..."
+                   [(ngModel)]="allAptSearch" (input)="filterAllAppointments()">
+            <select class="form-select filter-select" [(ngModel)]="allAptStatusFilter" (change)="filterAllAppointments()">
+              <option value="">Todos los estados</option>
+              <option value="UPCOMING">Pendiente</option><option value="CONFIRMED">Confirmada</option>
+              <option value="CANCELLED">Cancelada</option><option value="NO_SHOW">No asistió</option><option value="COMPLETED">Completada</option>
+            </select>
+            <select class="form-select filter-select" [(ngModel)]="allAptVetFilter" (change)="filterAllAppointments()">
+              <option value="">Todos los veterinarios</option>
+              <option *ngFor="let vet of vets" [value]="vet.id">Dr. {{ vet.firstName }} {{ vet.lastName }}</option>
+            </select>
+            <input type="date" class="form-input date-filter" [(ngModel)]="allAptDateFilter" (change)="filterAllAppointments()">
+            <button class="btn-secondary clear-filters-btn" (click)="clearAllAptFilters()" *ngIf="hasActiveFilters()">✕ Limpiar</button>
+          </div>
+        </div>
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead><tr><th>Fecha / Hora</th><th>Cliente</th><th>Mascota</th><th>Veterinario</th><th>Motivo</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+              <tr *ngFor="let apt of filteredAllAppointments" class="table-row">
+                <td><div class="cell-name">{{ apt.date }}</div><div class="time-badge-sm">{{ apt.time }}</div></td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small">{{ getUserInitials(apt.clientFirstName, apt.clientLastName) }}</div>
+                    <div><div class="cell-name">{{ apt.clientFirstName }} {{ apt.clientLastName }}</div><div class="cell-sub">{{ apt.clientEmail }}</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="pet-avatar-cell">{{ apt.petEmoji }}</div>
+                    <div><div class="cell-name">{{ apt.petName }}</div><div class="cell-sub">{{ apt.petSpecies }}</div></div>
+                  </div>
+                </td>
+                <td><div class="cell-name">Dr. {{ apt.vetFirstName }} {{ apt.vetLastName }}</div></td>
+                <td class="cell-text">{{ apt.reason }}</td>
+                <td><span class="apt-status-badge" [ngClass]="getStatusClass(apt.status)">{{ getStatusLabel(apt.status) }}</span></td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-action confirm"    *ngIf="apt.status === 'UPCOMING'"  (click)="confirmAppointment(apt)">Confirmar</button>
+                    <button class="btn-action no-show"    *ngIf="apt.status === 'CONFIRMED'" (click)="markNoShow(apt)">No asistió</button>
+                    <button class="btn-action cobrar"     *ngIf="apt.status === 'CONFIRMED' && !getPaymentForApt(apt.id)" (click)="openPaymentModal(apt)">💳 Cobrar</button>
+                    <button class="btn-action edit"                                           (click)="openEditAppointmentModal(apt)">Editar</button>
+                    <button class="btn-action deactivate" *ngIf="apt.status !== 'CANCELLED'" (click)="openCancelModal(apt)">Cancelar</button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredAllAppointments.length === 0"><td colspan="7" class="empty-row">No se encontraron citas</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB: PAGOS ===== -->
+      <div *ngIf="activeTab === 'pagos'" class="tab-content">
+        <div class="stats-strip">
+          <div class="stat-card"><div class="stat-icon-wrap">📋</div><div class="stat-info"><div class="stat-value">{{ paymentStats.total }}</div><div class="stat-label">Total pagos</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap">⏳</div><div class="stat-info"><div class="stat-value">{{ paymentStats.pending }}</div><div class="stat-label">Pendientes</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap">✅</div><div class="stat-info"><div class="stat-value">{{ paymentStats.paid }}</div><div class="stat-label">Cobrados</div></div></div>
+          <div class="stat-card"><div class="stat-icon-wrap">💰</div><div class="stat-info"><div class="stat-value">$ {{ paymentStats.todayRevenue | number:'1.0-0' }}</div><div class="stat-label">Recaudado hoy</div></div></div>
+        </div>
+        <div class="section-card table-card">
+          <div class="table-header-row">
+            <div class="table-section-title">💳 Historial de Pagos</div>
+            <div class="filters-row-inline">
+              <input type="text" class="form-input search-input-sm" placeholder="Buscar..." [(ngModel)]="paymentSearch" (input)="filterPayments()">
+              <select class="form-select" style="min-width:140px" [(ngModel)]="paymentStatusFilter" (change)="filterPayments()">
+                <option value="">Todos</option><option value="PENDING">Pendiente</option><option value="PAID">Cobrado</option>
+              </select>
+              <input type="date" class="form-input" style="min-width:140px" [(ngModel)]="paymentDateFilter" (change)="filterPayments()">
+            </div>
+          </div>
+          <div style="padding:32px;text-align:center" *ngIf="loadingPayments">
+            <span class="spinner-sm-inline" style="width:24px;height:24px;border-width:3px"></span>
+            <p style="margin-top:8px;color:#5F7F71">Cargando pagos...</p>
+          </div>
+          <div class="table-wrapper" *ngIf="!loadingPayments">
+            <table class="data-table">
+              <thead><tr><th>Fecha Cita</th><th>Cliente</th><th>Mascota</th><th>Concepto</th><th>Monto</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <tbody>
+              <tr *ngFor="let pay of filteredPayments" class="table-row">
+                <td>
+                  <div class="cell-name">{{ pay.appointmentDate }}</div>
+                  <div class="cell-sub" *ngIf="pay.paymentDate">Cobrado: {{ pay.paymentDate | date:'dd/MM/yy' }}</div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small">{{ (pay.clientName || '  ')[0] }}{{ (pay.clientName || '  ').split(' ')[1]?.[0] || '' }}</div>
+                    <div class="cell-name">{{ pay.clientName }}</div>
+                  </div>
+                </td>
+                <td><div class="cell-name">{{ pay.petName }}</div></td>
+                <td class="cell-text">{{ pay.concept }}</td>
+                <td><div class="cell-name">$ {{ pay.amount | number:'1.0-0' }}</div></td>
+                <td>
+                  <span class="apt-status-badge" [class.status-confirmada]="pay.status === 'PAID'" [class.status-pendiente]="pay.status === 'PENDING'">
+                    {{ pay.status === 'PAID' ? 'Cobrado' : 'Pendiente' }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn-action confirm" *ngIf="pay.status === 'PENDING'" (click)="confirmPaymentCash(pay)">✓ Cobrar</button>
+                  <span *ngIf="pay.status === 'PAID'" style="font-size:0.78rem;color:#22A06B;font-weight:700">✓ Listo</span>
+                </td>
+              </tr>
+              <tr *ngIf="filteredPayments.length === 0"><td colspan="7" class="empty-row">No hay pagos registrados</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TAB: CLIENTES ===== -->
+      <div *ngIf="activeTab === 'clientes'" class="tab-content">
+        <div class="clientes-layout">
+          <!-- Panel lista -->
+          <div class="clientes-panel panel-narrow">
+            <div class="panel-header">
+              <div class="panel-title">👥 Clientes</div>
+            </div>
+            <div class="search-bar">
+              <input type="text" class="form-input search-input" placeholder="Buscar nombre o email..."
+                     [(ngModel)]="clientSearch" (input)="applyClientSearch()">
+            </div>
+            <div class="loading-msg" *ngIf="loadingClients"><span class="spinner-sm-inline"></span> Cargando...</div>
+            <div class="client-list" *ngIf="!loadingClients">
+              <div class="client-row" *ngFor="let c of filteredRecepClients"
+                   [class.selected]="selectedClient?.id === c.id" (click)="selectClient(c)">
+                <div class="client-avatar">{{ c.name[0]?.toUpperCase() }}</div>
+                <div class="client-info">
+                  <div class="client-name">{{ c.name }}</div>
+                  <div class="client-email">{{ c.email }}</div>
+                </div>
+                <span class="status-badge" [class.active]="c.enabled" [class.inactive]="!c.enabled">
+                  {{ c.enabled ? 'Activo' : 'Inactivo' }}
+                </span>
+              </div>
+              <div class="empty-msg" *ngIf="filteredRecepClients.length === 0">No se encontraron clientes</div>
+            </div>
+          </div>
+          <!-- Panel detalle -->
+          <div class="clientes-panel detalle-panel">
+            <div class="empty-msg" *ngIf="!selectedClient" style="padding:60px 0;text-align:center;color:#9AAFA6">
+              👈 Selecciona un cliente para ver sus datos
+            </div>
+            <ng-container *ngIf="selectedClient">
+              <div class="detalle-header">
+                <div class="detalle-client-info">
+                  <div class="detalle-avatar">{{ selectedClient.name[0]?.toUpperCase() }}</div>
+                  <div>
+                    <div class="detalle-name">{{ selectedClient.name }}</div>
+                    <div class="detalle-email">{{ selectedClient.email }}</div>
+                  </div>
+                </div>
+                <div class="detalle-actions">
+                  <button class="btn-secondary btn-sm" (click)="openEditClientModal(selectedClient)">✏️ Editar</button>
+                  <button class="btn-sm"
+                          [class.btn-danger]="selectedClient.enabled"
+                          [class.btn-success]="!selectedClient.enabled"
+                          (click)="toggleRecepClient(selectedClient)">
+                    {{ selectedClient.enabled ? '🚫 Desactivar' : '✅ Activar' }}
+                  </button>
+                  <button class="btn-danger btn-sm" (click)="confirmDeleteClient(selectedClient)">🗑️ Eliminar</button>
+                </div>
+              </div>
+              <div class="mascotas-section">
+                <div class="mascotas-header">
+                  <div class="mascotas-title">🐾 Mascotas</div>
+                  <button class="btn-primary btn-sm" (click)="openAddPetModal()">+ Agregar</button>
+                </div>
+                <div class="loading-msg" *ngIf="loadingClientPets"><span class="spinner-sm-inline"></span> Cargando mascotas...</div>
+                <div class="mascotas-grid" *ngIf="!loadingClientPets">
+                  <div class="pet-card" *ngFor="let pet of selectedClientPets">
+                    <div class="pet-photo no-photo" *ngIf="!pet.photoUrl">
+                      {{ pet.species === 'Perro' ? '🐕' : pet.species === 'Gato' ? '🐈' : '🐾' }}
+                    </div>
+                    <div class="pet-photo" *ngIf="pet.photoUrl">
+                      <img [src]="pet.photoUrl" [alt]="pet.name" style="width:100%;height:100%;object-fit:cover;border-radius:10px">
+                    </div>
+                    <div class="pet-details">
+                      <div class="pet-name">{{ pet.name }}</div>
+                      <div class="pet-breed">{{ pet.species }} · {{ pet.breed }}</div>
+                      <div class="pet-sex">{{ pet.sex === 'M' ? '♂ Macho' : '♀ Hembra' }}</div>
+                    </div>
+                    <div class="pet-actions">
+                      <button class="btn-icon" (click)="openEditPetModal(pet)">✏️</button>
+                      <button class="btn-icon btn-icon-danger" (click)="confirmDeletePet(pet)">🗑️</button>
+                    </div>
+                  </div>
+                  <div class="empty-msg" *ngIf="selectedClientPets.length === 0">Sin mascotas registradas</div>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content-area -->
+  </main>
+</div>
+
+<!-- ===== MODAL: COBRAR CITA ===== -->
+<div class="modal-overlay" *ngIf="showPaymentModal" (click)="closePaymentModal()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>💳 Registrar Cobro</h3><button class="modal-close" (click)="closePaymentModal()">✕</button></div>
+    <div class="modal-body" *ngIf="paymentApt">
+      <div class="apt-edit-summary" style="margin-bottom:16px">
+        <div class="user-cell">
+          <div class="user-avatar-small">{{ getUserInitials(paymentApt.clientFirstName, paymentApt.clientLastName) }}</div>
+          <div>
+            <div class="cell-name">{{ paymentApt.clientFirstName }} {{ paymentApt.clientLastName }}</div>
+            <div class="cell-sub">{{ paymentApt.petEmoji }} {{ paymentApt.petName }} · Dr. {{ paymentApt.vetFirstName }} {{ paymentApt.vetLastName }}</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group full" style="margin-bottom:14px">
+        <label class="form-label">Concepto / Servicio *</label>
+        <select class="form-select" [(ngModel)]="paymentConcept" (change)="onConceptChange()">
+          <option value="">Seleccionar...</option>
+          <option *ngFor="let sp of servicePrices" [value]="sp.serviceType">{{ sp.displayName }} — $ {{ sp.price | number:'1.0-0' }}</option>
+          <option [value]="paymentApt.reason" *ngIf="!servicePrices.length">{{ paymentApt.reason }}</option>
+        </select>
+      </div>
+      <div class="form-group full" style="margin-bottom:14px" *ngIf="paymentBaseAmount > 0">
+        <label class="form-label">Monto a cobrar</label>
+        <div class="payment-amount-display">$ {{ paymentBaseAmount | number:'1.0-0' }} COP</div>
+      </div>
+      <div class="cancel-warning-box" *ngIf="paymentConcept && paymentBaseAmount === 0" style="margin-bottom:14px">
+        <p style="color:#7A6B40">⚠️ Este servicio no tiene precio configurado. Contacta al administrador.</p>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Notas (opcional)</label>
+        <textarea class="form-textarea" [(ngModel)]="paymentNotes" rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closePaymentModal()">Cancelar</button>
+      <button class="btn-primary" (click)="savePayment()" [disabled]="savingPayment || !paymentConcept || paymentBaseAmount <= 0">
+        <span *ngIf="!savingPayment">💾 Registrar Pago</span><span *ngIf="savingPayment">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: EDITAR CITA ===== -->
+<div class="modal-overlay" *ngIf="showEditAptModal" (click)="closeEditAptModal()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>Editar Cita</h3><button class="modal-close" (click)="closeEditAptModal()">✕</button></div>
+    <div class="modal-body" *ngIf="editingApt">
+      <div class="apt-edit-summary">
+        <div class="user-cell">
+          <div class="user-avatar-small">{{ getUserInitials(editingApt.clientFirstName, editingApt.clientLastName) }}</div>
+          <div>
+            <div class="cell-name">{{ editingApt.clientFirstName }} {{ editingApt.clientLastName }}</div>
+            <div class="cell-sub">{{ editingApt.petEmoji }} {{ editingApt.petName }} · {{ editingApt.petSpecies }}</div>
+          </div>
+        </div>
+      </div>
+      <form [formGroup]="editAptForm">
+        <div class="form-row">
+          <div class="form-group" (click)="$event.stopPropagation()">
+            <label class="form-label">Fecha *</label>
+            <div class="date-picker-wrapper">
+              <div class="date-display" [class.date-has-value]="editAptForm.get('date')?.value" (click)="toggleCalendarEdit($event); syncCalendarEditToForm()">
+                <span *ngIf="!editAptForm.get('date')?.value" class="date-placeholder">Seleccionar fecha</span>
+                <span *ngIf="editAptForm.get('date')?.value">{{ editAptForm.get('date')?.value | date:'dd/MM/yyyy' }}</span>
+                <span class="date-arrow">▾</span>
+              </div>
+              <div class="calendar-popup" *ngIf="showCalendarEdit" (click)="$event.stopPropagation()">
+                <div class="cal-header">
+                  <button type="button" class="cal-nav" (click)="prevMonthEdit()">‹</button>
+                  <div class="cal-title">
+                    <select class="cal-select" [(ngModel)]="calMonthEdit" [ngModelOptions]="{standalone:true}" (change)="buildCalendarEdit()">
+                      <option *ngFor="let m of meses; let i = index" [value]="i">{{ m }}</option>
+                    </select>
+                    <select class="cal-select" [(ngModel)]="calYearEdit" [ngModelOptions]="{standalone:true}" (change)="buildCalendarEdit()">
+                      <option *ngFor="let y of calYears" [value]="y">{{ y }}</option>
+                    </select>
+                  </div>
+                  <button type="button" class="cal-nav" (click)="nextMonthEdit()">›</button>
+                </div>
+                <div class="cal-weekdays"><span>Do</span><span>Lu</span><span>Ma</span><span>Mi</span><span>Ju</span><span>Vi</span><span>Sa</span></div>
+                <div class="cal-days">
+                  <span *ngFor="let day of calDaysEdit" class="cal-day"
+                        [class.empty]="day === 0" [class.selected]="isCalDaySelected(day, calYearEdit, calMonthEdit, editAptForm.get('date')?.value)"
+                        [class.disabled]="isCalDayDisabled(day, calYearEdit, calMonthEdit, true)" [class.today]="isCalDayToday(day, calYearEdit, calMonthEdit)"
+                        (click)="selectDayEdit(day)">{{ day || '' }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hora *</label>
+            <select class="form-select" formControlName="time">
+              <option *ngFor="let slot of ALL_SLOTS" [value]="slot">{{ slot }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Veterinario *</label>
+          <select class="form-select" formControlName="vetId">
+            <option *ngFor="let vet of vets" [value]="vet.id">Dr. {{ vet.firstName }} {{ vet.lastName }}</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Motivo</label>
+          <select class="form-select" formControlName="reason" [disabled]="loadingServices">
+            <option value="">{{ loadingServices ? 'Cargando servicios...' : 'Seleccionar motivo...' }}</option>
+            <option *ngFor="let service of availableServices" [value]="service.displayName">{{ service.displayName }}</option>
+            <option *ngIf="!loadingServices && availableServices.length === 0" value="" disabled>No hay servicios disponibles</option>
+          </select>
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Notas</label>
+          <textarea class="form-textarea" formControlName="notes" rows="3"></textarea>
+        </div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeEditAptModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveEditedApt()" [disabled]="savingEditApt">
+        <span *ngIf="!savingEditApt">Guardar cambios</span><span *ngIf="savingEditApt">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: CANCELAR CITA ===== -->
+<div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>Cancelar Cita</h3><button class="modal-close" (click)="closeCancelModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="cancel-warning-box"><p>¿Estás seguro de que deseas cancelar esta cita?</p></div>
+      <div class="cancel-details" *ngIf="aptToCancel">
+        <div class="detail-row"><span>Cliente</span><strong>{{ aptToCancel.clientFirstName }} {{ aptToCancel.clientLastName }}</strong></div>
+        <div class="detail-row"><span>Mascota</span><strong>{{ aptToCancel.petEmoji }} {{ aptToCancel.petName }}</strong></div>
+        <div class="detail-row"><span>Fecha / Hora</span><strong>{{ aptToCancel.date }} {{ aptToCancel.time }}</strong></div>
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Motivo de cancelación</label>
+        <textarea class="form-textarea" [(ngModel)]="cancelReason" placeholder="Ej: El cliente reagendó..." rows="2"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCancelModal()">Cerrar</button>
+      <button class="btn-danger" (click)="cancelAppointment()" [disabled]="cancellingApt">
+        <span *ngIf="!cancellingApt">Cancelar Cita</span><span *ngIf="cancellingApt">Procesando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: EDITAR CLIENTE ===== -->
+<div class="modal-overlay" *ngIf="showEditClientModal" (click)="closeClientModal()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>✏️ Editar Cliente</h3><button class="modal-close" (click)="closeClientModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-group full" style="margin-bottom:14px">
+        <label class="form-label">Nombre completo *</label>
+        <input type="text" class="form-input" [(ngModel)]="editClientForm.nombre">
+      </div>
+      <div class="form-group full" style="margin-bottom:14px">
+        <label class="form-label">Correo electrónico</label>
+        <input type="email" class="form-input" [(ngModel)]="editClientForm.email" placeholder="correo@ejemplo.com">
+      </div>
+      <div class="form-group full">
+        <label class="form-label">Teléfono</label>
+        <input type="tel" class="form-input" [(ngModel)]="editClientForm.telefono" placeholder="3001234567">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeClientModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveEditClient()" [disabled]="savingClient || !editClientForm.nombre">
+        <span *ngIf="!savingClient">💾 Guardar</span><span *ngIf="savingClient">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: ELIMINAR CLIENTE ===== -->
+<div class="modal-overlay" *ngIf="showDeleteClientModal" (click)="showDeleteClientModal = false">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>🗑️ Eliminar Cliente</h3>
+      <button class="modal-close" (click)="showDeleteClientModal = false">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cancel-warning-box">
+        <p>¿Eliminar a <strong>{{ clientToDelete?.name }}</strong>?</p>
+        <p style="margin-top:8px;font-size:0.82rem">
+          ⚠️ Se eliminarán también sus mascotas y todos sus datos.
+          Esta acción <strong>no se puede deshacer</strong>.
+        </p>
+      </div>
+      <div class="cancel-details" *ngIf="clientToDelete">
+        <div class="detail-row"><span>Cliente</span><strong>{{ clientToDelete.name }}</strong></div>
+        <div class="detail-row"><span>Email</span><strong>{{ clientToDelete.email }}</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeleteClientModal = false">Cancelar</button>
+      <button class="btn-danger" (click)="deleteClient()" [disabled]="deletingClient">
+        <span *ngIf="!deletingClient">🗑️ Eliminar definitivamente</span>
+        <span *ngIf="deletingClient">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: AGREGAR / EDITAR MASCOTA ===== -->
+<div class="modal-overlay" *ngIf="showPetModal" (click)="closePetModal()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingPet ? '✏️ Editar Mascota' : '🐾 Nueva Mascota' }}</h3>
+      <button class="modal-close" (click)="closePetModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nombre *</label>
+          <input type="text" class="form-input" [(ngModel)]="petForm.name" placeholder="Ej: Rocky">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Especie *</label>
+          <select class="form-select" [(ngModel)]="petForm.species">
+            <option value="">Seleccionar...</option>
+            <option value="Perro">Perro</option><option value="Gato">Gato</option>
+            <option value="Conejo">Conejo</option><option value="Ave">Ave</option><option value="Otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Raza *</label>
+          <input type="text" class="form-input" [(ngModel)]="petForm.breed" placeholder="Ej: Labrador">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sexo *</label>
+          <select class="form-select" [(ngModel)]="petForm.sex">
+            <option value="">Seleccionar...</option>
+            <option value="M">Macho</option><option value="F">Hembra</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Fecha de nacimiento *</label>
+          <input type="date" class="form-input" [(ngModel)]="petForm.birthDate">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Foto (opcional)</label>
+          <div class="photo-upload-wrap">
+            <div class="photo-preview"
+                 [style.background-image]="petForm.photoUrl ? 'url(' + petForm.photoUrl + ')' : ''">
+              <span *ngIf="!petForm.photoUrl">
+                {{ petForm.species === 'Perro' ? '🐕' : petForm.species === 'Gato' ? '🐈' : '🐾' }}
+              </span>
+            </div>
+            <div class="photo-actions">
+              <label class="btn-secondary photo-label btn-sm">
+                <span *ngIf="!uploadingPetPhoto">📷 Subir foto</span>
+                <span *ngIf="uploadingPetPhoto">Subiendo...</span>
+                <input type="file" accept="image/*" hidden
+                       [disabled]="uploadingPetPhoto"
+                       (change)="onPetModalPhotoChange($event)">
+              </label>
+              <button type="button" class="btn-secondary btn-sm" *ngIf="petForm.photoUrl" (click)="petForm.photoUrl = ''">Quitar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closePetModal()">Cancelar</button>
+      <button class="btn-primary" (click)="savePet()"
+              [disabled]="savingPet || uploadingPetPhoto || !petForm.name || !petForm.species || !petForm.breed || !petForm.sex || !petForm.birthDate">
+        <span *ngIf="!savingPet">💾 {{ editingPet ? 'Actualizar' : 'Agregar' }}</span>
+        <span *ngIf="savingPet">Guardando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL: ELIMINAR MASCOTA ===== -->
+<div class="modal-overlay" *ngIf="showDeletePetModal" (click)="showDeletePetModal = false">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header"><h3>🗑️ Eliminar Mascota</h3><button class="modal-close" (click)="showDeletePetModal = false">✕</button></div>
+    <div class="modal-body">
+      <div class="cancel-warning-box"><p>¿Eliminar a <strong>{{ petToDelete?.name }}</strong>? Esta acción no se puede deshacer.</p></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="showDeletePetModal = false">Cancelar</button>
+      <button class="btn-danger" (click)="deletePet()" [disabled]="deletingPet">
+        <span *ngIf="!deletingPet">🗑️ Eliminar</span><span *ngIf="deletingPet">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== TOAST ===== -->
+<div class="toast-container" *ngIf="toast.show">
+  <div class="toast" [class.toast-success]="toast.type === 'success'" [class.toast-error]="toast.type === 'error'">
+    {{ toast.message }}
+  </div>
+</div>

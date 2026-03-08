@@ -1,14 +1,18 @@
-import { Component, ViewChild, inject } from '@angular/core';
+import { Component, NgZone, OnInit, ViewChild, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import {
   IonContent, IonItem, IonLabel,
-  IonInput, IonButton, IonIcon,
+  IonInput, IonButton, IonIcon, IonSpinner,
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { eyeOutline, eyeOffOutline, alertCircleOutline } from 'ionicons/icons';
+import { eyeOutline, eyeOffOutline, alertCircleOutline, mailOutline, refreshOutline, arrowBackOutline } from 'ionicons/icons';
 import { OtpModalComponent } from '../../../component/otp-modal/otp-modal.component';
+import { PoliticaModalComponent } from '../../../component/politica-modal/politica-modal.component';
+import { AuthService } from "../../../services/auth";
+
+declare const grecaptcha: any;
 
 @Component({
   selector: 'app-register',
@@ -19,29 +23,139 @@ import { OtpModalComponent } from '../../../component/otp-modal/otp-modal.compon
     CommonModule,
     FormsModule,
     IonContent, IonItem, IonLabel,
-    IonInput, IonButton, IonIcon,
+    IonInput, IonButton, IonIcon, IonSpinner,
     OtpModalComponent,
+    PoliticaModalComponent,
   ],
 })
-export class RegisterPage {
+export class RegisterPage implements OnInit {
 
-  private router = inject(Router);
+  private router      = inject(Router);
+  private authService = inject(AuthService);
+  private ngZone      = inject(NgZone);
 
   @ViewChild(OtpModalComponent) otpModal!: OtpModalComponent;
 
-  nombre      = '';
-  correo      = '';
-  contrasena  = '';
-  mostrarPass = false;
-  mostrarError = false;
-  mensajeError = '';
-  mostrarOtp  = false;
+  nombre     = '';
+  correo     = '';
+  telefono   = '';
+  contrasena = '';
+  mostrarPass    = false;
+  mostrarError   = false;
+  mensajeError   = '';
+  mostrarOtp     = false;
+  mostrarPolitica  = false;
+  aceptaPolitica   = false;
+
+  // ── Estado verificación pendiente ─────────────────────────────
+  /** true cuando el registro fue exitoso y se está esperando verificación del correo */
+  verificacionPendiente = false;
+  /** correo al que se envió el enlace de verificación */
+  correoRegistrado      = '';
+  /** true mientras se está reenviando el correo */
+  reenviando            = false;
+  /** mensaje de éxito/error del reenvío */
+  mensajeReenvio        = '';
+  /** tipo del mensaje de reenvío: 'ok' | 'error' | '' */
+  tipoReenvio: 'ok' | 'error' | '' = '';
+  // ─────────────────────────────────────────────────────────────
+
+  errores: {
+    nombre:     string;
+    correo:     string;
+    telefono:   string;
+    contrasena: string;
+  } = { nombre: '', correo: '', telefono: '', contrasena: '' };
+
+  tocado: {
+    nombre:     boolean;
+    correo:     boolean;
+    telefono:   boolean;
+    contrasena: boolean;
+  } = { nombre: false, correo: false, telefono: false, contrasena: false };
+
+  siteKey        = '6Lc8A4EsAAAAALRBXHH98TRFskX6urHK28txP555';
+  recaptchaToken = '';
 
   constructor() {
-    addIcons({ eyeOutline, eyeOffOutline, alertCircleOutline });
+    addIcons({ eyeOutline, eyeOffOutline, alertCircleOutline, mailOutline, refreshOutline, arrowBackOutline });
   }
 
-  // ─── Indicador de fuerza ─────────────────────────────────────
+  ngOnInit(): void {
+    this.mostrarPass    = false;
+    this.mostrarError   = false;
+    this.recaptchaToken = '';
+    this.errores        = { nombre: '', correo: '', telefono: '', contrasena: '' };
+    this.tocado         = { nombre: false, correo: false, telefono: false, contrasena: false };
+    this.renderRecaptcha();
+  }
+
+  ionViewWillEnter(): void {
+    // Solo limpiamos el formulario si NO estamos en estado de verificación pendiente
+    if (!this.verificacionPendiente) {
+      this.nombre        = '';
+      this.correo        = '';
+      this.telefono      = '';
+      this.contrasena    = '';
+      this.aceptaPolitica = false;
+      this.errores       = { nombre: '', correo: '', telefono: '', contrasena: '' };
+      this.tocado        = { nombre: false, correo: false, telefono: false, contrasena: false };
+    }
+  }
+
+  // ── Validaciones ─────────────────────────────────────────────
+
+  validarNombre(): void {
+    this.tocado.nombre  = true;
+    const partes        = this.nombre.trim().split(/\s+/);
+    if (!this.nombre.trim()) {
+      this.errores.nombre = 'El nombre es obligatorio.';
+    } else if (partes.length < 2 || partes.some(p => p.length < 2)) {
+      this.errores.nombre = 'Ingresa nombre y apellido (ej: Juan Pérez).';
+    } else {
+      this.errores.nombre = '';
+    }
+  }
+
+  validarCorreo(): void {
+    this.tocado.correo  = true;
+    const emailRegex    = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    this.errores.correo = !this.correo || !emailRegex.test(this.correo)
+      ? 'Ingresa un correo electrónico válido.'
+      : '';
+  }
+
+  validarTelefono(): void {
+    this.tocado.telefono  = true;
+    const telRegex        = /^3[0-9]{9}$/;
+    if (!this.telefono) {
+      this.errores.telefono = 'El teléfono es obligatorio.';
+    } else if (!telRegex.test(this.telefono)) {
+      this.errores.telefono = 'Debe empezar por 3 y tener 10 dígitos (ej: 3001234567).';
+    } else {
+      this.errores.telefono = '';
+    }
+  }
+
+  validarContrasena(): void {
+    this.tocado.contrasena  = true;
+    const pattern           = /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    if (!this.contrasena) {
+      this.errores.contrasena = 'La contraseña es obligatoria.';
+    } else if (!pattern.test(this.contrasena)) {
+      this.errores.contrasena = 'Mínimo 8 caracteres, una mayúscula, un número y un carácter especial (@$!%*?&).';
+    } else {
+      this.errores.contrasena = '';
+    }
+  }
+
+  soloNumeros(event: Event): void {
+    const input   = event.target as HTMLInputElement;
+    input.value   = input.value.replace(/\D/g, '');
+    this.telefono = input.value;
+  }
+
+  // ── Indicador de fuerza ───────────────────────────────────────
 
   get fuerzaPct(): string {
     const len = this.contrasena.length;
@@ -75,61 +189,140 @@ export class RegisterPage {
     return map[this.fuerzaClase];
   }
 
-  // ─── Registro ────────────────────────────────────────────────
+  // ── Registro ──────────────────────────────────────────────────
 
-  registrar() {
-    // Validaciones
-    if (!this.nombre.trim()) {
-      this.setError('Ingresa tu nombre completo.');
-      return;
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!this.correo || !emailRegex.test(this.correo)) {
-      this.setError('Ingresa un correo válido.');
-      return;
-    }
-    if (this.contrasena.length < 8) {
-      this.setError('La contraseña debe tener al menos 8 caracteres.');
+  registrar(): void {
+    this.validarNombre();
+    this.validarCorreo();
+    this.validarTelefono();
+    this.validarContrasena();
+
+    const hayErrores = Object.values(this.errores).some(e => e !== '');
+    if (hayErrores) return;
+
+    if (!this.recaptchaToken) {
+      this.setError('Completa la verificación reCAPTCHA.');
       return;
     }
 
-    // ── SIMULACIÓN TEMPORAL (borrar cuando conectes el backend) ──
-    // this.authService.register({ nombre, correo, contrasena }).subscribe(() => {
-    //   this.mostrarOtp = true;  // backend envía el código al correo
-    // });
-    this.mostrarOtp = true;
-    // ─────────────────────────────────────────────────────────────
+    this.authService.register(
+      this.nombre.trim(),
+      this.correo.trim(),
+      this.contrasena,
+      this.telefono.trim(),
+      this.recaptchaToken,
+    ).subscribe({
+      next: () => {
+        this.recaptchaToken   = '';
+        this.resetRecaptcha();
+        // ✅ FIX: En lugar de navegar a login, mostramos la pantalla de verificación pendiente
+        this.correoRegistrado      = this.correo.trim();
+        this.verificacionPendiente = true;
+        this.mensajeReenvio        = '';
+        this.tipoReenvio           = '';
+      },
+      error: (err) => {
+        this.recaptchaToken = '';
+        this.resetRecaptcha();
+        const msg = err.error?.message || err.error || 'Error al registrar. Intenta de nuevo.';
+        this.setError(typeof msg === 'string' ? msg : 'Error al registrar. Intenta de nuevo.');
+      },
+    });
   }
 
-  handleOtpValidado(code: string) {
-    // ── SIMULACIÓN TEMPORAL (código correcto de prueba: 123456) ──
+  // ── Verificación pendiente ─────────────────────────────────────
+
+  /**
+   * Vuelve al formulario de registro para que el usuario corrija sus datos.
+   * Limpia el estado de verificación pendiente.
+   */
+  volverEditar(): void {
+    this.verificacionPendiente = false;
+    this.mensajeReenvio        = '';
+    this.tipoReenvio           = '';
+    // Re-renderiza el reCAPTCHA porque fue destruido al ocultar el formulario
+    setTimeout(() => this.renderRecaptcha(), 100);
+  }
+
+  /**
+   * Reenvía el correo de verificación al correo registrado.
+   * Requiere que el backend tenga el endpoint POST /auth/resend-verification?email=...
+   */
+  reenviarVerificacion(): void {
+    if (this.reenviando || !this.correoRegistrado) return;
+    this.reenviando     = true;
+    this.mensajeReenvio = '';
+    this.tipoReenvio    = '';
+
+    this.authService.resendVerificationEmail(this.correoRegistrado).subscribe({
+      next: () => {
+        this.reenviando     = false;
+        this.mensajeReenvio = '✅ Correo reenviado. Revisa tu bandeja de entrada.';
+        this.tipoReenvio    = 'ok';
+      },
+      error: () => {
+        this.reenviando     = false;
+        this.mensajeReenvio = '❌ No se pudo reenviar el correo. Intenta más tarde.';
+        this.tipoReenvio    = 'error';
+      },
+    });
+  }
+
+  // ── Política de datos ─────────────────────────────────────────
+
+  abrirPolitica(): void {
+    this.mostrarPolitica = true;
+  }
+
+  cerrarPolitica(): void {
+    this.mostrarPolitica = false;
+  }
+
+  // ── reCAPTCHA ─────────────────────────────────────────────────
+
+  private renderRecaptcha(): void {
+    const interval = setInterval(() => {
+      if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
+        clearInterval(interval);
+        grecaptcha.render('recaptcha-register', {
+          sitekey: this.siteKey,
+          callback: (token: string) => {
+            this.ngZone.run(() => { this.recaptchaToken = token; });
+          },
+          'expired-callback': () => {
+            this.ngZone.run(() => { this.recaptchaToken = ''; });
+          },
+        });
+      }
+    }, 200);
+  }
+
+  private resetRecaptcha(): void {
+    if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
+      grecaptcha.reset();
+    }
+  }
+
+  // ── OTP ───────────────────────────────────────────────────────
+
+  handleOtpValidado(code: string): void {
     if (code === '123456') {
       this.otpModal.showSuccess();
     } else {
       this.otpModal.showError();
     }
-    // ── Reemplazar con llamada al backend ──
-    // this.authService.verificarOtp(code).subscribe(res => {
-    //   res.ok ? this.otpModal.showSuccess() : this.otpModal.showError();
-    // });
   }
 
-  handleSuccessRedirect() {
+  handleSuccessRedirect(): void {
     this.mostrarOtp = false;
-    // Al registrarse exitosamente va al login para que ingrese
     this.router.navigate(['/login']);
   }
 
-  handleReenvio() {
-    // this.authService.reenviarOtp(this.correo).subscribe();
-    console.log('Reenviar código a:', this.correo);
-  }
-
-  irLogin() {
+  irLogin(): void {
     this.router.navigate(['/login']);
   }
 
-  private setError(msg: string) {
+  private setError(msg: string): void {
     this.mensajeError = msg;
     this.mostrarError = true;
     setTimeout(() => (this.mostrarError = false), 3500);

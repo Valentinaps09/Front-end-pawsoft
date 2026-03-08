@@ -1,0 +1,149 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Pagos</div>
+        <div class="topbar-sub">Historial completo de pagos del sistema</div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ═══ STATS ═══ -->
+      <div class="stats-strip" *ngIf="stats">
+        <div class="stat-card">
+          <div class="stat-icon-wrap">✅</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalPaid }}</div>
+            <div class="stat-label">Pagos cobrados</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap">⏳</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ stats.totalPending }}</div>
+            <div class="stat-label">Pendientes</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap">📅</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ formatCurrency(stats.revenueToday) }}</div>
+            <div class="stat-label">Ingresos hoy</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon-wrap">💰</div>
+          <div class="stat-info">
+            <div class="stat-value">{{ formatCurrency(stats.revenueThisMonth) }}</div>
+            <div class="stat-label">Este mes</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ FILTROS ═══ -->
+      <div class="section-card">
+        <div class="filters-row">
+          <input type="text" class="form-input search-input"
+                 placeholder="Buscar por cliente, mascota, veterinario, concepto..."
+                 [(ngModel)]="searchText" (input)="filter()">
+          <select class="form-select filter-select" [(ngModel)]="statusFilter" (change)="filter()">
+            <option value="">Todos los estados</option>
+            <option value="PAID">Cobrado</option>
+            <option value="PENDING">Pendiente</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ═══ TABLA ═══ -->
+      <div class="section-card table-card">
+
+        <div class="loading-row" *ngIf="loading">
+          <span>Cargando pagos...</span>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loading">
+          <table class="data-table">
+            <thead>
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Mascota</th>
+              <th>Veterinario</th>
+              <th>Fecha cita</th>
+              <th>Concepto</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Fecha cobro</th>
+              <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr *ngFor="let p of filteredPayments" class="table-row">
+
+              <td class="cell-text">#{{ p.id }}</td>
+
+              <td>
+                <div class="cell-name">{{ p.clientName }}</div>
+                <div class="cell-sub">{{ p.clientEmail }}</div>
+              </td>
+
+              <td>
+                <div class="cell-name">{{ p.petName }}</div>
+              </td>
+
+              <td>
+                <div class="cell-name">{{ p.vetName }}</div>
+              </td>
+
+              <td class="cell-text">
+                {{ formatDate(p.appointmentDate) }}
+                <div class="cell-sub">{{ p.appointmentTime }}</div>
+              </td>
+
+              <td class="cell-text">{{ p.concept }}</td>
+
+              <td>
+                <div class="cell-name">{{ formatCurrency(p.amount) }}</div>
+                <div class="cell-sub" *ngIf="p.amount !== p.baseAmount">
+                  Base: {{ formatCurrency(p.baseAmount) }}
+                </div>
+              </td>
+
+              <td>
+                  <span class="status-badge" [class.paid]="p.status === 'PAID'" [class.pending]="p.status === 'PENDING'">
+                    {{ p.status === 'PAID' ? 'Cobrado' : 'Pendiente' }}
+                  </span>
+              </td>
+
+              <td class="cell-text">
+                {{ p.paymentDate ? formatDate(p.paymentDate) : '—' }}
+                <div class="cell-sub" *ngIf="p.receivedBy">{{ p.receivedBy }}</div>
+              </td>
+
+              <td>
+                <button class="btn-action revert"
+                        *ngIf="p.status === 'PAID'"
+                        (click)="revert(p)"
+                        title="Revertir a pendiente">
+                  Revertir
+                </button>
+                <span class="cell-sub" *ngIf="p.status === 'PENDING'">—</span>
+              </td>
+
+            </tr>
+
+            <tr *ngIf="filteredPayments.length === 0">
+              <td colspan="10" class="empty-row">No se encontraron pagos</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

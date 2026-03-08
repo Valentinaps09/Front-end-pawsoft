@@ -1,0 +1,233 @@
+<!-- DASHBOARD VETERINARIO -->
+<div class="dashboard-layout">
+
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{ getActiveTabLabel() }}</div>
+        <div class="topbar-sub">{{ getActiveTabSub() }}</div>
+      </div>
+      <div class="topbar-actions">
+        <div class="today-badge">
+          <span class="today-dot"></span>
+          {{ todayFormatted }}
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB NAV -->
+    <div class="tab-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'hoy'" (click)="setTab('hoy')">
+        📅 Citas de Hoy
+      </button>
+      <button class="tab-btn" [class.active]="activeTab === 'proximas'" (click)="setTab('proximas')">
+        🗓️ Próximas Citas
+      </button>
+    </div>
+
+    <!-- CONTENT AREA -->
+    <div class="content-area">
+
+      <!-- ===== TAB: CITAS DE HOY ===== -->
+      <div *ngIf="activeTab === 'hoy'" class="tab-content">
+
+        <!-- STATS STRIP -->
+        <div class="stats-strip">
+          <div class="stat-card" *ngFor="let stat of todayStats">
+            <div class="stat-icon-wrap">{{ stat.icon }}</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="section-card">
+          <div class="filters-row">
+            <input
+              type="text"
+              class="form-input search-input"
+              placeholder="Buscar por mascota o propietario..."
+              [(ngModel)]="searchToday"
+              (input)="filterTodayAppointments()">
+
+            <select class="form-select filter-select" [(ngModel)]="statusFilterToday" (change)="filterTodayAppointments()">
+              <option value="">Todos los estados</option>
+              <option value="UPCOMING">Programada</option>
+              <option value="CONFIRMED">Confirmada</option>
+              <option value="CANCELLED">Cancelada</option>
+              <option value="COMPLETED">Completada</option>
+              <option value="NO_SHOW">No asistió</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- APPOINTMENTS TABLE -->
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>Mascota</th>
+                <th>Propietario</th>
+                <th>Hora</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let apt of filteredTodayAppointments" class="table-row" [class.row-cancelled]="apt.status === 'CANCELLED'">
+                <td>
+                  <div class="user-cell">
+                    <div class="pet-avatar-cell">
+                      <img *ngIf="apt.petPhotoUrl" [src]="apt.petPhotoUrl" [alt]="apt.petName"
+                           style="width:34px;height:34px;border-radius:8px;object-fit:cover;">
+                      <span *ngIf="!apt.petPhotoUrl">{{ apt.petEmoji }}</span>
+                    </div>
+                    <div>
+                      <div class="cell-name">{{ apt.petName }}</div>
+                      <div class="cell-sub">{{ apt.petSpecies }} · {{ apt.petBreed }}</div>
+                      <div class="cell-sub">🎂 {{ apt.petAge }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small owner">{{ getInitials(apt.ownerName) }}</div>
+                    <div>
+                      <div class="cell-name">{{ apt.ownerName }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="time-chip">
+                    <span class="time-icon">🕐</span>
+                    {{ apt.time }}
+                  </div>
+                </td>
+                <td class="cell-text">{{ apt.reason }}</td>
+                <td>
+                  <span class="status-apt-badge" [ngClass]="getStatusClass(apt.status)">
+                    {{ getStatusLabel(apt.status) }}
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredTodayAppointments.length === 0">
+                <td colspan="5" class="empty-row">No hay citas para hoy con esos filtros</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== TAB: PRÓXIMAS CITAS ===== -->
+      <div *ngIf="activeTab === 'proximas'" class="tab-content">
+
+        <!-- STATS STRIP -->
+        <div class="stats-strip">
+          <div class="stat-card" *ngFor="let stat of upcomingStats">
+            <div class="stat-icon-wrap">{{ stat.icon }}</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="section-card">
+          <div class="filters-row">
+            <input
+              type="text"
+              class="form-input search-input"
+              placeholder="Buscar por mascota o propietario..."
+              [(ngModel)]="searchUpcoming"
+              (input)="filterUpcomingAppointments()">
+
+            <select class="form-select filter-select" [(ngModel)]="statusFilterUpcoming" (change)="filterUpcomingAppointments()">
+              <option value="">Todos los estados</option>
+              <option value="UPCOMING">Programada</option>
+              <option value="CONFIRMED">Confirmada</option>
+              <option value="CANCELLED">Cancelada</option>
+              <option value="COMPLETED">Completada</option>
+              <option value="NO_SHOW">No asistió</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- UPCOMING TABLE -->
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr>
+                <th>Mascota</th>
+                <th>Propietario</th>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Motivo</th>
+                <th>Estado</th>
+              </tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let apt of filteredUpcomingAppointments" class="table-row" [class.row-cancelled]="apt.status === 'CANCELLED'">
+                <td>
+                  <div class="user-cell">
+                    <div class="pet-avatar-cell">
+                      <img *ngIf="apt.petPhotoUrl" [src]="apt.petPhotoUrl" [alt]="apt.petName"
+                           style="width:34px;height:34px;border-radius:8px;object-fit:cover;">
+                      <span *ngIf="!apt.petPhotoUrl">{{ apt.petEmoji }}</span>
+                    </div>
+                    <div>
+                      <div class="cell-name">{{ apt.petName }}</div>
+                      <div class="cell-sub">{{ apt.petSpecies }} · {{ apt.petBreed }}</div>
+                      <div class="cell-sub">🎂 {{ apt.petAge }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small owner">{{ getInitials(apt.ownerName) }}</div>
+                    <div>
+                      <div class="cell-name">{{ apt.ownerName }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <div class="date-chip">{{ apt.date | date: 'dd/MM/yyyy' }}</div>
+                </td>
+                <td>
+                  <div class="time-chip">
+                    <span class="time-icon">🕐</span>
+                    {{ apt.time }}
+                  </div>
+                </td>
+                <td class="cell-text">{{ apt.reason }}</td>
+                <td>
+                  <span class="status-apt-badge" [ngClass]="getStatusClass(apt.status)">
+                    {{ getStatusLabel(apt.status) }}
+                  </span>
+                </td>
+              </tr>
+
+              <tr *ngIf="filteredUpcomingAppointments.length === 0">
+                <td colspan="6" class="empty-row">No hay próximas citas con esos filtros</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>

@@ -1,0 +1,256 @@
+<div class="dashboard-layout">
+
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">Mi Perfil</div>
+        <div class="topbar-sub">Gestiona tu información personal</div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <div class="loading-overlay" *ngIf="loadingProfile">
+        <div class="spinner"></div>
+      </div>
+
+      <ng-container *ngIf="!loadingProfile">
+
+        <div class="perfil-header">
+          <div class="avatar-circle">{{ email.charAt(0).toUpperCase() }}</div>
+          <div>
+            <div class="perfil-title">{{ name || email }}</div>
+            <div class="perfil-subtitle">{{ email }}</div>
+          </div>
+        </div>
+
+        <div class="alert alert-success" *ngIf="successMessage">✅ {{ successMessage }}</div>
+        <div class="alert alert-error"   *ngIf="errorMessage">⚠️ {{ errorMessage }}</div>
+
+        <!-- ══ Información personal ══ -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>👤 Información personal</h3>
+          </div>
+
+          <!-- Nombre: solo lectura -->
+          <div class="field-group">
+            <label class="field-label">Nombre</label>
+            <div class="field-readonly">
+              <span>{{ name || 'No disponible' }}</span>
+              <span class="readonly-badge">No editable</span>
+            </div>
+          </div>
+
+          <!-- Correo -->
+          <div class="field-group">
+            <label class="field-label" for="email">Correo electrónico</label>
+            <div class="field-input-wrapper" [class.field-error]="emailTocado && emailError">
+              <span class="field-icon">✉️</span>
+              <input id="email" type="email" class="field-input"
+                     [(ngModel)]="email"
+                     placeholder="tucorreo@ejemplo.com"
+                     (blur)="onEmailBlur()"
+                     autocomplete="email" />
+            </div>
+            <span class="field-hint-error" *ngIf="emailTocado && emailError">{{ emailError }}</span>
+          </div>
+
+          <!-- Teléfono -->
+          <div class="field-group">
+            <label class="field-label" for="phone">Teléfono</label>
+            <div class="field-input-wrapper" [class.field-error]="phoneTocado && phoneError">
+              <span class="field-prefix">+57</span>
+              <input id="phone" type="tel" class="field-input"
+                     [value]="phone"
+                     (input)="onPhoneInput($event)"
+                     placeholder="3001234567"
+                     maxlength="10"
+                     inputmode="numeric"
+                     autocomplete="tel" />
+            </div>
+            <span class="field-hint-error" *ngIf="phoneTocado && phoneError">{{ phoneError }}</span>
+            <span class="field-hint" *ngIf="!phoneTocado || !phoneError">
+              10 dígitos — celular (3XX) o fijo (6XX)
+            </span>
+          </div>
+        </div>
+
+        <!-- ══ Cambiar contraseña ══ -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>🔒 Cambiar contraseña <span class="optional-badge">Opcional</span></h3>
+          </div>
+
+          <div class="section-hint">Déjalo en blanco si no deseas cambiar tu contraseña.</div>
+
+          <!-- Nueva contraseña -->
+          <div class="field-group">
+            <label class="field-label" for="newPass">Nueva contraseña</label>
+            <div class="field-input-wrapper" [class.field-error]="passTocado && passError && newPassword">
+              <span class="field-icon">🔑</span>
+              <input id="newPass" [type]="showNewPass ? 'text' : 'password'"
+                     class="field-input" [(ngModel)]="newPassword"
+                     placeholder="Mínimo 8 caracteres"
+                     (blur)="onPassBlur()"
+                     autocomplete="new-password" />
+              <button class="toggle-pass" type="button" (click)="showNewPass = !showNewPass"
+                      [attr.aria-label]="showNewPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                {{ showNewPass ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            <div class="strength-bar-wrapper" *ngIf="newPassword">
+              <div class="strength-bar">
+                <div class="strength-fill"
+                     [ngClass]="passwordStrengthClass"
+                     [style.width]="passwordStrengthPct"></div>
+              </div>
+              <span class="strength-label" [ngClass]="passwordStrengthClass">
+                {{ passwordStrengthLabel }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Confirmar contraseña -->
+          <div class="field-group">
+            <label class="field-label" for="confirmPass">Confirmar contraseña</label>
+            <div class="field-input-wrapper" [class.field-error]="passTocado && confirmPassword && newPassword !== confirmPassword">
+              <span class="field-icon">🔑</span>
+              <input id="confirmPass" [type]="showConfirmPass ? 'text' : 'password'"
+                     class="field-input" [(ngModel)]="confirmPassword"
+                     placeholder="Repite la nueva contraseña"
+                     (blur)="onPassBlur()"
+                     autocomplete="new-password" />
+              <button class="toggle-pass" type="button" (click)="showConfirmPass = !showConfirmPass"
+                      [attr.aria-label]="showConfirmPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                {{ showConfirmPass ? '🙈' : '👁️' }}
+              </button>
+            </div>
+            <span class="match-hint match-ok"
+                  *ngIf="confirmPassword && newPassword === confirmPassword">✅ Las contraseñas coinciden</span>
+            <span class="match-hint match-err"
+                  *ngIf="passTocado && passError">❌ {{ passError }}</span>
+          </div>
+        </div>
+
+        <!-- ══ Accesibilidad ══ -->
+        <div class="section-card">
+          <div class="section-header">
+            <h3>♿ Accesibilidad</h3>
+          </div>
+
+          <div class="section-hint">Personaliza la experiencia visual y de navegación.</div>
+
+          <!-- Tamaño de fuente -->
+          <div class="field-group">
+            <label class="field-label">Tamaño de texto</label>
+            <div class="toggle-group">
+              <button class="toggle-btn" 
+                      [class.active]="accessibilityService.getFontSize() === 'normal'"
+                      (click)="accessibilityService.setFontSize('normal')">
+                Normal
+              </button>
+              <button class="toggle-btn" 
+                      [class.active]="accessibilityService.getFontSize() === 'large'"
+                      (click)="accessibilityService.setFontSize('large')">
+                Grande
+              </button>
+              <button class="toggle-btn" 
+                      [class.active]="accessibilityService.getFontSize() === 'xlarge'"
+                      (click)="accessibilityService.setFontSize('xlarge')">
+                Muy grande
+              </button>
+            </div>
+          </div>
+
+          <!-- Reducir movimiento -->
+          <div class="field-group">
+            <label class="field-label">Reducir animaciones</label>
+            <div class="switch-wrapper">
+              <label class="switch">
+                <input type="checkbox" 
+                       [checked]="accessibilityService.getReduceMotion()"
+                       (change)="accessibilityService.setReduceMotion($any($event.target).checked)">
+                <span class="slider"></span>
+              </label>
+              <span class="switch-label">
+                {{ accessibilityService.getReduceMotion() ? 'Activado' : 'Desactivado' }}
+              </span>
+            </div>
+            <span class="field-hint">Desactiva transiciones y animaciones para reducir el movimiento en pantalla.</span>
+          </div>
+
+          <!-- Lectura de voz (opcional) -->
+          <div class="field-group">
+            <label class="field-label">Lectura de voz <span class="optional-badge">Recomendado</span></label>
+            <div class="switch-wrapper">
+              <label class="switch">
+                <input type="checkbox" 
+                       [checked]="accessibilityService.getVoiceEnabled()"
+                       (change)="accessibilityService.setVoiceEnabled($any($event.target).checked)">
+                <span class="slider"></span>
+              </label>
+              <span class="switch-label">
+                {{ accessibilityService.getVoiceEnabled() ? 'Activado' : 'Desactivado' }}
+              </span>
+            </div>
+            <span class="field-hint">Permite que el sistema lea en voz alta ciertos elementos de la interfaz.</span>
+          </div>
+        </div>
+
+        <!-- Botón guardar -->
+        <div class="form-actions">
+          <button class="btn-save" (click)="requestSave()" [disabled]="sendingCode">
+            <span *ngIf="!sendingCode">💾 Guardar cambios</span>
+            <span *ngIf="sendingCode" class="btn-loading">
+              <span class="spinner-sm"></span> Enviando código...
+            </span>
+          </button>
+        </div>
+
+      </ng-container>
+    </div><!-- /content-area -->
+
+  </main>
+</div>
+
+<!-- ══ MODAL verificación 2FA ══ -->
+<div class="modal-overlay" *ngIf="showVerifyModal" (click)="closeVerifyModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>📧 Verificar tu identidad</h3>
+      <button class="modal-close" (click)="closeVerifyModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <div class="modal-subtitle">
+        Hemos enviado un código a tu correo actual.<br>
+        Ingrésalo para confirmar los cambios.
+      </div>
+      <div class="code-input-wrapper">
+        <input type="text" class="code-input"
+               [(ngModel)]="verificationCode"
+               placeholder="Código de 6 dígitos"
+               maxlength="6"
+               inputmode="numeric"
+               (keyup.enter)="confirmVerifyAndSave()" />
+      </div>
+      <div class="verify-error" *ngIf="verifyError">⚠️ {{ verifyError }}</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeVerifyModal()">Cancelar</button>
+      <button class="btn-confirm" (click)="confirmVerifyAndSave()" [disabled]="verifyingCode">
+        <span *ngIf="!verifyingCode">Confirmar cambios</span>
+        <span *ngIf="verifyingCode" class="btn-loading">
+          <span class="spinner-sm"></span> Verificando...
+        </span>
+      </button>
+    </div>
+
+  </div>
+</div>

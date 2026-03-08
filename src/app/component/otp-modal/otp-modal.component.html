@@ -4,13 +4,15 @@
     <!-- Header -->
     <div class="otp-header" [class.success-state]="isSuccess">
 
-      <div class="otp-icon" [class.success-icon]="isSuccess">
-        <ion-icon [name]="isSuccess ? 'checkmark-circle-outline' : 'mail-outline'"></ion-icon>
+      <div class="otp-icon" [class.success-icon]="isSuccess" [class.locked-icon]="isLocked">
+        <ion-icon [name]="isSuccess ? 'checkmark-circle-outline' : isLocked ? 'time-outline' : 'mail-outline'"></ion-icon>
       </div>
 
-      <h2>{{ isSuccess ? 'Verificación exitosa' : 'Verificación de código' }}</h2>
+      <h2>
+        {{ isSuccess ? 'Verificación exitosa' : isLocked ? 'Cuenta bloqueada' : 'Verificación de código' }}
+      </h2>
 
-      <p class="otp-subtitle" *ngIf="!isSuccess">
+      <p class="otp-subtitle" *ngIf="!isSuccess && !isLocked">
         Ingresa el código de 6 dígitos que enviamos a
         <span class="email-hint">{{ maskedEmail }}</span>
       </p>
@@ -22,34 +24,42 @@
 
     </div>
 
-    <!-- Contenido oculto cuando hay éxito -->
-    <ng-container *ngIf="!isSuccess">
-
-      <!-- Mensaje de bloqueo -->
-      <div class="locked-msg" *ngIf="isLocked">
-        <ion-icon name="alert-circle-outline"></ion-icon>
-        Cuenta bloqueada. Espera {{ lockSeconds }}s para intentar de nuevo.
+    <!-- ═══ ESTADO BLOQUEADO ═══ -->
+    <ng-container *ngIf="isLocked && !isSuccess">
+      <div class="lock-state">
+        <div class="lock-timer">{{ lockSeconds }}s</div>
+        <p class="lock-msg">{{ lockMessage }}</p>
+        <p class="lock-hint">
+          Los inputs se habilitarán automáticamente cuando expire el bloqueo.
+        </p>
       </div>
+    </ng-container>
+
+    <!-- ═══ CONTENIDO NORMAL (no bloqueado, no éxito) ═══ -->
+    <ng-container *ngIf="!isSuccess && !isLocked">
 
       <!-- OTP Inputs -->
       <div class="otp-inputs">
         <input
           *ngFor="let i of [0,1,2,3,4,5]"
           #otpInputs
-          type="text"
+          type="tel"
           inputmode="numeric"
           maxlength="1"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+          [attr.name]="'otp-' + i + '-' + randomId"
           class="otp-digit"
           [class.filled]="otpValues[i]"
           [class.error]="hasError"
-          [disabled]="isLocked"
           (input)="onDigitInput($event, i)"
           (keydown)="onKeyDown($event, i)"
           (paste)="onPaste($event)"
         />
       </div>
 
-      <!-- Mensaje de error — muestra intentos restantes si los hay -->
+      <!-- Error de validación — muestra intentos restantes si los hay -->
       <div class="error-msg" [class.visible]="hasError">
         <ion-icon name="alert-circle-outline"></ion-icon>
         {{ errorMessage }}
@@ -59,20 +69,34 @@
       <ion-button
         expand="block"
         class="validate-btn"
-        [disabled]="!isComplete || isLoading || isLocked"
+        [disabled]="!isComplete || isLoading"
         (click)="validar()">
         <ion-spinner *ngIf="isLoading" name="crescent" slot="start"></ion-spinner>
         {{ isLoading ? 'Validando...' : 'Validar' }}
       </ion-button>
 
-      <!-- Reenviar -->
+      <!-- Sección reenvío -->
       <div class="resend-section">
-        <span *ngIf="countdown > 0" class="countdown">
+
+        <!-- Cooldown entre reenvíos (el backend indicó que es muy pronto) -->
+        <span *ngIf="isCooldown" class="cooldown-msg">
+          <ion-icon name="time-outline"></ion-icon>
+          {{ cooldownMessage }}
+        </span>
+
+        <!-- Countdown visual inicial de 60 s -->
+        <span *ngIf="!isCooldown && countdown > 0" class="countdown">
           Reenviar código en {{ countdown }}s
         </span>
-        <span *ngIf="countdown === 0 && !isLocked" class="resend-link" (click)="reenviarCodigo()">
+
+        <!-- Botón reenviar — disponible cuando countdown llega a 0 -->
+        <span
+          *ngIf="!isCooldown && countdown === 0"
+          class="resend-link"
+          (click)="reenviarCodigo()">
           ¿No recibiste el código? <strong>Reenviar</strong>
         </span>
+
       </div>
 
     </ng-container>

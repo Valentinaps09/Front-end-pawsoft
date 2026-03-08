@@ -9,47 +9,152 @@
         <p>Sistema de Gestión Veterinaria</p>
       </div>
 
-      <!-- Card -->
-      <div class="register-card">
+      <!-- ══════════════════════════════════════════════════════
+           PANTALLA: Verificación de correo pendiente
+           ══════════════════════════════════════════════════════ -->
+      <div class="register-card verification-card" *ngIf="verificacionPendiente">
 
+        <div class="verification-icon">📬</div>
+
+        <h2>¡Ya casi terminas!</h2>
+
+        <p class="card-desc">
+          Enviamos un enlace de verificación a:
+        </p>
+
+        <p class="correo-registrado">{{ correoRegistrado }}</p>
+
+        <p class="card-desc small">
+          Revisa tu bandeja de entrada y también la carpeta de
+          <strong>spam</strong>. El enlace expira en <strong>1 hora</strong>.
+        </p>
+
+        <div class="action-divider"></div>
+
+        <!-- Mensaje de reenvío -->
+        <p *ngIf="mensajeReenvio"
+           class="reenvio-msg"
+           [class.ok]="tipoReenvio === 'ok'"
+           [class.error]="tipoReenvio === 'error'">
+          {{ mensajeReenvio }}
+        </p>
+
+        <!-- Botón reenviar -->
+        <ion-button
+          expand="block"
+          class="resend-btn"
+          (click)="reenviarVerificacion()"
+          [disabled]="reenviando">
+          <ion-spinner *ngIf="reenviando" name="crescent" slot="start"></ion-spinner>
+          <ion-icon *ngIf="!reenviando" name="refresh-outline" slot="start"></ion-icon>
+          {{ reenviando ? 'Reenviando...' : 'Reenviar correo' }}
+        </ion-button>
+
+        <!-- Botón volver a editar -->
+        <ion-button
+          expand="block"
+          fill="outline"
+          class="back-btn"
+          (click)="volverEditar()">
+          <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+          Volver y editar mis datos
+        </ion-button>
+
+        <div class="login-link" (click)="irLogin()">
+          ¿Ya verificaste? <span>Inicia sesión</span>
+        </div>
+
+      </div>
+
+      <!-- ══════════════════════════════════════════════════════
+           PANTALLA: Formulario de registro
+           ══════════════════════════════════════════════════════ -->
+      <div class="register-card" *ngIf="!verificacionPendiente">
         <h2>Crear cuenta</h2>
         <p class="card-desc">Completa los datos para registrarte en PawSoft.</p>
 
         <!-- Nombre completo -->
-        <ion-item lines="none" class="input-item">
-          <ion-label position="stacked">Nombre completo</ion-label>
-          <ion-input
-            type="text"
-            placeholder="Ej: Juan Pérez"
-            [(ngModel)]="nombre">
-          </ion-input>
-        </ion-item>
+        <div class="field-wrap" [class.field-error]="tocado.nombre && errores.nombre">
+          <ion-item lines="none" class="input-item">
+            <ion-label position="stacked">Nombre completo</ion-label>
+            <ion-input
+              type="text"
+              placeholder="Ej: Juan Pérez"
+              [(ngModel)]="nombre"
+              (ionBlur)="validarNombre()">
+            </ion-input>
+          </ion-item>
+          <p class="field-hint" *ngIf="!tocado.nombre || !errores.nombre">
+            Ingresa nombre y apellido (ej: Juan Pérez)
+          </p>
+          <p class="field-hint error" *ngIf="tocado.nombre && errores.nombre">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errores.nombre }}
+          </p>
+        </div>
 
         <!-- Email -->
-        <ion-item lines="none" class="input-item">
-          <ion-label position="stacked">Correo electrónico</ion-label>
-          <ion-input
-            type="email"
-            placeholder="ejemplo@correo.com"
-            [(ngModel)]="correo">
-          </ion-input>
-        </ion-item>
+        <div class="field-wrap" [class.field-error]="tocado.correo && errores.correo">
+          <ion-item lines="none" class="input-item">
+            <ion-label position="stacked">Correo electrónico</ion-label>
+            <ion-input
+              type="email"
+              placeholder="ejemplo@correo.com"
+              [(ngModel)]="correo"
+              (ionBlur)="validarCorreo()">
+            </ion-input>
+          </ion-item>
+          <p class="field-hint error" *ngIf="tocado.correo && errores.correo">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errores.correo }}
+          </p>
+        </div>
+
+        <!-- Teléfono -->
+        <div class="field-wrap" [class.field-error]="tocado.telefono && errores.telefono">
+          <ion-item lines="none" class="input-item">
+            <ion-label position="stacked">Teléfono</ion-label>
+            <ion-input
+              type="tel"
+              placeholder="3001234567"
+              [(ngModel)]="telefono"
+              maxlength="10"
+              (ionInput)="soloNumeros($event)"
+              (ionBlur)="validarTelefono()">
+            </ion-input>
+          </ion-item>
+          <p class="field-hint" *ngIf="!tocado.telefono || !errores.telefono">
+            Número colombiano de 10 dígitos (ej: 3001234567)
+          </p>
+          <p class="field-hint error" *ngIf="tocado.telefono && errores.telefono">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errores.telefono }}
+          </p>
+        </div>
 
         <!-- Contraseña -->
-        <ion-item lines="none" class="input-item">
-          <ion-label position="stacked">Contraseña</ion-label>
-          <ion-input
-            [type]="mostrarPass ? 'text' : 'password'"
-            placeholder="••••••••"
-            [(ngModel)]="contrasena">
-          </ion-input>
-          <ion-icon
-            slot="end"
-            class="eye-icon"
-            [name]="mostrarPass ? 'eye-off-outline' : 'eye-outline'"
-            (click)="mostrarPass = !mostrarPass">
-          </ion-icon>
-        </ion-item>
+        <div class="field-wrap" [class.field-error]="tocado.contrasena && errores.contrasena">
+          <ion-item lines="none" class="input-item password-item">
+            <ion-label position="stacked">Contraseña</ion-label>
+            <ion-input
+              [type]="mostrarPass ? 'text' : 'password'"
+              placeholder="••••••••"
+              [(ngModel)]="contrasena"
+              autocomplete="new-password"
+              (ionBlur)="validarContrasena()">
+            </ion-input>
+            <ion-icon
+              slot="end"
+              class="eye-icon"
+              [name]="mostrarPass ? 'eye-off-outline' : 'eye-outline'"
+              (click)="mostrarPass = !mostrarPass">
+            </ion-icon>
+          </ion-item>
+          <p class="field-hint error" *ngIf="tocado.contrasena && errores.contrasena">
+            <ion-icon name="alert-circle-outline"></ion-icon>
+            {{ errores.contrasena }}
+          </p>
+        </div>
 
         <!-- Indicador de fuerza -->
         <div class="strength-bar" *ngIf="contrasena.length > 0">
@@ -59,27 +164,44 @@
           <span class="strength-label" [class]="fuerzaClase">{{ fuerzaTexto }}</span>
         </div>
 
-        <!-- Error -->
+        <!-- reCAPTCHA -->
+        <div class="recaptcha-wrap">
+          <div id="recaptcha-register"></div>
+        </div>
+
+        <!-- Política de tratamiento de datos -->
+        <div class="politica-wrap">
+          <label class="politica-label">
+            <input
+              type="checkbox"
+              [(ngModel)]="aceptaPolitica"
+              class="politica-check">
+            <span>He leído y acepto la <span class="politica-link" (click)="abrirPolitica(); $event.preventDefault(); $event.stopPropagation()">Política de tratamiento de datos personales</span></span>
+          </label>
+        </div>
+
+        <!-- Error general (backend) -->
         <div class="error-msg" [class.visible]="mostrarError">
           <ion-icon name="alert-circle-outline"></ion-icon>
           {{ mensajeError }}
         </div>
 
-        <!-- Botón registrar -->
-        <ion-button expand="block" class="register-btn" (click)="registrar()">
+        <ion-button
+          expand="block"
+          class="register-btn"
+          (click)="registrar()"
+          [disabled]="!nombre.trim() || !correo || !contrasena || !telefono || !recaptchaToken || !aceptaPolitica">
           Crear cuenta
         </ion-button>
 
-        <!-- Link login -->
         <div class="login-link" (click)="irLogin()">
           ¿Ya tienes cuenta? <span>Inicia sesión</span>
         </div>
-
       </div>
+
     </div>
   </div>
 
-  <!-- OTP Modal reutilizado -->
   <app-otp-modal
     [isVisible]="mostrarOtp"
     [email]="correo"
@@ -87,5 +209,11 @@
     (successRedirect)="handleSuccessRedirect()"
     (closed)="mostrarOtp = false">
   </app-otp-modal>
+
+  <app-politica-modal
+    [isVisible]="mostrarPolitica"
+    (closed)="cerrarPolitica()"
+    (aceptado)="aceptaPolitica = true; cerrarPolitica()">
+  </app-politica-modal>
 
 </ion-content>

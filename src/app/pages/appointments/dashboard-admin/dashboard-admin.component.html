@@ -1,0 +1,368 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">{{ getActiveTabLabel() }}</div>
+        <div class="topbar-sub">{{ getActiveTabSub() }}</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn-primary" *ngIf="activeTab === 'usuarios'" (click)="openCreateUserModal()">
+          + Nuevo Usuario
+        </button>
+      </div>
+    </div>
+
+    <div class="tab-nav">
+      <button class="tab-btn" [class.active]="activeTab === 'usuarios'" (click)="setTab('usuarios')">Gestión de Usuarios</button>
+      <button class="tab-btn" [class.active]="activeTab === 'clientes'" (click)="setTab('clientes')">Clientes</button>
+      <button class="tab-btn" [class.active]="activeTab === 'mascotas'" (click)="setTab('mascotas')">Mascotas</button>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ═══ USUARIOS ═══ -->
+      <div *ngIf="activeTab === 'usuarios'" class="tab-content">
+
+        <div class="stats-strip">
+          <div class="stat-card" *ngFor="let stat of userStats">
+            <div class="stat-icon-wrap">{{ stat.icon }}</div>
+            <div class="stat-info">
+              <div class="stat-value">{{ stat.value }}</div>
+              <div class="stat-label">{{ stat.label }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <div class="filters-row">
+            <input type="text" class="form-input search-input" placeholder="Buscar por nombre o email..."
+                   [(ngModel)]="userSearch" (input)="filterUsers()">
+            <select class="form-select filter-select" [(ngModel)]="userRoleFilter" (change)="filterUsers()">
+              <option value="">Todos los roles</option>
+              <option value="ROLE_VETERINARIO">Veterinario</option>
+              <option value="ROLE_RECEPCIONISTA">Recepcionista</option>
+              <option value="ROLE_ADMIN">Administrador</option>
+            </select>
+            <select class="form-select filter-select" [(ngModel)]="userStatusFilter" (change)="filterUsers()">
+              <option value="">Todos los estados</option>
+              <option value="active">Activo</option>
+              <option value="inactive">Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr><th>Usuario</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let user of filteredUsers" class="table-row">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-photo" *ngIf="user.photoUrl">
+                      <img [src]="user.photoUrl" [alt]="user.name">
+                    </div>
+                    <div class="user-avatar-small" *ngIf="!user.photoUrl">{{ getUserInitials(user) }}</div>
+                    <div>
+                      <div class="cell-name">{{ user.name }}</div>
+                      <div class="cell-sub">{{ user.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="role-badge" [ngClass]="getRoleClass(user.role)">
+                    {{ getRoleLabel(user.role) }}
+                  </span>
+                </td>
+                <td>
+                  <span class="status-badge" [class.active]="user.enabled" [class.inactive]="!user.enabled">
+                    {{ user.enabled ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <div class="action-btns">
+                    <button class="btn-action edit" (click)="openEditUserModal(user)">Editar</button>
+                    <button class="btn-action"
+                            [class.deactivate]="user.enabled"
+                            [class.activate]="!user.enabled"
+                            (click)="toggleUserStatus(user)">
+                      {{ user.enabled ? 'Desactivar' : 'Activar' }}
+                    </button>
+                    <button
+                      class="btn-action delete"
+                      [class.btn-self]="user.email === userName"
+                      [disabled]="user.email.trim().toLowerCase() === userName"
+                      [title]="user.email === userName ? 'No puedes eliminarte a ti mismo' : 'Eliminar'"
+                      (click)="openDeleteModal(user)">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="filteredUsers.length === 0">
+                <td colspan="4" class="empty-row">No se encontraron usuarios</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ CLIENTES ═══ -->
+      <div *ngIf="activeTab === 'clientes'" class="tab-content">
+        <div class="section-card">
+          <div class="filters-row">
+            <input type="text" class="form-input search-input" placeholder="Buscar cliente..."
+                   [(ngModel)]="clientSearch" (input)="filterClients()">
+          </div>
+        </div>
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr><th>Cliente</th><th>Estado</th><th>Acciones</th></tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let client of filteredClients" class="table-row">
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small client">{{ getUserInitialsFromName(client.name) }}</div>
+                    <div>
+                      <div class="cell-name">{{ client.name }}</div>
+                      <div class="cell-sub">{{ client.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge"
+                        [class.active]="client.enabled"
+                        [class.inactive]="!client.enabled">
+                    {{ client.enabled ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn-action view" (click)="openClientDetail(client)">Ver detalle</button>
+                </td>
+              </tr>
+              <tr *ngIf="filteredClients.length === 0">
+                <td colspan="3" class="empty-row">No se encontraron clientes</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ MASCOTAS ═══ -->
+      <div *ngIf="activeTab === 'mascotas'" class="tab-content">
+        <div class="section-card">
+          <div class="filters-row">
+            <input type="text" class="form-input search-input" placeholder="Buscar mascota o dueño..."
+                   [(ngModel)]="petSearch" (input)="filterPets()">
+            <select class="form-select filter-select" [(ngModel)]="petSpeciesFilter" (change)="filterPets()">
+              <option value="">Todas las especies</option>
+              <option value="Perro">Perros</option>
+              <option value="Gato">Gatos</option>
+              <option value="Conejo">Conejos</option>
+              <option value="Ave">Aves</option>
+            </select>
+          </div>
+        </div>
+        <div class="section-card table-card">
+          <div class="table-wrapper">
+            <table class="data-table">
+              <thead>
+              <tr><th>Mascota</th><th>Especie / Raza</th><th>Propietario</th><th>Sexo</th></tr>
+              </thead>
+              <tbody>
+              <tr *ngFor="let pet of filteredPets" class="table-row">
+                <td>
+                  <div class="user-cell">
+                    <div class="pet-avatar-cell">{{ getEmojiBySpecies(pet.species) }}</div>
+                    <div><div class="cell-name">{{ pet.name }}</div></div>
+                  </div>
+                </td>
+                <td>
+                  <div class="cell-name">{{ pet.species }}</div>
+                  <div class="cell-sub">{{ pet.breed }}</div>
+                </td>
+                <td>
+                  <div class="user-cell">
+                    <div class="user-avatar-small owner">{{ getUserInitialsFromName(pet.ownerName) }}</div>
+                    <div>
+                      <div class="cell-name">{{ pet.ownerName }}</div>
+                      <div class="cell-sub">{{ pet.ownerEmail }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="cell-text">{{ pet.sex === 'M' ? 'Macho' : 'Hembra' }}</td>
+              </tr>
+              <tr *ngIf="filteredPets.length === 0">
+                <td colspan="4" class="empty-row">No se encontraron mascotas</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- ═══ MODAL CREAR / EDITAR ═══ -->
+<div class="modal-overlay" *ngIf="showUserModal" (click)="closeUserModal()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3>{{ editingUser ? 'Editar Usuario' : 'Nuevo Usuario' }}</h3>
+      <button class="modal-close" (click)="closeUserModal()">✕</button>
+    </div>
+
+    <div class="modal-body">
+      <form [formGroup]="userForm">
+
+        <div class="photo-upload-group" *ngIf="userForm.get('role')?.value === 'ROLE_VETERINARIO'">
+          <div class="photo-preview">
+            <img *ngIf="photoPreview" [src]="photoPreview" alt="Foto">
+            <span *ngIf="!photoPreview">🩺</span>
+          </div>
+          <div class="photo-actions">
+            <label class="btn-upload" for="vetPhotoInput">
+              📷 {{ photoPreview ? 'Cambiar foto' : 'Subir foto' }}
+            </label>
+            <input type="file" id="vetPhotoInput" accept="image/*"
+                   style="display:none" (change)="onPhotoSelected($event)">
+            <button type="button" class="btn-remove-photo"
+                    *ngIf="photoPreview" (click)="removePhoto()">Quitar</button>
+            <span class="photo-hint">Opcional · máx. 2MB · Se muestra al cliente al agendar</span>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label">Nombre completo *</label>
+          <input type="text" class="form-input" formControlName="name"
+                 placeholder="Ej: Ana Torres" [class.invalid]="isFieldInvalid('name')">
+          <span class="field-error" *ngIf="isFieldInvalid('name')">Campo requerido</span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Correo *</label>
+            <input type="email" class="form-input" formControlName="email"
+                   placeholder="correo@ejemplo.com"
+                   [class.invalid]="isFieldInvalid('email') || !!saveError"
+                   [attr.readonly]="editingUser ? true : null">
+            <span class="field-error" *ngIf="isFieldInvalid('email')">Correo inválido</span>
+            <!-- Aviso de correo duplicado u otro error al guardar -->
+            <div class="save-error-box" *ngIf="saveError">
+              <span class="save-error-icon">⚠</span>
+              <span>{{ saveError }}</span>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Rol *</label>
+            <select class="form-select" formControlName="role" [class.invalid]="isFieldInvalid('role')">
+              <option value="">Selecciona...</option>
+              <option value="ROLE_VETERINARIO">Veterinario</option>
+              <option value="ROLE_RECEPCIONISTA">Recepcionista</option>
+              <option value="ROLE_ADMIN">Administrador</option>
+            </select>
+            <span class="field-error" *ngIf="isFieldInvalid('role')">Campo requerido</span>
+          </div>
+        </div>
+
+        <div class="form-group full" *ngIf="!editingUser">
+          <div class="temp-password-notice">
+            <span>🔑</span>
+            <p>Se generará una contraseña temporal y se enviará al correo del usuario.</p>
+          </div>
+        </div>
+
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeUserModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveUser()"
+              [disabled]="!userForm.valid || savingUser || uploadingPhoto">
+        <span *ngIf="uploadingPhoto">Subiendo foto...</span>
+        <span *ngIf="savingUser && !uploadingPhoto">Guardando...</span>
+        <span *ngIf="!savingUser && !uploadingPhoto">
+          {{ editingUser ? 'Actualizar' : 'Crear Usuario' }}
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL ELIMINAR ═══ -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-card modal-sm" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Eliminar Usuario</h3>
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cancel-warning-box">
+        <p>¿Estás seguro? Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="cancel-details" *ngIf="userToDelete">
+        <div class="detail-row"><span>Nombre</span><strong>{{ userToDelete.name }}</strong></div>
+        <div class="detail-row"><span>Correo</span><strong>{{ userToDelete.email }}</strong></div>
+        <div class="detail-row"><span>Rol</span><strong>{{ getRoleLabel(userToDelete.role) }}</strong></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeDeleteModal()">Cancelar</button>
+      <button class="btn-danger" (click)="deleteUser()" [disabled]="deletingUser">
+        <span *ngIf="!deletingUser">Eliminar</span>
+        <span *ngIf="deletingUser">Eliminando...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL DETALLE CLIENTE ═══ -->
+<div class="modal-overlay" *ngIf="showClientDetailModal" (click)="closeClientDetail()">
+  <div class="modal-card modal-lg" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Detalle de Cliente</h3>
+      <button class="modal-close" (click)="closeClientDetail()">✕</button>
+    </div>
+    <div class="modal-body" *ngIf="selectedClient">
+      <div class="client-detail-header">
+        <div class="client-big-avatar">{{ getUserInitialsFromName(selectedClient.name) }}</div>
+        <div>
+          <div class="client-detail-name">{{ selectedClient.name }}</div>
+          <div class="client-detail-email">{{ selectedClient.email }}</div>
+        </div>
+      </div>
+      <div class="detail-section-title">Mascotas de este cliente</div>
+
+      <div class="pets-detail-grid">
+        <ng-container *ngIf="getClientPets(selectedClient.email).length > 0; else sinMascotas">
+          <div class="pet-detail-card" *ngFor="let pet of getClientPets(selectedClient.email)">
+            <div class="pet-detail-emoji">{{ getEmojiBySpecies(pet.species) }}</div>
+            <div>
+              <div class="pet-detail-name">{{ pet.name }}</div>
+              <div class="pet-detail-sub">{{ pet.species }} · {{ pet.breed }}</div>
+              <div class="pet-detail-sub">{{ pet.sex === 'M' ? 'Macho' : 'Hembra' }}</div>
+            </div>
+          </div>
+        </ng-container>
+        <ng-template #sinMascotas>
+          <div class="no-pets-label">Este cliente no tiene mascotas registradas.</div>
+        </ng-template>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeClientDetail()">Cerrar</button>
+    </div>
+  </div>
+</div>
