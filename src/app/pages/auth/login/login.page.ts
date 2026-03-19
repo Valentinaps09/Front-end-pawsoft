@@ -123,51 +123,36 @@ export class LoginPage implements OnInit, OnDestroy {
   // ── reCAPTCHA ──────────────────────────────────────────────────
 
   private renderRecaptcha(): void {
-    console.log('[reCAPTCHA] Iniciando renderizado...');
-    console.log('[reCAPTCHA] Site Key:', this.siteKey);
-    
     let attempts = 0;
-    const maxAttempts = 50; // 10 segundos (50 * 200ms)
-    
+    const maxAttempts = 50;
+
     const interval = setInterval(() => {
       attempts++;
-      
+
       if (typeof grecaptcha !== 'undefined' && grecaptcha.render) {
         clearInterval(interval);
-        console.log('[reCAPTCHA] ✅ grecaptcha disponible, renderizando...');
-        
+
         try {
-          const widgetId = grecaptcha.render('recaptcha-container', {
+          grecaptcha.render('recaptcha-container', {
             sitekey: this.siteKey,
             callback: (token: string) => {
-              this.ngZone.run(() => { 
-                console.log('[reCAPTCHA] ✅ Token recibido:', token.substring(0, 30) + '...');
-                this.recaptchaToken = token; 
-              });
+              this.ngZone.run(() => { this.recaptchaToken = token; });
             },
             'expired-callback': () => {
-              this.ngZone.run(() => { 
-                console.warn('[reCAPTCHA] ⚠️ Token expirado');
-                this.recaptchaToken = ''; 
-              });
+              this.ngZone.run(() => { this.recaptchaToken = ''; });
             },
             'error-callback': () => {
-              this.ngZone.run(() => { 
-                console.error('[reCAPTCHA] ❌ Error en reCAPTCHA');
+              this.ngZone.run(() => {
                 this.recaptchaToken = '';
                 this.errorMsg = 'Error al cargar reCAPTCHA. Por favor, recarga la página.';
               });
             },
           });
-          console.log('[reCAPTCHA] Widget ID:', widgetId);
-        } catch (error) {
-          console.error('[reCAPTCHA] ❌ Error al renderizar:', error);
+        } catch {
           this.errorMsg = 'Error al cargar reCAPTCHA. Por favor, recarga la página.';
         }
       } else if (attempts >= maxAttempts) {
         clearInterval(interval);
-        console.error('[reCAPTCHA] ❌ Timeout: grecaptcha no se cargó después de 10 segundos');
-        console.error('[reCAPTCHA] grecaptcha type:', typeof grecaptcha);
         this.errorMsg = 'No se pudo cargar reCAPTCHA. Por favor, desactiva tu bloqueador de anuncios y recarga la página.';
       }
     }, 200);
@@ -175,7 +160,6 @@ export class LoginPage implements OnInit, OnDestroy {
 
   private resetRecaptcha(): void {
     if (typeof grecaptcha !== 'undefined' && grecaptcha.reset) {
-      console.log('[reCAPTCHA] Reseteando widget...');
       grecaptcha.reset();
     }
   }
@@ -183,14 +167,8 @@ export class LoginPage implements OnInit, OnDestroy {
   // ── Fase 1: Login ──────────────────────────────────────────────
 
   login(): void {
-    console.log('[LOGIN] Iniciando login...');
-    console.log('[LOGIN] Email:', this.email);
-    console.log('[LOGIN] Password length:', this.password.length);
-    console.log('[LOGIN] reCAPTCHA token:', this.recaptchaToken ? 'presente (' + this.recaptchaToken.length + ' chars)' : 'AUSENTE ❌');
-    
     if (!this.recaptchaToken) {
       this.errorMsg = 'Por favor, completa el reCAPTCHA antes de continuar.';
-      console.error('[LOGIN] ❌ Bloqueado: reCAPTCHA token vacío');
       return;
     }
     this.errorMsg            = '';
