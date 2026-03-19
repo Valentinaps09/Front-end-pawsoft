@@ -33,15 +33,12 @@ export const roleGuard = (route: ActivatedRouteSnapshot): boolean => {
     const payload = JSON.parse(atob(base64));
     const userRole: string = payload['role'] ?? '';
 
-    console.log('JWT payload:', payload);
-
     // Rol correcto → permite el acceso
     if (userRole && allowedRoles.includes(userRole)) {
       return true;
     }
 
     // Rol incorrecto → redirige al dashboard propio (NO a /login)
-    console.warn(`roleGuard: rol '${userRole}' no permitido. Requerido: [${allowedRoles}]`);
     router.navigate([getDashboardByRole(userRole)], { replaceUrl: true });
     return false;
 
