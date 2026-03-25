@@ -21,7 +21,7 @@ export interface AppointmentResponse {
   time: string;
   reason: string;
   vetName: string;
-  status: 'upcoming' | 'completed' | 'cancelled';
+  status: 'upcoming' | 'completed' | 'cancelled' | 'confirmed' | 'no_show';
 }
 
 export interface RecepAppointmentResponse {
