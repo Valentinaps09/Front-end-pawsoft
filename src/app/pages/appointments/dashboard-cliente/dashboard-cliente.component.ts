@@ -183,6 +183,8 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
           .filter(a => {
             const status = (a.status ?? '').toLowerCase();
             if (status === 'cancelled') return false;
+            // no_show siempre se muestra (el cliente debe saber que no asistió)
+            if (status === 'no_show') return true;
             const dateStr = a.date ?? a.dateFormatted ?? '';
             return dateStr >= todayStr;
           })
