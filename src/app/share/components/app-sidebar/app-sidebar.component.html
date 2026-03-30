@@ -19,6 +19,28 @@
       <span class="label">{{ item.label }}</span>
       <span class="lock-icon" *ngIf="item.disabled">🔒</span>
     </div>
+
+    <!-- Sección CLÍNICO — solo para veterinario -->
+    <ng-container *ngIf="userRole === 'ROLE_VETERINARIO' && clinicItems.length > 0">
+      <div class="section-divider">
+        <span class="section-label">CLÍNICO</span>
+      </div>
+      <div
+        *ngFor="let item of clinicItems"
+        class="menu-item"
+        [class.active]="isActive(item)"
+        [class.disabled]="item.disabled"
+        (click)="onClinicItemClick(item)"
+      >
+        <span class="icon">{{ item.icon }}</span>
+        <div class="label-wrap">
+          <span class="label">{{ item.label }}</span>
+          <span class="sub-label" *ngIf="item.subLabel">{{ item.subLabel }}</span>
+        </div>
+        <span class="active-dot" *ngIf="item.activeDot"></span>
+        <span class="lock-icon" *ngIf="item.disabled">🔒</span>
+      </div>
+    </ng-container>
   </div>
 
   <!-- User Info -->

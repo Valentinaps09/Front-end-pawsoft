@@ -1,0 +1,120 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">🩺 Atención Médica</div>
+        <div class="topbar-sub">Citas confirmadas pendientes de atención</div>
+      </div>
+      <div class="today-badge">
+        <span class="today-dot"></span>
+        {{ todayFormatted }}
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- FILTROS -->
+      <div class="section-card">
+        <div class="filters-row">
+          <input
+            type="text"
+            class="form-input search-input"
+            placeholder="Buscar por mascota o propietario..."
+            [(ngModel)]="searchText"
+            (input)="aplicarFiltros()">
+
+          <select class="form-select filter-select" [(ngModel)]="filtroEstado" (change)="aplicarFiltros()">
+            <option value="todas">Todas</option>
+            <option value="pendiente">Pendiente</option>
+            <option value="en_proceso">En proceso</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div class="error-card" *ngIf="errorMsg">
+        <span>⚠️ {{ errorMsg }}</span>
+        <button class="btn-retry" (click)="cargarCitas()">Reintentar</button>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-wrap" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <span>Cargando citas...</span>
+      </div>
+
+      <!-- LISTA DE CITAS -->
+      <div class="citas-grid" *ngIf="!isLoading && !errorMsg">
+
+        <div
+          *ngFor="let cita of citasFiltradas"
+          class="cita-card"
+          [class.en-proceso]="isEnProceso(cita)">
+
+          <!-- Header de la tarjeta -->
+          <div class="cita-header">
+            <div class="pet-avatar">
+              <img *ngIf="cita.petPhotoUrl" [src]="cita.petPhotoUrl" [alt]="cita.petName">
+              <span *ngIf="!cita.petPhotoUrl">{{ getEmojiBySpecies(cita.petSpecies) }}</span>
+            </div>
+            <div class="cita-info">
+              <div class="pet-name">{{ cita.petName }}</div>
+              <div class="pet-species">{{ cita.petSpecies }}</div>
+            </div>
+            <span class="estado-badge" [class.pendiente]="!isEnProceso(cita)" [class.en-proceso-badge]="isEnProceso(cita)">
+              {{ isEnProceso(cita) ? '🟢 En proceso' : '🟠 Pendiente' }}
+            </span>
+          </div>
+
+          <!-- Datos de la cita -->
+          <div class="cita-body">
+            <div class="dato-row">
+              <span class="dato-icon">👤</span>
+              <span class="dato-text">{{ cita.clientName }}</span>
+            </div>
+            <div class="dato-row">
+              <span class="dato-icon">🕐</span>
+              <span class="dato-text">{{ formatTime(cita.time) }}</span>
+            </div>
+            <div class="dato-row">
+              <span class="dato-icon">📝</span>
+              <span class="dato-text motivo">{{ cita.reason }}</span>
+            </div>
+            <div class="dato-row" *ngIf="cita.notes">
+              <span class="dato-icon">🗒️</span>
+              <span class="dato-text">{{ cita.notes }}</span>
+            </div>
+          </div>
+
+          <!-- Acción -->
+          <div class="cita-footer">
+            <button
+              *ngIf="!isEnProceso(cita)"
+              class="btn-iniciar"
+              (click)="iniciarAtencion(cita)">
+              Iniciar atención →
+            </button>
+            <button
+              *ngIf="isEnProceso(cita)"
+              class="btn-continuar"
+              (click)="continuarAtencion()">
+              Continuar →
+            </button>
+          </div>
+        </div>
+
+        <!-- Vacío -->
+        <div class="empty-state" *ngIf="citasFiltradas.length === 0">
+          <div class="empty-icon">🩺</div>
+          <div class="empty-title">No hay citas confirmadas</div>
+          <div class="empty-sub">Las citas confirmadas por recepción aparecerán aquí</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

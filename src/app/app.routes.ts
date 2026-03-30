@@ -119,6 +119,33 @@ export const routes: Routes = [
   },
 
   {
+    path: 'veterinario/atencion-medica',
+    canActivate: [authGuard, desktopOnlyGuard, roleGuard],
+    data: { roles: ['ROLE_VETERINARIO'] },
+    loadComponent: () =>
+      import('./pages/appointments/dashboard-vet/atencion-medica/atencion-medica.component')
+        .then(m => m.AtencionMedicaComponent),
+  },
+
+  {
+    path: 'veterinario/formulario-consulta',
+    canActivate: [authGuard, desktopOnlyGuard, roleGuard],
+    data: { roles: ['ROLE_VETERINARIO'] },
+    loadComponent: () =>
+      import('./pages/appointments/dashboard-vet/formulario-consulta/formulario-consulta.component')
+        .then(m => m.FormularioConsultaComponent),
+  },
+
+  {
+    path: 'veterinario/historial-clinico',
+    canActivate: [authGuard, desktopOnlyGuard, roleGuard],
+    data: { roles: ['ROLE_VETERINARIO'] },
+    loadComponent: () =>
+      import('./pages/appointments/dashboard-vet/historial-clinico/historial-clinico.component')
+        .then(m => m.HistorialClinicoComponent),
+  },
+
+  {
     path: 'dashboard-rec',
     canActivate: [authGuard, desktopOnlyGuard, roleGuard],
     data: { roles: ['ROLE_RECEPCIONISTA'] },

@@ -1,0 +1,153 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">📁 Historial Clínico</div>
+        <div class="topbar-sub">Registros de atenciones completadas — solo lectura</div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- FILTROS -->
+      <div class="section-card">
+        <div class="filters-row">
+          <input type="text" class="form-input search-input"
+            placeholder="Buscar por mascota o propietario..."
+            [(ngModel)]="searchText" (input)="aplicarFiltros()">
+
+          <input type="date" class="form-input date-input"
+            [(ngModel)]="filtroFechaInicio" (change)="aplicarFiltros()"
+            title="Fecha inicio">
+
+          <input type="date" class="form-input date-input"
+            [(ngModel)]="filtroFechaFin" (change)="aplicarFiltros()"
+            title="Fecha fin">
+
+          <select class="form-select especie-select"
+            [(ngModel)]="filtroEspecie" (change)="aplicarFiltros()">
+            <option value="">Todas las especies</option>
+            <option *ngFor="let e of especiesDisponibles" [value]="e">{{ e }}</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- ERROR -->
+      <div class="error-card" *ngIf="errorMsg">
+        <span>⚠️ {{ errorMsg }}</span>
+        <button class="btn-retry" (click)="cargarHistorial()">Reintentar</button>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-wrap" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <span>Cargando historial...</span>
+      </div>
+
+      <!-- LISTA -->
+      <div class="registros-list" *ngIf="!isLoading && !errorMsg">
+
+        <div class="registro-item" *ngFor="let r of registrosFiltrados">
+
+          <!-- Header colapsado -->
+          <div class="registro-header" (click)="toggleExpand(r.id)">
+            <div class="reg-avatar">
+              <img *ngIf="r.petPhotoUrl" [src]="r.petPhotoUrl" [alt]="r.petName">
+              <span *ngIf="!r.petPhotoUrl">{{ getEmojiBySpecies(r.petSpecies) }}</span>
+            </div>
+            <div class="reg-info">
+              <div class="reg-pet-name">{{ r.petName }}</div>
+              <div class="reg-details">{{ r.petSpecies }} · {{ r.ownerName }}</div>
+            </div>
+            <div class="reg-fecha">{{ formatDate(r.appointmentDate) }}</div>
+            <div class="reg-diagnostico">{{ r.diagnosticoPrincipal || '—' }}</div>
+            <div class="reg-chevron" [class.open]="isExpanded(r.id)">▼</div>
+          </div>
+
+          <!-- Detalle expandido -->
+          <div class="registro-detalle" *ngIf="isExpanded(r.id)">
+
+            <div class="detalle-grid">
+
+              <!-- Examen físico -->
+              <div class="detalle-seccion">
+                <div class="detalle-titulo">🔬 Examen Físico</div>
+                <div class="detalle-row" *ngIf="r.peso">
+                  <span class="det-label">Peso:</span>
+                  <span class="det-val">{{ r.peso }} kg</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.temperatura">
+                  <span class="det-label">Temperatura:</span>
+                  <span class="det-val">{{ r.temperatura }} °C</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.frecuenciaCardiaca">
+                  <span class="det-label">Frec. cardíaca:</span>
+                  <span class="det-val">{{ r.frecuenciaCardiaca }} lpm</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.observacionesGenerales">
+                  <span class="det-label">Observaciones:</span>
+                  <span class="det-val">{{ r.observacionesGenerales }}</span>
+                </div>
+              </div>
+
+              <!-- Diagnóstico -->
+              <div class="detalle-seccion">
+                <div class="detalle-titulo">🩺 Diagnóstico</div>
+                <div class="detalle-row">
+                  <span class="det-label">Principal:</span>
+                  <span class="det-val">{{ r.diagnosticoPrincipal || '—' }}</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.diagnosticoSecundario">
+                  <span class="det-label">Secundario:</span>
+                  <span class="det-val">{{ r.diagnosticoSecundario }}</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.notasClinicas">
+                  <span class="det-label">Notas:</span>
+                  <span class="det-val">{{ r.notasClinicas }}</span>
+                </div>
+              </div>
+
+              <!-- Medicamentos -->
+              <div class="detalle-seccion" *ngIf="r.medicamentos">
+                <div class="detalle-titulo">💊 Medicamentos</div>
+                <div class="med-tag" *ngFor="let med of parseMedicamentos(r.medicamentos)">
+                  <strong>{{ med.nombre }}</strong> — {{ med.dosisValor }} {{ med.dosisUnidad }} ({{ med.via }})
+                </div>
+                <div class="detalle-row" *ngIf="r.indicaciones">
+                  <span class="det-label">Indicaciones:</span>
+                  <span class="det-val">{{ r.indicaciones }}</span>
+                </div>
+              </div>
+
+              <!-- Próximo control -->
+              <div class="detalle-seccion" *ngIf="r.proximoControlFecha">
+                <div class="detalle-titulo">📅 Próximo Control</div>
+                <div class="detalle-row">
+                  <span class="det-label">Fecha:</span>
+                  <span class="det-val">{{ formatDate(r.proximoControlFecha) }}</span>
+                </div>
+                <div class="detalle-row" *ngIf="r.proximoControlMotivo">
+                  <span class="det-label">Motivo:</span>
+                  <span class="det-val">{{ r.proximoControlMotivo }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Vacío -->
+        <div class="empty-state" *ngIf="registrosFiltrados.length === 0">
+          <div class="empty-icon">📁</div>
+          <div class="empty-title">No hay registros</div>
+          <div class="empty-sub">Los registros de atenciones completadas aparecerán aquí</div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>

@@ -1,8 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs/operators';
+import { Subscription } from 'rxjs';
 import { AuthService } from '../../../services/auth';
+import { MedicalRecordService, AtencionActiva } from '../../../services/medical-record.service';
 
 interface MenuItem {
   icon: string;
@@ -11,6 +13,8 @@ interface MenuItem {
   tab?: string;
   disabled?: boolean;
   badge?: number | string;
+  subLabel?: string;
+  activeDot?: boolean;
 }
 
 @Component({
@@ -21,20 +25,24 @@ interface MenuItem {
   styleUrls: ['./app-sidebar.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class AppSidebarComponent implements OnInit, OnChanges {
+export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
   @Input() userRole: string = 'ROLE_CLIENTE';
   @Input() userName: string = '';
   @Input() activeTab: string = '';
   @Output() tabChange = new EventEmitter<string>();
 
   menuItems: MenuItem[] = [];
+  clinicItems: MenuItem[] = [];
   userInitials: string = '';
   currentUrl: string = '';
+
+  private atencionSub?: Subscription;
 
   constructor(
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
     private readonly authService: AuthService,
+    private readonly medicalRecordService: MedicalRecordService,
   ) {}
 
   ngOnInit(): void {
@@ -47,6 +55,16 @@ export class AppSidebarComponent implements OnInit, OnChanges {
       this.currentUrl = event.urlAfterRedirects.split('?')[0];
       this.cdr.detectChanges();
     });
+
+    // Suscribirse al estado de atención activa para actualizar sección CLÍNICO
+    this.atencionSub = this.medicalRecordService.atencionActiva$.subscribe(activa => {
+      this.buildClinicItems(activa);
+      this.cdr.detectChanges();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.atencionSub?.unsubscribe();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -114,6 +132,44 @@ export class AppSidebarComponent implements OnInit, OnChanges {
 
       default:
         this.menuItems = [];
+    }
+  }
+
+  private buildClinicItems(activa: AtencionActiva | null): void {
+    if (this.userRole !== 'ROLE_VETERINARIO') {
+      this.clinicItems = [];
+      return;
+    }
+    this.clinicItems = [
+      {
+        icon: '🩺',
+        label: 'Atención médica',
+        route: '/veterinario/atencion-medica',
+        disabled: false,
+      },
+      {
+        icon: '📋',
+        label: 'Formulario consulta',
+        route: '/veterinario/formulario-consulta',
+        disabled: !activa,
+        activeDot: !!activa,
+        subLabel: activa ? activa.petName : undefined,
+      },
+      {
+        icon: '📁',
+        label: 'Historial clínico',
+        route: '/veterinario/historial-clinico',
+        disabled: false,
+      },
+    ];
+  }
+
+  onClinicItemClick(item: MenuItem): void {
+    if (item.disabled) return;
+    if (item.route) {
+      this.currentUrl = item.route;
+      this.cdr.detectChanges();
+      this.router.navigate([item.route]);
     }
   }
 

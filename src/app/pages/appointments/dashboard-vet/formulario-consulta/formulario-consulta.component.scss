@@ -1,0 +1,170 @@
+.dashboard-layout {
+  display: flex; min-height: 100vh;
+  background: linear-gradient(135deg, #E3EFE8 0%, #F4F8F6 100%);
+  font-family: 'Manrope', sans-serif; color: #1B2B23;
+}
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+/* Topbar */
+.topbar {
+  padding: 14px 24px; background: #fff; border-bottom: 1px solid #E7EFEA;
+  display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 10;
+}
+.btn-volver {
+  background: #EAF5EE; border: 1px solid #C8E6D4; color: #145C42;
+  padding: 8px 14px; border-radius: 8px; font-size: .82rem; font-weight: 700;
+  cursor: pointer; font-family: 'Manrope', sans-serif; white-space: nowrap;
+  &:hover { background: #D4EDE0; }
+}
+.topbar-center { flex: 1; text-align: center; }
+.topbar-title  { font-size: 1.1rem; font-weight: 800; color: #163A2B; }
+.topbar-sub    { font-size: .78rem; color: #5F7F71; margin-top: 2px; }
+.guardado-indicator {
+  font-size: .78rem; font-weight: 600; color: #22A06B;
+  opacity: 0; transition: opacity .3s; white-space: nowrap;
+  &.visible { opacity: 1; }
+}
+
+/* Banner mascota */
+.banner-mascota {
+  background: #163A2B; color: #fff; padding: 16px 24px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.banner-avatar {
+  width: 52px; height: 52px; border-radius: 12px;
+  background: rgba(255,255,255,.15); display: flex; align-items: center;
+  justify-content: center; font-size: 1.5rem; flex-shrink: 0; overflow: hidden;
+  img { width: 100%; height: 100%; object-fit: cover; }
+}
+.banner-pet-name { font-size: 1.1rem; font-weight: 800; }
+.banner-details  { font-size: .8rem; opacity: .75; margin-top: 2px; }
+.banner-owner    { font-size: .8rem; opacity: .75; margin-top: 2px; }
+.banner-info     { flex: 1; }
+.motivo-tag {
+  background: rgba(244,184,96,.2); border: 1px solid rgba(244,184,96,.4);
+  color: #f4b860; padding: 5px 12px; border-radius: 20px; font-size: .78rem; font-weight: 600;
+}
+.btn-borrador {
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+  color: #fff; padding: 8px 14px; border-radius: 8px; font-size: .82rem;
+  font-weight: 600; cursor: pointer; font-family: 'Manrope', sans-serif;
+  &:hover { background: rgba(255,255,255,.18); }
+}
+
+/* Content */
+.content-area {
+  padding: 24px 28px 100px;
+  display: flex; flex-direction: column; gap: 20px;
+  max-width: 900px; width: 100%; margin: 0 auto;
+}
+
+/* Secciones */
+.seccion-card {
+  background: #fff; border-radius: 16px; padding: 24px;
+  box-shadow: 0 2px 12px rgba(18,38,30,.05); border: 1px solid #E8EFE9;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.seccion-title {
+  font-size: 1rem; font-weight: 800; color: #163A2B;
+  padding-bottom: 12px; border-bottom: 1px solid #F0F5F2;
+}
+
+/* Forms */
+.form-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group.full-width { grid-column: 1 / -1; }
+label { font-size: .8rem; font-weight: 700; color: #5F7F71; }
+.required { color: #e53935; }
+.optional  { font-weight: 400; color: #9AAFA6; }
+.char-hint { font-weight: 400; color: #9AAFA6; font-size: .72rem; }
+
+.form-input, .form-textarea, .form-select {
+  padding: 10px 14px; border: 1.5px solid #DCEAE2; border-radius: 9px;
+  font-size: .875rem; color: #163A2B; background: #FAFCFB;
+  font-family: 'Manrope', sans-serif; transition: border-color .15s;
+  &:focus { outline: none; border-color: #22A06B; box-shadow: 0 0 0 3px rgba(34,160,107,.1); }
+  &::placeholder { color: #9AAFA6; }
+}
+.form-textarea { resize: vertical; min-height: 80px; }
+
+/* Medicamentos */
+.medicamentos-list { display: flex; flex-direction: column; gap: 12px; }
+
+.medicamento-item {
+  display: flex; align-items: flex-end; gap: 10px;
+  background: #F8FBF9; border-radius: 10px; padding: 12px;
+  border: 1px solid #E8EFE9;
+}
+
+.med-fields {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.5fr;
+  gap: 10px;
+  align-items: end;
+  @media (max-width: 700px) { grid-template-columns: 1fr 1fr; }
+}
+.btn-eliminar {
+  background: #FEECEC; border: 1px solid #FFCDD2; color: #b03030;
+  width: 34px; height: 34px; border-radius: 8px; cursor: pointer;
+  font-size: .8rem; flex-shrink: 0; display: flex; align-items: center;
+  justify-content: center; align-self: flex-end; margin-bottom: 0;
+  &:hover { background: #FFCDD2; }
+}
+
+/* Date field estilizado */
+.date-field {
+  cursor: pointer;
+  color-scheme: light;
+
+  &::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    filter: invert(40%) sepia(60%) saturate(400%) hue-rotate(100deg);
+    width: 18px;
+    height: 18px;
+  }
+}
+.btn-agregar {
+  background: #EAF5EE; border: 1.5px dashed #C8E6D4; color: #145C42;
+  padding: 10px; border-radius: 10px; font-size: .85rem; font-weight: 700;
+  cursor: pointer; font-family: 'Manrope', sans-serif; width: 100%;
+  &:hover { background: #D4EDE0; }
+}
+
+/* Error */
+.error-card {
+  background: #FFF3F3; border: 1px solid #FFCDD2; border-radius: 12px;
+  padding: 14px 18px; color: #b03030; font-size: .875rem;
+}
+
+/* Barra inferior */
+.bottom-bar {
+  position: fixed; bottom: 0; left: 260px; right: 80px;
+  background: #fff; border-top: 1px solid #E7EFEA;
+  padding: 14px 28px; display: flex; gap: 12px; justify-content: flex-end;
+  box-shadow: 0 -4px 16px rgba(18,38,30,.06); z-index: 10;
+}
+.btn-borrador-bottom {
+  background: #EAF5EE; border: 1.5px solid #C8E6D4; color: #145C42;
+  padding: 11px 20px; border-radius: 10px; font-size: .875rem; font-weight: 700;
+  cursor: pointer; font-family: 'Manrope', sans-serif;
+  &:hover:not(:disabled) { background: #D4EDE0; }
+  &:disabled { opacity: .5; cursor: not-allowed; }
+}
+.btn-cerrar {
+  background: #22A06B; color: #fff; border: none;
+  padding: 11px 24px; border-radius: 10px; font-size: .875rem; font-weight: 700;
+  cursor: pointer; font-family: 'Manrope', sans-serif;
+  &:hover:not(:disabled) { background: #1b7f56; }
+  &:disabled { opacity: .6; cursor: not-allowed; }
+}

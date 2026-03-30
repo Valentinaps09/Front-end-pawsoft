@@ -1,0 +1,182 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content" *ngIf="atencion">
+
+    <!-- TOPBAR FIJA -->
+    <div class="topbar">
+      <button class="btn-volver" (click)="volver()">← Volver a citas</button>
+      <div class="topbar-center">
+        <div class="topbar-title">📋 Registrar Atención</div>
+        <div class="topbar-sub">Cita #{{ atencion.appointmentId }} · {{ atencion.appointmentTime }}</div>
+      </div>
+      <div class="guardado-indicator" [class.visible]="estadoGuardado !== 'sin_cambios'">
+        {{ getEstadoGuardadoLabel() }}
+      </div>
+    </div>
+
+    <!-- BANNER MASCOTA -->
+    <div class="banner-mascota">
+      <div class="banner-avatar">
+        <img *ngIf="atencion.petPhotoUrl" [src]="atencion.petPhotoUrl" [alt]="atencion.petName">
+        <span *ngIf="!atencion.petPhotoUrl">{{ getEmojiBySpecies(atencion.petSpecies) }}</span>
+      </div>
+      <div class="banner-info">
+        <div class="banner-pet-name">{{ atencion.petName }}</div>
+        <div class="banner-details">{{ atencion.petSpecies }} · {{ calcularEdad(atencion.petBirthday) }}</div>
+        <div class="banner-owner">👤 {{ atencion.ownerName }}</div>
+      </div>
+      <div class="banner-motivo">
+        <span class="motivo-tag">{{ atencion.reason }}</span>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- ERROR -->
+      <div class="error-card" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
+
+      <!-- SECCIÓN 1: Examen físico -->
+      <div class="seccion-card">
+        <div class="seccion-title">🔬 Examen Físico</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Peso (kg)</label>
+            <input type="text" class="form-input" [(ngModel)]="peso"
+              (ngModelChange)="onFormChange()"
+              placeholder="Ej: 12.5" maxlength="5"
+              pattern="[0-9]{1,3}(\.[0-9]{1,2})?"
+              inputmode="decimal">
+          </div>
+          <div class="form-group">
+            <label>Temperatura (°C)</label>
+            <input type="text" class="form-input" [(ngModel)]="temperatura"
+              (ngModelChange)="onFormChange()"
+              placeholder="Ej: 38.5" maxlength="4"
+              pattern="[0-9]{2}(\.[0-9])?"
+              inputmode="decimal">
+          </div>
+          <div class="form-group">
+            <label>Frecuencia cardíaca (lpm)</label>
+            <input type="text" class="form-input" [(ngModel)]="frecuenciaCardiaca"
+              (ngModelChange)="onFormChange()"
+              placeholder="Ej: 80" maxlength="3"
+              pattern="[0-9]{1,3}"
+              inputmode="numeric">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Observaciones generales <span class="char-hint">máx. 500 caracteres</span></label>
+          <textarea class="form-textarea" [(ngModel)]="observacionesGenerales"
+            (ngModelChange)="onFormChange()" rows="3"
+            placeholder="Observaciones del examen físico..." maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 2: Diagnóstico -->
+      <div class="seccion-card">
+        <div class="seccion-title">🩺 Diagnóstico</div>
+        <div class="form-group">
+          <label>Diagnóstico principal <span class="required">*</span></label>
+          <input type="text" class="form-input" [(ngModel)]="diagnosticoPrincipal"
+            (ngModelChange)="onFormChange()" placeholder="Diagnóstico principal" maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Diagnóstico secundario <span class="optional">(opcional)</span></label>
+          <input type="text" class="form-input" [(ngModel)]="diagnosticoSecundario"
+            (ngModelChange)="onFormChange()" placeholder="Diagnóstico secundario" maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Notas clínicas <span class="char-hint">máx. 500 caracteres</span></label>
+          <textarea class="form-textarea" [(ngModel)]="notasClinicas"
+            (ngModelChange)="onFormChange()" rows="3"
+            placeholder="Notas adicionales..." maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 3: Tratamiento y medicamentos -->
+      <div class="seccion-card">
+        <div class="seccion-title">💊 Tratamiento y Medicamentos</div>
+
+        <div class="medicamentos-list">
+          <div class="medicamento-item" *ngFor="let med of medicamentos; let i = index">
+            <div class="med-fields">
+              <!-- Nombre -->
+              <div class="form-group">
+                <label>Medicamento</label>
+                <select class="form-select" [(ngModel)]="med.nombre" (ngModelChange)="onFormChange()">
+                  <option value="">Seleccionar...</option>
+                  <option *ngFor="let m of MEDICAMENTOS_CATALOGO" [value]="m">{{ m }}</option>
+                </select>
+              </div>
+              <!-- Dosis: valor + unidad en la misma fila -->
+              <div class="form-group">
+                <label>Dosis</label>
+                <input type="text" class="form-input" [(ngModel)]="med.dosisValor"
+                  (ngModelChange)="onFormChange()" placeholder="Ej: 25" maxlength="4"
+                  inputmode="numeric">
+              </div>
+              <div class="form-group">
+                <label>Unidad</label>
+                <select class="form-select" [(ngModel)]="med.dosisUnidad" (ngModelChange)="onFormChange()">
+                  <option *ngFor="let u of UNIDADES_DOSIS" [value]="u">{{ u }}</option>
+                </select>
+              </div>
+              <!-- Vía -->
+              <div class="form-group">
+                <label>Vía</label>
+                <select class="form-select" [(ngModel)]="med.via" (ngModelChange)="onFormChange()">
+                  <option value="">Seleccionar...</option>
+                  <option *ngFor="let v of VIAS_ADMINISTRACION" [value]="v">{{ v }}</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn-eliminar" (click)="eliminarMedicamento(i)" title="Eliminar">✕</button>
+          </div>
+        </div>
+
+        <button class="btn-agregar" (click)="agregarMedicamento()">＋ Agregar medicamento</button>
+
+        <div class="form-group" style="margin-top: 16px;">
+          <label>Indicaciones para el propietario <span class="char-hint">máx. 500 caracteres</span></label>
+          <textarea class="form-textarea" [(ngModel)]="indicaciones"
+            (ngModelChange)="onFormChange()" rows="3"
+            placeholder="Instrucciones de cuidado en casa..." maxlength="500"></textarea>
+        </div>
+      </div>
+
+      <!-- SECCIÓN 4: Próximo control -->
+      <div class="seccion-card">
+        <div class="seccion-title">📅 Próximo Control</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Fecha del próximo control</label>
+            <input type="date" class="form-input date-field"
+              [(ngModel)]="proximoControlFecha"
+              (ngModelChange)="onFormChange()"
+              [min]="minFechaControl"
+              onkeydown="return false">
+          </div>
+          <div class="form-group">
+            <label>Motivo</label>
+            <input type="text" class="form-input" [(ngModel)]="proximoControlMotivo"
+              (ngModelChange)="onFormChange()" placeholder="Control de seguimiento..." maxlength="150">
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BARRA INFERIOR FIJA -->
+    <div class="bottom-bar">
+      <button class="btn-borrador-bottom" (click)="guardarBorrador()" [disabled]="isSubmitting">
+        💾 Guardar borrador
+      </button>
+      <button class="btn-cerrar" (click)="cerrarAtencion()" [disabled]="isSubmitting">
+        <span *ngIf="!isSubmitting">✓ Cerrar atención</span>
+        <span *ngIf="isSubmitting">Guardando...</span>
+      </button>
+    </div>
+
+  </main>
+</div>
