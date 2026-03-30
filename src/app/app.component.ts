@@ -5,6 +5,7 @@ import { filter } from 'rxjs/operators';
 import { Subscription } from 'rxjs';
 import { InactivityService } from './services/inactivity.service';
 import { AccessibilityWidgetComponent } from './share/components/accessibility-widget/accessibility-widget.component';
+import { ChatbotFabComponent } from './component/chatbot-fab/chatbot-fab.component';
 
 /**
  * Componente raíz de la aplicación Pawsoft.
@@ -22,7 +23,7 @@ import { AccessibilityWidgetComponent } from './share/components/accessibility-w
   selector: 'app-root',
   templateUrl: 'app.component.html',
   standalone: true,
-  imports: [IonApp, IonRouterOutlet, AccessibilityWidgetComponent],
+  imports: [IonApp, IonRouterOutlet, AccessibilityWidgetComponent, ChatbotFabComponent],
 })
 export class AppComponent implements OnInit, OnDestroy {
 
