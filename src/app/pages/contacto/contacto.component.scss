@@ -63,6 +63,26 @@
   max-width: 800px;
   margin: 0 auto;
   width: 100%;
+
+  /* Scrollbar personalizado */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(26, 122, 76, 0.05);
+    border-radius: 10px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.2);
+    border-radius: 10px;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.35);
+    }
+  }
 }
 
 /* ══ Contact Card ══ */
