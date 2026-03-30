@@ -24,6 +24,7 @@ interface AppointmentView {
   id: string; petName: string; petEmoji: string; petPhotoUrl?: string;
   date: string; time: string; reason: string; vetName: string;
   status: 'upcoming' | 'completed' | 'cancelled' | 'confirmed' | 'no_show'; canCancel: boolean;
+  rawDate: string; rawTime: string; sortTimestamp: number; isPast: boolean;
 }
 
 /**
@@ -83,6 +84,8 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
 
   /* ── Mis citas ── */
   myAppointments: AppointmentView[] = [];
+  allAppointments: AppointmentView[] = [];
+  showingAllAppointments = false;
 
   /* ── Mis pagos ── */
   myPayments: PaymentResponse[] = [];
@@ -179,7 +182,9 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       next: (data: AppointmentResponse[]) => {
         const now = new Date();
         const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
-        this.myAppointments = data
+        
+        // Filtrar y mapear las citas
+        this.allAppointments = data
           .filter(a => {
             const status = (a.status ?? '').toLowerCase();
             if (status === 'cancelled') return false;
@@ -193,6 +198,11 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
             const aptDate   = new Date(a.date ?? a.dateFormatted ?? '');
             aptDate.setHours(0, 0, 0, 0);
             const tomorrow  = new Date(now); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            const rawDateStr = a.date ?? a.dateFormatted ?? '';
+            const rawTimeStr = a.time ?? '00:00:00';
+            const sortTimestamp = new Date(`${rawDateStr}T${rawTimeStr}`).getTime();
+            
             return {
               id:          String(a.id),
               petName:     a.petName     ?? 'Mi mascota',
@@ -204,11 +214,44 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
               vetName:     a.vetName     ?? 'Veterinario',
               status:      rawStatus,
               canCancel:   rawStatus === 'upcoming' && aptDate >= tomorrow,
+              rawDate:     rawDateStr,
+              rawTime:     rawTimeStr,
+              sortTimestamp: sortTimestamp,
+              isPast:      sortTimestamp < now.getTime()
             };
           });
+
+        // Ordenar: primero las futuras (más cercanas primero), luego las pasadas (más recientes primero)
+        this.allAppointments.sort((a, b) => {
+          // Si una es pasada y la otra futura, la futura va primero
+          if (a.isPast && !b.isPast) return 1;
+          if (!a.isPast && b.isPast) return -1;
+          
+          // Si ambas son futuras, la más cercana va primero (orden ascendente)
+          if (!a.isPast && !b.isPast) return a.sortTimestamp - b.sortTimestamp;
+          
+          // Si ambas son pasadas, la más reciente va primero (orden descendente)
+          return b.sortTimestamp - a.sortTimestamp;
+        });
+
+        // Mostrar solo las primeras 5 o todas según el estado
+        this.updateDisplayedAppointments();
       },
       error: () => {}
     });
+  }
+
+  updateDisplayedAppointments(): void {
+    if (this.showingAllAppointments) {
+      this.myAppointments = [...this.allAppointments];
+    } else {
+      this.myAppointments = this.allAppointments.slice(0, 5);
+    }
+  }
+
+  toggleShowAllAppointments(): void {
+    this.showingAllAppointments = !this.showingAllAppointments;
+    this.updateDisplayedAppointments();
   }
 
   /**
@@ -383,12 +426,36 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       reason: this.appointmentReason,
     };
     // Optimistic UI — agrega la cita visualmente antes de confirmar el backend
-    this.myAppointments.unshift({
-      id: Date.now().toString(), petName: this.selectedPet.name, petEmoji: this.selectedPet.emoji,
-      date: this.selectedDateObj.toLocaleDateString(), time: this.selectedTimeSlot.time,
-      reason: this.getReasonLabel(this.appointmentReason), vetName: this.selectedVet.name,
-      status: 'upcoming', canCancel: true,
+    const newTimestamp = new Date(`${year}-${month}-${day}T${this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time}`).getTime();
+    const now = new Date();
+    
+    const newAppointment: AppointmentView = {
+      id: Date.now().toString(), 
+      petName: this.selectedPet.name, 
+      petEmoji: this.selectedPet.emoji,
+      date: this.selectedDateObj.toLocaleDateString(), 
+      time: this.selectedTimeSlot.time,
+      reason: this.getReasonLabel(this.appointmentReason), 
+      vetName: this.selectedVet.name,
+      status: 'upcoming', 
+      canCancel: true,
+      rawDate: `${year}-${month}-${day}`,
+      rawTime: this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
+      sortTimestamp: newTimestamp,
+      isPast: newTimestamp < now.getTime()
+    };
+    
+    this.allAppointments.push(newAppointment);
+    
+    // Re-ordenar con la misma lógica
+    this.allAppointments.sort((a, b) => {
+      if (a.isPast && !b.isPast) return 1;
+      if (!a.isPast && b.isPast) return -1;
+      if (!a.isPast && !b.isPast) return a.sortTimestamp - b.sortTimestamp;
+      return b.sortTimestamp - a.sortTimestamp;
     });
+    
+    this.updateDisplayedAppointments();
     this.appointmentService.createAppointment(payload).subscribe({
       next:  () => { this.loadMyAppointments(); },
       error: (err) => { console.warn('Backend falló al crear cita', err); },

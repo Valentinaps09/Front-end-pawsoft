@@ -60,7 +60,7 @@
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   padding: 24px;
-  max-width: 1300px;
+  max-width: 1500px;
   width: 100%;
   margin: 0 auto;
 }
@@ -81,8 +81,9 @@
 
 .pets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 400px));
+  gap: 20px;
+  justify-content: start;
 }
 
 .pet-card {

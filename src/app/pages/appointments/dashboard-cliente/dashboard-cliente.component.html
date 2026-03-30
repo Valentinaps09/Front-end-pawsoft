@@ -18,7 +18,7 @@
           <!-- MIS CITAS -->
           <div class="section-card">
             <div class="section-header">
-              <h3>📅 Mis Próximas Citas</h3>
+              <h3>📅 Mis Citas</h3>
             </div>
 
             <div class="appointments-list" *ngIf="myAppointments.length > 0">
@@ -39,17 +39,27 @@
                 </div>
                 <div class="appt-actions">
                   <button class="btn-cancel-small"
-                          *ngIf="appt.canCancel && appt.status === 'upcoming'"
+                          *ngIf="appt.canCancel && appt.status === 'upcoming' && !appt.isPast"
                           (click)="openCancelModal(appt)">Cancelar</button>
                   <div class="appt-cancelled-label" *ngIf="appt.status === 'cancelled'">Cancelada</div>
+                  <div class="appt-status-badge pending-status" *ngIf="appt.isPast && appt.status === 'upcoming'">
+                    <span>Pendiente</span>
+                  </div>
                   <div class="appt-status-badge" [ngClass]="appt.status"
                        *ngIf="appt.status !== 'cancelled' && appt.status !== 'upcoming'">
-                    <span *ngIf="appt.status === 'completed'">✅ Completada</span>
-                    <span *ngIf="appt.status === 'confirmed'">✔ Confirmada</span>
-                    <span *ngIf="appt.status === 'no_show'">⚠️ No asistió</span>
+                    <span *ngIf="appt.status === 'completed'">Completada</span>
+                    <span *ngIf="appt.status === 'confirmed'">Confirmada</span>
+                    <span *ngIf="appt.status === 'no_show'">No asistió</span>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div class="appointments-footer" *ngIf="allAppointments.length > 5">
+              <button class="btn-toggle-all" (click)="toggleShowAllAppointments()">
+                <span *ngIf="!showingAllAppointments">Ver todas ({{ allAppointments.length }})</span>
+                <span *ngIf="showingAllAppointments">Ver menos</span>
+              </button>
             </div>
 
             <div class="no-appointments" *ngIf="myAppointments.length === 0">
@@ -191,13 +201,16 @@
               <div class="spinner"></div>
               <p>Cargando horarios...</p>
             </div>
-            <div class="time-slots-grid" *ngIf="!loadingSlots">
+            <div class="time-slots-grid" *ngIf="!loadingSlots && timeSlots.length > 0">
               <button class="time-slot" *ngFor="let slot of timeSlots"
                       [class.selected]="slot.status === 'selected'"
                       [disabled]="slot.status === 'taken'"
                       (click)="selectTimeSlot(slot)">
                 {{ slot.time }}
               </button>
+            </div>
+            <div class="no-appointments" *ngIf="!loadingSlots && timeSlots.length === 0">
+              <p>No hay horarios disponibles para esta fecha</p>
             </div>
           </div>
 
