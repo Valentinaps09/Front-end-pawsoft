@@ -46,6 +46,17 @@ export interface RecepAppointmentResponse {
   notes: string | null;
 }
 
+/**
+ * Servicio para gestión de citas veterinarias.
+ * 
+ * Funcionalidad:
+ * - Agendamiento de citas por clientes
+ * - Consulta de horarios disponibles
+ * - Gestión de citas por recepcionista (crear, editar, cancelar)
+ * - Visualización de citas por veterinario
+ * - Inicio y cancelación de atención médica
+ * - Validación de disponibilidad de veterinarios
+ */
 @Injectable({ providedIn: 'root' })
 export class AppointmentService {
 
