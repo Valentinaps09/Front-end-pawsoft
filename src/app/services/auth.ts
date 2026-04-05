@@ -96,6 +96,20 @@ export class AuthService {
     );
   }
 
+  // ── Verificación de email ───────────────────────────────────────────────────
+
+  /**
+   * Verifica el email del usuario usando el token recibido por correo.
+   * Se usa desde la página de verificación cuando el usuario hace clic en el link.
+   *
+   * @param token token de verificación recibido en el email
+   */
+  verifyEmail(token: string): Observable<unknown> {
+    return this.http.get(
+      `${this.apiUrl}/auth/verify-email?token=${encodeURIComponent(token)}`,
+    );
+  }
+
   // ── Recuperación de contraseña ──────────────────────────────────────────────
 
   requestPasswordReset(email: string): Observable<unknown> {

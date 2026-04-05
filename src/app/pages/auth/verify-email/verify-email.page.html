@@ -1,0 +1,63 @@
+<ion-content class="verify-content" [fullscreen]="true">
+
+  <div class="center-container">
+    <div class="verify-wrapper">
+
+      <!-- Logo -->
+      <div class="logo-section">
+        <h1>Paw<span>Soft</span></h1>
+        <p>Sistema de Gestión Veterinaria</p>
+      </div>
+
+      <!-- Card: Verificando -->
+      <div class="verify-card" *ngIf="verificando">
+        <div class="card-icon">
+          <ion-spinner name="crescent"></ion-spinner>
+        </div>
+        <h2>Verificando tu correo...</h2>
+        <p class="card-desc">
+          Por favor espera mientras verificamos tu cuenta.
+        </p>
+      </div>
+
+      <!-- Card: Verificación exitosa -->
+      <div class="verify-card success-card" *ngIf="!verificando && verificado">
+        <div class="card-icon success-icon">
+          <ion-icon name="checkmark-circle-outline"></ion-icon>
+        </div>
+
+        <h2>¡Correo verificado!</h2>
+        <p class="card-desc">
+          Tu cuenta ha sido verificada exitosamente. Ya puedes iniciar sesión
+          y comenzar a usar PawSoft.
+        </p>
+
+        <ion-button expand="block" class="main-btn" (click)="irLogin()">
+          Ir al inicio de sesión
+        </ion-button>
+
+        <button class="link-btn" (click)="cerrarVentana()">
+          Cerrar esta ventana
+        </button>
+      </div>
+
+      <!-- Card: Error -->
+      <div class="verify-card error-card" *ngIf="!verificando && !verificado">
+        <div class="card-icon error-icon">
+          <ion-icon name="alert-circle-outline"></ion-icon>
+        </div>
+
+        <h2>Error de verificación</h2>
+        <p class="card-desc">
+          {{ mensajeError }}
+        </p>
+
+        <ion-button expand="block" class="main-btn" (click)="irLogin()">
+          Ir al inicio de sesión
+        </ion-button>
+      </div>
+
+    </div>
+  </div>
+
+</ion-content>

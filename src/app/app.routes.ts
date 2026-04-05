@@ -30,6 +30,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./pages/auth/reset-password/reset-password.page').then(m => m.ResetPasswordPage),
   },
+  {
+    path: 'auth/verify-email',
+    loadComponent: () =>
+      import('./pages/auth/verify-email/verify-email.page').then(m => m.VerifyEmailPage),
+  },
 
   {
     path: 'change-password-first',
