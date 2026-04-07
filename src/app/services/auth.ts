@@ -106,8 +106,7 @@ export class AuthService {
    */
   verifyEmail(token: string): Observable<unknown> {
     return this.http.get(
-      `${this.apiUrl}/auth/verify-email?token=${encodeURIComponent(token)}`,
-      { responseType: 'text' }
+      `${this.apiUrl}/auth/verify-email?token=${encodeURIComponent(token)}`
     );
   }
 
