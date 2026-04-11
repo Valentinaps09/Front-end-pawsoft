@@ -86,9 +86,10 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   confirmingAppointment = false;
 
   /* ── Mis citas ── */
-  myAppointments: AppointmentView[] = [];
-  allAppointments: AppointmentView[] = [];
-  showingAllAppointments = false;
+  upcomingAppointments: AppointmentView[] = []; // Citas de hoy y futuras
+  pastAppointments: AppointmentView[] = [];     // Historial (citas pasadas)
+  showingAllUpcoming = false;
+  showingAllPast = false;
 
   /* ── Mis pagos ── */
   myPayments: PaymentResponse[] = [];
@@ -185,63 +186,46 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
     this.appointmentService.getMyAppointments().subscribe({
       next: (data: AppointmentResponse[]) => {
         const now = new Date();
-        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+        now.setHours(0, 0, 0, 0); // Inicio del día de hoy
+        
+        const allMapped = data.map(a => {
+          const rawStatus = (a.status ?? 'upcoming').toLowerCase() as AppointmentView['status'];
+          const rawDateStr = a.date ?? a.dateFormatted ?? '';
+          const rawTimeStr = a.time ?? '00:00:00';
+          const aptDate = new Date(rawDateStr);
+          aptDate.setHours(0, 0, 0, 0);
+          const sortTimestamp = new Date(`${rawDateStr}T${rawTimeStr}`).getTime();
+          const isPast = aptDate < now;
 
-        // Solo citas de HOY con estado UPCOMING (pendiente) o CONFIRMED
-        this.allAppointments = data
-          .filter(a => {
-            const status = (a.status ?? '').toLowerCase();
-            const dateStr = a.date ?? a.dateFormatted ?? '';
-            const isToday = dateStr === todayStr;
-            const isActive = status === 'upcoming' || status === 'confirmed';
-            return isToday && isActive;
-          })
-          .map(a => {
-            const rawStatus = (a.status ?? 'upcoming').toLowerCase() as AppointmentView['status'];
-            const aptDate   = new Date(a.date ?? a.dateFormatted ?? '');
-            aptDate.setHours(0, 0, 0, 0);
-            const tomorrow  = new Date(now); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate() + 1);
+          return {
+            id: String(a.id),
+            petName: a.petName ?? 'Mi mascota',
+            petEmoji: a.petEmoji ?? '🐾',
+            petPhotoUrl: a.petPhotoUrl ?? undefined,
+            date: this.formatearFecha(rawDateStr),
+            time: this.formatearHora(rawTimeStr),
+            reason: this.getReasonLabel(a.reason),
+            vetName: a.vetName ?? 'Veterinario',
+            status: rawStatus,
+            canCancel: rawStatus === 'upcoming' && !isPast,
+            rawDate: rawDateStr,
+            rawTime: rawTimeStr,
+            sortTimestamp: sortTimestamp,
+            isPast: isPast
+          };
+        });
 
-            const rawDateStr = a.date ?? a.dateFormatted ?? '';
-            const rawTimeStr = a.time ?? '00:00:00';
-            const sortTimestamp = new Date(`${rawDateStr}T${rawTimeStr}`).getTime();
+        // Separar en próximas (hoy y futuras) y pasadas
+        this.upcomingAppointments = allMapped
+          .filter(a => !a.isPast)
+          .sort((a, b) => a.sortTimestamp - b.sortTimestamp);
 
-            return {
-              id:          String(a.id),
-              petName:     a.petName     ?? 'Mi mascota',
-              petEmoji:    a.petEmoji    ?? '🐾',
-              petPhotoUrl: a.petPhotoUrl ?? undefined,
-              date:        this.formatearFecha(a.dateFormatted ?? a.date ?? ''),
-              time:        this.formatearHora(a.time ?? ''),
-              reason:      this.getReasonLabel(a.reason),
-              vetName:     a.vetName     ?? 'Veterinario',
-              status:      rawStatus,
-              canCancel:   rawStatus === 'upcoming' && aptDate >= tomorrow,
-              rawDate:     rawDateStr,
-              rawTime:     rawTimeStr,
-              sortTimestamp: sortTimestamp,
-              isPast:      sortTimestamp < now.getTime()
-            };
-          });
-
-        this.allAppointments.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
-        this.updateDisplayedAppointments();
+        this.pastAppointments = allMapped
+          .filter(a => a.isPast)
+          .sort((a, b) => b.sortTimestamp - a.sortTimestamp); // Más recientes primero
       },
       error: () => {}
     });
-  }
-
-  updateDisplayedAppointments(): void {
-    if (this.showingAllAppointments) {
-      this.myAppointments = [...this.allAppointments];
-    } else {
-      this.myAppointments = this.allAppointments.slice(0, 5);
-    }
-  }
-
-  toggleShowAllAppointments(): void {
-    this.showingAllAppointments = !this.showingAllAppointments;
-    this.updateDisplayedAppointments();
   }
 
   /**
@@ -418,6 +402,9 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
     // Optimistic UI — agrega la cita visualmente antes de confirmar el backend
     const newTimestamp = new Date(`${year}-${month}-${day}T${this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time}`).getTime();
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    const aptDate = new Date(`${year}-${month}-${day}`);
+    aptDate.setHours(0, 0, 0, 0);
     
     const newAppointment: AppointmentView = {
       id: Date.now().toString(), 
@@ -432,20 +419,11 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       rawDate: `${year}-${month}-${day}`,
       rawTime: this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
       sortTimestamp: newTimestamp,
-      isPast: newTimestamp < now.getTime()
+      isPast: aptDate < now
     };
     
-    this.allAppointments.push(newAppointment);
-    
-    // Re-ordenar con la misma lógica
-    this.allAppointments.sort((a, b) => {
-      if (a.isPast && !b.isPast) return 1;
-      if (!a.isPast && b.isPast) return -1;
-      if (!a.isPast && !b.isPast) return a.sortTimestamp - b.sortTimestamp;
-      return b.sortTimestamp - a.sortTimestamp;
-    });
-    
-    this.updateDisplayedAppointments();
+    this.upcomingAppointments.push(newAppointment);
+    this.upcomingAppointments.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
     this.appointmentService.createAppointment(payload).subscribe({
       next:  () => { this.loadMyAppointments(); },
       error: (err) => { console.warn('Backend falló al crear cita', err); },

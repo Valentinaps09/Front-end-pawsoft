@@ -104,7 +104,6 @@ export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
       case 'ROLE_CLIENTE':
         this.menuItems = [
           { icon: '📅', label: 'Mis Citas',         route: '/dashboard-cliente' },
-          { icon: '📋', label: 'Historial de Citas', route: '/mis-citas' },
           { icon: '🐾', label: 'Mis Mascotas',       route: '/pet' },
           { icon: '📞', label: 'Contacto',           route: '/contacto' },
           { icon: '👤', label: 'Mi Perfil',          route: '/perfil-cliente' },

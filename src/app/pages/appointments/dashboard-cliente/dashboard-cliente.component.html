@@ -15,14 +15,15 @@
         <!-- COLUMNA IZQUIERDA: Mis citas + Mis pagos -->
         <div class="left-column">
 
-          <!-- MIS CITAS -->
+          <!-- MIS CITAS PRÓXIMAS -->
           <div class="section-card">
             <div class="section-header">
-              <h3>📅 Citas del Día</h3>
+              <h3>📅 Mis Citas</h3>
+              <p class="section-subtitle">Citas de hoy y futuras</p>
             </div>
 
-            <div class="appointments-list" *ngIf="myAppointments.length > 0">
-              <div class="appointment-item" *ngFor="let appt of myAppointments"
+            <div class="appointments-list" *ngIf="upcomingAppointments.length > 0">
+              <div class="appointment-item" *ngFor="let appt of upcomingAppointments.slice(0, showingAllUpcoming ? upcomingAppointments.length : 5)"
                    [class.cancelled]="appt.status === 'cancelled'">
                 <div class="appt-icon">
                   <img *ngIf="appt.petPhotoUrl"
@@ -39,10 +40,57 @@
                 </div>
                 <div class="appt-actions">
                   <button class="btn-cancel-small"
-                          *ngIf="appt.canCancel && appt.status === 'upcoming' && !appt.isPast"
+                          *ngIf="appt.canCancel && appt.status === 'upcoming'"
                           (click)="openCancelModal(appt)">Cancelar</button>
                   <div class="appt-cancelled-label" *ngIf="appt.status === 'cancelled'">Cancelada</div>
-                  <div class="appt-status-badge pending-status" *ngIf="appt.isPast && appt.status === 'upcoming'">
+                  <div class="appt-status-badge" [ngClass]="appt.status"
+                       *ngIf="appt.status !== 'cancelled' && appt.status !== 'upcoming'">
+                    <span *ngIf="appt.status === 'completed'">Completada</span>
+                    <span *ngIf="appt.status === 'confirmed'">Confirmada</span>
+                    <span *ngIf="appt.status === 'no_show'">No asistió</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="appointments-footer" *ngIf="upcomingAppointments.length > 5">
+              <button class="btn-toggle-all" (click)="showingAllUpcoming = !showingAllUpcoming">
+                <span *ngIf="!showingAllUpcoming">Ver todas ({{ upcomingAppointments.length }})</span>
+                <span *ngIf="showingAllUpcoming">Ver menos</span>
+              </button>
+            </div>
+
+            <div class="no-appointments" *ngIf="upcomingAppointments.length === 0">
+              <p>No tienes citas próximas</p>
+            </div>
+          </div>
+
+          <!-- HISTORIAL DE CITAS PASADAS -->
+          <div class="section-card">
+            <div class="section-header">
+              <h3>📋 Historial de Citas</h3>
+              <p class="section-subtitle">Todas tus citas pasadas</p>
+            </div>
+
+            <div class="appointments-list" *ngIf="pastAppointments.length > 0">
+              <div class="appointment-item" *ngFor="let appt of pastAppointments.slice(0, showingAllPast ? pastAppointments.length : 5)"
+                   [class.cancelled]="appt.status === 'cancelled'">
+                <div class="appt-icon">
+                  <img *ngIf="appt.petPhotoUrl"
+                       [src]="appt.petPhotoUrl"
+                       [alt]="appt.petName"
+                       style="width:100%;height:100%;object-fit:cover;border-radius:10px;">
+                  <span *ngIf="!appt.petPhotoUrl">{{ appt.petEmoji }}</span>
+                </div>
+                <div class="appt-info">
+                  <div class="appt-pet-name">{{ appt.petName }}</div>
+                  <div class="appt-datetime">{{ appt.date }} · {{ appt.time }}</div>
+                  <div class="appt-reason">{{ appt.reason }}</div>
+                  <div class="appt-vet" *ngIf="appt.vetName">🩺 {{ appt.vetName }}</div>
+                </div>
+                <div class="appt-actions">
+                  <div class="appt-cancelled-label" *ngIf="appt.status === 'cancelled'">Cancelada</div>
+                  <div class="appt-status-badge pending-status" *ngIf="appt.status === 'upcoming'">
                     <span>Pendiente</span>
                   </div>
                   <div class="appt-status-badge" [ngClass]="appt.status"
@@ -95,15 +143,15 @@
               </div>
             </div>
 
-            <div class="appointments-footer" *ngIf="allAppointments.length > 5">
-              <button class="btn-toggle-all" (click)="toggleShowAllAppointments()">
-                <span *ngIf="!showingAllAppointments">Ver todas ({{ allAppointments.length }})</span>
-                <span *ngIf="showingAllAppointments">Ver menos</span>
+            <div class="appointments-footer" *ngIf="pastAppointments.length > 5">
+              <button class="btn-toggle-all" (click)="showingAllPast = !showingAllPast">
+                <span *ngIf="!showingAllPast">Ver todas ({{ pastAppointments.length }})</span>
+                <span *ngIf="showingAllPast">Ver menos</span>
               </button>
             </div>
 
-            <div class="no-appointments" *ngIf="myAppointments.length === 0">
-              <p>No tienes citas próximas</p>
+            <div class="no-appointments" *ngIf="pastAppointments.length === 0">
+              <p>No tienes citas pasadas</p>
             </div>
           </div>
 
