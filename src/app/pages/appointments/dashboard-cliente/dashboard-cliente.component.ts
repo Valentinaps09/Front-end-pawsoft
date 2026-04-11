@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { AppointmentService, AppointmentRequest, AppointmentResponse } from 'src/app/services/appointment.service';
@@ -24,7 +24,7 @@ interface TimeSlot { time: string; status: 'available' | 'taken' | 'selected'; }
 interface AppointmentView {
   id: string; petName: string; petEmoji: string; petPhotoUrl?: string;
   date: string; time: string; reason: string; vetName: string;
-  status: 'upcoming' | 'completed' | 'cancelled' | 'confirmed' | 'no_show' | 'in_progress'; canCancel: boolean;
+  status: 'upcoming' | 'completed' | 'cancelled' | 'confirmed' | 'no_show'; canCancel: boolean;
   rawDate: string; rawTime: string; sortTimestamp: number; isPast: boolean;
   medicalRecord?: MedicalRecordResponse;
   showingMedicalRecord?: boolean;
@@ -86,10 +86,9 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   confirmingAppointment = false;
 
   /* ── Mis citas ── */
-  upcomingAppointments: AppointmentView[] = []; // Citas de hoy y futuras
-  pastAppointments: AppointmentView[] = [];     // Historial (citas pasadas)
-  showingAllUpcoming = false;
-  showingAllPast = false;
+  myAppointments: AppointmentView[] = [];
+  allAppointments: AppointmentView[] = [];
+  showingAllAppointments = false;
 
   /* ── Mis pagos ── */
   myPayments: PaymentResponse[] = [];
@@ -111,6 +110,7 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   private toastTimer: any;
 
   constructor(
+    private readonly fb: FormBuilder,
     readonly router: Router,
     private readonly appointmentService: AppointmentService,
     private readonly petService: PetService,
@@ -185,48 +185,63 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
     this.appointmentService.getMyAppointments().subscribe({
       next: (data: AppointmentResponse[]) => {
         const now = new Date();
-        now.setHours(0, 0, 0, 0); // Inicio del día de hoy
-        
-        const allMapped = data.map(a => {
-          const rawStatus = (a.status ?? 'upcoming').toLowerCase() as AppointmentView['status'];
-          const rawDateStr = a.date ?? a.dateFormatted ?? '';
-          const rawTimeStr = a.time ?? '00:00:00';
-          const aptDate = new Date(rawDateStr);
-          aptDate.setHours(0, 0, 0, 0);
-          const sortTimestamp = new Date(`${rawDateStr}T${rawTimeStr}`).getTime();
-          const isPast = aptDate < now;
+        const todayStr = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
 
-          return {
-            id: String(a.id),
-            petName: a.petName ?? 'Mi mascota',
-            petEmoji: a.petEmoji ?? '🐾',
-            petPhotoUrl: a.petPhotoUrl ?? undefined,
-            date: this.formatearFecha(rawDateStr),
-            time: this.formatearHora(rawTimeStr),
-            reason: this.getReasonLabel(a.reason),
-            vetName: a.vetName ?? 'Veterinario',
-            status: rawStatus,
-            canCancel: rawStatus === 'upcoming' && !isPast,
-            rawDate: rawDateStr,
-            rawTime: rawTimeStr,
-            sortTimestamp: sortTimestamp,
-            isPast: isPast
-          };
-        });
+        // Solo citas de HOY con estado UPCOMING (pendiente) o CONFIRMED
+        this.allAppointments = data
+          .filter(a => {
+            const status = (a.status ?? '').toLowerCase();
+            const dateStr = a.date ?? a.dateFormatted ?? '';
+            const isToday = dateStr === todayStr;
+            const isActive = status === 'upcoming' || status === 'confirmed';
+            return isToday && isActive;
+          })
+          .map(a => {
+            const rawStatus = (a.status ?? 'upcoming').toLowerCase() as AppointmentView['status'];
+            const aptDate   = new Date(a.date ?? a.dateFormatted ?? '');
+            aptDate.setHours(0, 0, 0, 0);
+            const tomorrow  = new Date(now); tomorrow.setHours(0,0,0,0); tomorrow.setDate(tomorrow.getDate() + 1);
 
-        // Separar en próximas (hoy y futuras, o en progreso) y pasadas
-        // Las citas IN_PROGRESS deben aparecer en "Mis Citas" aunque sean del pasado
-        this.upcomingAppointments = allMapped
-          .filter(a => !a.isPast || a.status === 'in_progress' || a.status === 'confirmed')
-          .sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+            const rawDateStr = a.date ?? a.dateFormatted ?? '';
+            const rawTimeStr = a.time ?? '00:00:00';
+            const sortTimestamp = new Date(`${rawDateStr}T${rawTimeStr}`).getTime();
 
-        // Historial: solo citas pasadas que estén completadas, canceladas o no_show
-        this.pastAppointments = allMapped
-          .filter(a => a.isPast && a.status !== 'in_progress' && a.status !== 'confirmed' && a.status !== 'upcoming')
-          .sort((a, b) => b.sortTimestamp - a.sortTimestamp); // Más recientes primero
+            return {
+              id:          String(a.id),
+              petName:     a.petName     ?? 'Mi mascota',
+              petEmoji:    a.petEmoji    ?? '🐾',
+              petPhotoUrl: a.petPhotoUrl ?? undefined,
+              date:        this.formatearFecha(a.dateFormatted ?? a.date ?? ''),
+              time:        this.formatearHora(a.time ?? ''),
+              reason:      this.getReasonLabel(a.reason),
+              vetName:     a.vetName     ?? 'Veterinario',
+              status:      rawStatus,
+              canCancel:   rawStatus === 'upcoming' && aptDate >= tomorrow,
+              rawDate:     rawDateStr,
+              rawTime:     rawTimeStr,
+              sortTimestamp: sortTimestamp,
+              isPast:      sortTimestamp < now.getTime()
+            };
+          });
+
+        this.allAppointments.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+        this.updateDisplayedAppointments();
       },
       error: () => {}
     });
+  }
+
+  updateDisplayedAppointments(): void {
+    if (this.showingAllAppointments) {
+      this.myAppointments = [...this.allAppointments];
+    } else {
+      this.myAppointments = this.allAppointments.slice(0, 5);
+    }
+  }
+
+  toggleShowAllAppointments(): void {
+    this.showingAllAppointments = !this.showingAllAppointments;
+    this.updateDisplayedAppointments();
   }
 
   /**
@@ -366,8 +381,8 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
             return slotDate > now;
           })
           .map(time => ({
-          time, status: occupied.some(o => o.startsWith(time)) ? 'taken' : 'available'
-        }));
+            time, status: occupied.some(o => o.startsWith(time)) ? 'taken' : 'available'
+          }));
         this.loadingSlots = false;
       },
       error: () => {
@@ -403,28 +418,34 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
     // Optimistic UI — agrega la cita visualmente antes de confirmar el backend
     const newTimestamp = new Date(`${year}-${month}-${day}T${this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time}`).getTime();
     const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const aptDate = new Date(`${year}-${month}-${day}`);
-    aptDate.setHours(0, 0, 0, 0);
-    
+
     const newAppointment: AppointmentView = {
-      id: Date.now().toString(), 
-      petName: this.selectedPet.name, 
+      id: Date.now().toString(),
+      petName: this.selectedPet.name,
       petEmoji: this.selectedPet.emoji,
-      date: this.selectedDateObj.toLocaleDateString(), 
+      date: this.selectedDateObj.toLocaleDateString(),
       time: this.selectedTimeSlot.time,
-      reason: this.getReasonLabel(this.appointmentReason), 
+      reason: this.getReasonLabel(this.appointmentReason),
       vetName: this.selectedVet.name,
-      status: 'upcoming', 
+      status: 'upcoming',
       canCancel: true,
       rawDate: `${year}-${month}-${day}`,
       rawTime: this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
       sortTimestamp: newTimestamp,
-      isPast: aptDate < now
+      isPast: newTimestamp < now.getTime()
     };
-    
-    this.upcomingAppointments.push(newAppointment);
-    this.upcomingAppointments.sort((a, b) => a.sortTimestamp - b.sortTimestamp);
+
+    this.allAppointments.push(newAppointment);
+
+    // Re-ordenar con la misma lógica
+    this.allAppointments.sort((a, b) => {
+      if (a.isPast && !b.isPast) return 1;
+      if (!a.isPast && b.isPast) return -1;
+      if (!a.isPast && !b.isPast) return a.sortTimestamp - b.sortTimestamp;
+      return b.sortTimestamp - a.sortTimestamp;
+    });
+
+    this.updateDisplayedAppointments();
     this.appointmentService.createAppointment(payload).subscribe({
       next:  () => { this.loadMyAppointments(); },
       error: (err) => { console.warn('Backend falló al crear cita', err); },
@@ -490,7 +511,7 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
 
   toggleMedicalRecord(appt: AppointmentView): void {
     if (appt.status !== 'completed') return;
-    
+
     // Si ya está mostrando, solo ocultar
     if (appt.showingMedicalRecord) {
       appt.showingMedicalRecord = false;
