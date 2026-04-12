@@ -9,6 +9,7 @@ import { MedicalRecordService, AtencionActiva } from '../../../services/medical-
 interface MenuItem {
   icon: string;
   label: string;
+  mobileLabel?: string;
   route?: string;
   tab?: string;
   disabled?: boolean;
@@ -103,11 +104,12 @@ export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
     switch (this.userRole) {
       case 'ROLE_CLIENTE':
         this.menuItems = [
-          { icon: '📅', label: 'Mis Citas',         route: '/dashboard-cliente' },
-          { icon: '📋', label: 'Historial de Citas', route: '/mis-citas' },
-          { icon: '🐾', label: 'Mis Mascotas',       route: '/pet' },
+          { icon: '📅', label: 'Citas',         route: '/dashboard-cliente' },
+          { icon: '📋', label: 'Historial', route: '/mis-citas' },
+          { icon: '💳', label: 'Pagos',          route: '/mis-pagos' },
+          { icon: '🐾', label: 'Mascotas',       route: '/pet' },
           { icon: '📞', label: 'Contacto',           route: '/contacto' },
-          { icon: '👤', label: 'Mi Perfil',          route: '/perfil-cliente' },
+          { icon: '👤', label: 'Perfil',          route: '/perfil-cliente' },
         ];
         break;
 

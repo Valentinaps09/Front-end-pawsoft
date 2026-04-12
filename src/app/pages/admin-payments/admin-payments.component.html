@@ -109,7 +109,10 @@
               <td>
                 <div class="cell-name">{{ formatCurrency(p.amount) }}</div>
                 <div class="cell-sub" *ngIf="p.amount !== p.baseAmount">
-                  Base: {{ formatCurrency(p.baseAmount) }}
+                  Sin descuento: {{ formatCurrency(p.baseAmount) }}
+                </div>
+                <div class="cell-sub descuento-motivo" *ngIf="p.amount !== p.baseAmount && p.notes">
+                  📝 {{ p.notes }}
                 </div>
               </td>
 

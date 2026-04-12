@@ -1,0 +1,76 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">💳 Mis Pagos</div>
+        <div class="topbar-sub">Historial de cobros de tus consultas</div>
+      </div>
+    </div>
+
+    <div class="content-area">
+
+      <!-- FILTROS -->
+      <div class="filters-card">
+        <div class="filters-row">
+          <div class="filter-group">
+            <label class="filter-label">Fecha</label>
+            <input type="date" class="form-input" [(ngModel)]="filtroFecha" (change)="aplicarFiltros()">
+          </div>
+          <div class="filter-group">
+            <label class="filter-label">Tipo de consulta</label>
+            <select class="form-select" [(ngModel)]="filtroConcepto" (change)="aplicarFiltros()">
+              <option value="">Todos</option>
+              <option *ngFor="let c of conceptosDisponibles" [value]="c">{{ c }}</option>
+            </select>
+          </div>
+          <button class="btn-limpiar" (click)="limpiarFiltros()" *ngIf="filtroFecha || filtroConcepto">
+            ✕ Limpiar
+          </button>
+        </div>
+      </div>
+
+      <div class="error-card" *ngIf="errorMsg">
+        <span>⚠️ {{ errorMsg }}</span>
+        <button class="btn-retry" (click)="cargarPagos()">Reintentar</button>
+      </div>
+
+      <div class="loading-wrap" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <span>Cargando pagos...</span>
+      </div>
+
+      <!-- LISTA CON SCROLL -->
+      <div class="pagos-scroll" *ngIf="!isLoading && !errorMsg">
+        <div class="pagos-list">
+
+          <div class="pago-card" *ngFor="let pay of pagosFiltrados">
+            <div class="pago-icon">🧾</div>
+            <div class="pago-info">
+              <div class="pago-concepto">{{ pay.concept }}</div>
+              <div class="pago-meta">{{ pay.petName }} · Dr. {{ pay.vetName }}</div>
+              <div class="pago-fecha">{{ pay.appointmentDate }}</div>
+              <div class="pago-nota" *ngIf="pay.notes">📝 {{ pay.notes }}</div>
+            </div>
+            <div class="pago-right">
+              <div class="pago-monto">$ {{ pay.amount | number:'1.0-0' }} COP</div>
+              <span class="pago-badge" [class.paid]="pay.status === 'PAID'" [class.pending]="pay.status === 'PENDING'">
+                {{ pay.status === 'PAID' ? '✓ Pagado' : '⏳ Pendiente' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="pagosFiltrados.length === 0">
+            <div class="empty-icon">💳</div>
+            <div class="empty-title">Sin pagos</div>
+            <div class="empty-sub">{{ pagos.length > 0 ? 'No hay pagos con esos filtros' : 'Aquí aparecerán los cobros de tus consultas' }}</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>

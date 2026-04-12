@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { RecepAppointmentResponse } from './appointment.service';
 
@@ -59,6 +60,9 @@ export interface RegistroMedico {
   proximoControlMotivo: string;
   // Archivos adjuntos
   fotosAdjuntas: string[];
+  // Costos
+  costoMedicamentos: number;
+  costoTotal: number;
 }
 
 export interface MedicalRecordResponse {
@@ -97,6 +101,9 @@ export interface MedicalRecordResponse {
   fotosAdjuntas: string;
   creadoEn: string;
   actualizadoEn: string | null;
+  costoMedicamentos: number | null;
+  costoTotal: number | null;
+  precioServicioBase: number | null;
 }
 
 // ── Claves de localStorage ────────────────────────────────────────────────────
@@ -205,6 +212,8 @@ export class MedicalRecordService {
       proximoControlFecha:    registro.proximoControlFecha?.trim() || null,
       proximoControlMotivo:   registro.proximoControlMotivo?.trim() || null,
       fotosAdjuntas:          JSON.stringify(registro.fotosAdjuntas || []),
+      costoMedicamentos:      registro.costoMedicamentos ?? 0,
+      costoTotal:             registro.costoTotal ?? 0,
     };
     return this.http.post<MedicalRecordResponse>(
       `${this.apiUrl}?cerrar=${cerrar}`,
@@ -236,6 +245,20 @@ export class MedicalRecordService {
       `${environment.apiUrl}/api/cliente/medical-records`,
       { headers: this.headers() }
     );
+  }
+
+  obtenerCatalogoMedicamentos(): Observable<{ id: number; name: string; price: number; unit: string }[]> {
+    return this.http.get<{ id: number; name: string; price: number; unit: string }[]>(
+      `${environment.apiUrl}/api/vet/medical-records/medications`,
+      { headers: this.headers() }
+    );
+  }
+
+  obtenerPrecioServicio(serviceType: string): Observable<number> {
+    return this.http.get<{ price: number }>(
+      `${environment.apiUrl}/api/recepcionista/payments/price?serviceType=${encodeURIComponent(serviceType)}`,
+      { headers: this.headers() }
+    ).pipe(map((res: any) => res?.price ?? 0));
   }
 
   uploadPhoto(file: File): Observable<{ secure_url: string }> {

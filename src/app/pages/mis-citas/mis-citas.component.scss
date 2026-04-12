@@ -3,7 +3,18 @@
   background: linear-gradient(135deg, #E3EFE8 0%, #F4F8F6 100%);
   font-family: 'Manrope', sans-serif; color: #1B2B23;
 }
-.main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; overflow-y: auto; }
+.main-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #C8E6D4; border-radius: 3px; }
+}
 
 @media (max-width: 768px) {
   .dashboard-layout {
@@ -26,7 +37,7 @@
 .topbar-sub   { font-size: .85rem; color: #5F7F71; margin-top: 3px; }
 
 .content-area {
-  padding: 28px; display: flex; flex-direction: column; gap: 20px;
+  padding: 28px 28px 80px; display: flex; flex-direction: column; gap: 20px;
   max-width: 900px; width: 100%; margin: 0 auto;
 }
 
@@ -218,3 +229,45 @@
 .empty-icon  { font-size: 3rem; margin-bottom: 12px; }
 .empty-title { font-size: 1.1rem; font-weight: 700; color: #163A2B; }
 .empty-sub   { font-size: .85rem; color: #7A9A8C; margin-top: 6px; }
+
+/* Resumen de costos para el cliente */
+.costo-resumen-cliente {
+  background: #F4F8F6;
+  border: 1px solid #C8E6D4;
+  border-radius: 10px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+.costo-fila {
+  display: flex;
+  justify-content: space-between;
+  font-size: .85rem;
+  color: #3D5A4C;
+}
+.costo-total-cliente {
+  border-top: 1px solid #C8E6D4;
+  padding-top: 8px;
+  margin-top: 4px;
+  font-weight: 800;
+  font-size: .95rem;
+  color: #145C42;
+}
+
+.costo-tachado {
+  color: #9AAFA6;
+  font-size: .82rem;
+}
+.costo-ajuste {
+  font-weight: 700;
+  color: #b03030;
+  &.descuento { color: #22A06B; }
+}
+.costo-motivo {
+  font-size: .78rem;
+  color: #5F7F71;
+  font-style: italic;
+  padding: 2px 0;
+}

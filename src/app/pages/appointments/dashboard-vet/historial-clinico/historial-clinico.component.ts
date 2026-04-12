@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { MedicalRecordService, MedicalRecordResponse, Medicamento, VacunaControl } from 'src/app/services/medical-record.service';
@@ -11,7 +11,7 @@ import {
 @Component({
   selector: 'app-historial-clinico',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSidebarComponent],
+  imports: [CommonModule, CurrencyPipe, FormsModule, AppSidebarComponent],
   templateUrl: './historial-clinico.component.html',
   styleUrls: ['./historial-clinico.component.scss']
 })

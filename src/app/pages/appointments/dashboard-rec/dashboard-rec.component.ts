@@ -11,6 +11,7 @@ import { AppointmentService } from 'src/app/services/appointment.service';
 import { PaymentService, PaymentResponse, ServicePrice } from 'src/app/services/Payment.service';
 import { RecepClientService, RecepClient, RecepPet } from 'src/app/services/RecepClient.service';
 import { AdminPaymentService, ServicePriceItem } from 'src/app/services/admin-payment.service';
+import { MedicalRecordService } from 'src/app/services/medical-record.service';
 
 interface Vet {
   id:        string;
@@ -192,6 +193,10 @@ export class DashboardRecComponent implements OnInit {
   paymentApt:        Appointment | null = null;
   paymentConcept     = '';
   paymentBaseAmount  = 0;
+  paymentMedCost     = 0;
+  paymentTotalAmount = 0;
+  paymentAjustarPrecio = false;
+  paymentMontoAjustado = 0;
   paymentNotes       = '';
   savingPayment      = false;
 
@@ -245,7 +250,8 @@ export class DashboardRecComponent implements OnInit {
     private readonly appointmentService: AppointmentService,
     private readonly paymentService:     PaymentService,
     private readonly recepClientService: RecepClientService,
-    private readonly adminPaymentService: AdminPaymentService
+    private readonly adminPaymentService: AdminPaymentService,
+    private readonly medicalRecordService: MedicalRecordService
   ) {}
 
   @HostListener('document:click')
@@ -398,10 +404,39 @@ export class DashboardRecComponent implements OnInit {
   openPaymentModal(apt: Appointment): void {
     this.paymentApt = apt; this.paymentConcept = apt.reason;
     this.paymentNotes = ''; this.paymentBaseAmount = this.getPriceForConcept(apt.reason);
+    this.paymentMedCost = 0;
+    this.paymentTotalAmount = this.paymentBaseAmount;
+    this.paymentAjustarPrecio = false;
+    this.paymentMontoAjustado = 0;
+
+    // Consultar si hay registro médico con costos calculados por el vet
+    this.medicalRecordService.obtenerPorCita(Number(apt.id)).subscribe({
+      next: (record) => {
+        if (record?.costoTotal && record.costoTotal > 0) {
+          this.paymentMedCost = record.costoMedicamentos ?? 0;
+          this.paymentTotalAmount = record.costoTotal;
+          this.paymentBaseAmount = record.costoTotal;
+        }
+      },
+      error: () => { /* sin registro médico aún, usar precio base */ }
+    });
+
     this.showPaymentModal = true;
   }
 
-  closePaymentModal(): void { this.showPaymentModal = false; this.paymentApt = null; }
+  closePaymentModal(): void {
+    this.showPaymentModal = false; this.paymentApt = null;
+    this.paymentAjustarPrecio = false; this.paymentMontoAjustado = 0; this.paymentNotes = '';
+  }
+
+  onAjustarPrecioChange(): void {
+    if (!this.paymentAjustarPrecio) {
+      this.paymentMontoAjustado = 0;
+      this.paymentNotes = '';
+    } else {
+      this.paymentMontoAjustado = this.paymentBaseAmount;
+    }
+  }
 
   getPriceForConcept(concept: string): number {
     const sp = this.servicePrices.find(p => p.serviceType.toLowerCase() === concept.toLowerCase());
@@ -412,6 +447,12 @@ export class DashboardRecComponent implements OnInit {
 
   savePayment(): void {
     if (!this.paymentApt || this.paymentBaseAmount <= 0) return;
+    if (this.paymentAjustarPrecio && !this.paymentNotes?.trim()) return;
+
+    const montoFinal = this.paymentAjustarPrecio && this.paymentMontoAjustado > 0
+      ? this.paymentMontoAjustado
+      : this.paymentBaseAmount;
+
     this.savingPayment = true;
     this.paymentService.createPayment({
       appointmentId: Number(this.paymentApt.id),
@@ -419,8 +460,8 @@ export class DashboardRecComponent implements OnInit {
       clientEmail: this.paymentApt.clientEmail, petName: this.paymentApt.petName,
       vetName: `${this.paymentApt.vetFirstName} ${this.paymentApt.vetLastName}`,
       appointmentDate: this.paymentApt.date, appointmentTime: this.paymentApt.time,
-      concept: this.paymentConcept, baseAmount: this.paymentBaseAmount,
-      amount: this.paymentBaseAmount, notes: this.paymentNotes
+      concept: this.paymentApt.reason, baseAmount: this.paymentBaseAmount,
+      amount: montoFinal, notes: this.paymentNotes
     }).subscribe({
       next: () => { this.savingPayment = false; this.closePaymentModal(); this.loadPayments(); this.showToast('Pago registrado correctamente', 'success'); },
       error: () => { this.savingPayment = false; this.showToast('Error al registrar el pago', 'error'); }

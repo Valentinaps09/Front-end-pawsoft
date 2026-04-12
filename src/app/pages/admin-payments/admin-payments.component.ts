@@ -82,6 +82,14 @@ export class AdminPaymentsComponent implements OnInit {
 
   formatDate(date: string | null): string {
     if (!date) return '—';
+    // Parsear manualmente para evitar el problema de zona horaria UTC
+    const parts = date.split('T')[0].split('-');
+    if (parts.length === 3) {
+      const d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+      return d.toLocaleDateString('es-CO', {
+        day: '2-digit', month: 'short', year: 'numeric'
+      });
+    }
     return new Date(date).toLocaleDateString('es-CO', {
       day: '2-digit', month: 'short', year: 'numeric'
     });

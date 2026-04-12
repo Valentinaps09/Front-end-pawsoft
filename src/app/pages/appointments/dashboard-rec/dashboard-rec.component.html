@@ -75,10 +75,10 @@
                 <td>
                   <div class="action-btns">
                     <button class="btn-action confirm"    *ngIf="apt.status === 'UPCOMING'"  (click)="confirmAppointment(apt)">Confirmar</button>
-                    <button class="btn-action no-show"    *ngIf="apt.status === 'CONFIRMED'" (click)="markNoShow(apt)">No asistió</button>
+                    <button class="btn-action no-show"    *ngIf="apt.status === 'UPCOMING'" (click)="markNoShow(apt)">No asistió</button>
                     <button class="btn-action cobrar"     *ngIf="apt.status === 'COMPLETED' && !getPaymentForApt(apt.id)" (click)="openPaymentModal(apt)">💳 Cobrar</button>
-                    <button class="btn-action edit"                                           (click)="openEditAppointmentModal(apt)">Editar</button>
-                    <button class="btn-action deactivate" *ngIf="apt.status !== 'CANCELLED'" (click)="openCancelModal(apt)">Cancelar</button>
+                    <button class="btn-action edit"       *ngIf="apt.status === 'UPCOMING'" (click)="openEditAppointmentModal(apt)">Editar</button>
+                    <button class="btn-action deactivate" *ngIf="apt.status === 'UPCOMING'" (click)="openCancelModal(apt)">Cancelar</button>
                   </div>
                 </td>
               </tr>
@@ -493,10 +493,10 @@
                 <td>
                   <div class="action-btns">
                     <button class="btn-action confirm"    *ngIf="apt.status === 'UPCOMING'"  (click)="confirmAppointment(apt)">Confirmar</button>
-                    <button class="btn-action no-show"    *ngIf="apt.status === 'CONFIRMED'" (click)="markNoShow(apt)">No asistió</button>
+                    <button class="btn-action no-show"    *ngIf="apt.status === 'UPCOMING'" (click)="markNoShow(apt)">No asistió</button>
                     <button class="btn-action cobrar"     *ngIf="apt.status === 'COMPLETED' && !getPaymentForApt(apt.id)" (click)="openPaymentModal(apt)">💳 Cobrar</button>
-                    <button class="btn-action edit"                                           (click)="openEditAppointmentModal(apt)">Editar</button>
-                    <button class="btn-action deactivate" *ngIf="apt.status !== 'CANCELLED'" (click)="openCancelModal(apt)">Cancelar</button>
+                    <button class="btn-action edit"       *ngIf="apt.status === 'UPCOMING'" (click)="openEditAppointmentModal(apt)">Editar</button>
+                    <button class="btn-action deactivate" *ngIf="apt.status === 'UPCOMING'" (click)="openCancelModal(apt)">Cancelar</button>
                   </div>
                 </td>
               </tr>
@@ -668,29 +668,70 @@
           </div>
         </div>
       </div>
+
+      <!-- Concepto fijo, no editable -->
       <div class="form-group full" style="margin-bottom:14px">
-        <label class="form-label">Concepto / Servicio *</label>
-        <select class="form-select" [(ngModel)]="paymentConcept" (change)="onConceptChange()">
-          <option value="">Seleccionar...</option>
-          <option *ngFor="let sp of servicePrices" [value]="sp.serviceType">{{ sp.displayName }} — $ {{ sp.price | number:'1.0-0' }}</option>
-          <option [value]="paymentApt.reason" *ngIf="!servicePrices.length">{{ paymentApt.reason }}</option>
-        </select>
+        <label class="form-label">Concepto / Servicio</label>
+        <div class="payment-concept-display">{{ paymentApt.reason }}</div>
       </div>
-      <div class="form-group full" style="margin-bottom:14px" *ngIf="paymentBaseAmount > 0">
-        <label class="form-label">Monto a cobrar</label>
-        <div class="payment-amount-display">$ {{ paymentBaseAmount | number:'1.0-0' }} COP</div>
+
+      <!-- Desglose de costos automático -->
+      <div class="form-group full" style="margin-bottom:14px">
+        <label class="form-label">Desglose</label>
+        <div class="payment-desglose">
+          <div class="desglose-row">
+            <span>{{ paymentApt.reason }}</span>
+            <span>$ {{ (paymentBaseAmount - paymentMedCost) | number:'1.0-0' }} COP</span>
+          </div>
+          <div class="desglose-row" *ngIf="paymentMedCost > 0">
+            <span>Medicamentos</span>
+            <span>$ {{ paymentMedCost | number:'1.0-0' }} COP</span>
+          </div>
+          <div class="desglose-row desglose-total">
+            <span>Total calculado</span>
+            <span>$ {{ paymentBaseAmount | number:'1.0-0' }} COP</span>
+          </div>
+        </div>
       </div>
-      <div class="cancel-warning-box" *ngIf="paymentConcept && paymentBaseAmount === 0" style="margin-bottom:14px">
+
+      <div class="cancel-warning-box" *ngIf="paymentBaseAmount === 0" style="margin-bottom:14px">
         <p style="color:#7A6B40">⚠️ Este servicio no tiene precio configurado. Contacta al administrador.</p>
       </div>
-      <div class="form-group full">
+
+      <!-- Ajuste de precio opcional con nota obligatoria -->
+      <div class="form-group full" style="margin-bottom:8px;padding-left:2px">
+        <label style="display:flex;align-items:center;gap:10px;cursor:pointer;padding:10px 14px;background:#F4F8F6;border:1.5px solid #DCEAE2;border-radius:9px;user-select:none">
+          <input type="checkbox" [(ngModel)]="paymentAjustarPrecio" (change)="onAjustarPrecioChange()"
+                 style="accent-color:#22A06B;width:17px;height:17px;flex-shrink:0;cursor:pointer">
+          <span style="font-size:.875rem;font-weight:700;color:#163A2B !important">✏️ Ajustar precio final</span>
+        </label>
+      </div>
+
+      <div *ngIf="paymentAjustarPrecio" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+        <div class="form-group full">
+          <label class="form-label">Precio final ajustado *</label>
+          <input type="number" class="form-input" [(ngModel)]="paymentMontoAjustado"
+                 placeholder="Ingresa el nuevo monto" min="0" step="1000">
+        </div>
+        <div class="form-group full">
+          <label class="form-label">Motivo del ajuste * <span style="color:#e53935">(obligatorio)</span></label>
+          <textarea class="form-textarea" [(ngModel)]="paymentNotes" rows="2"
+                    placeholder="Ej: Descuento por cliente frecuente, error en cobro, etc."></textarea>
+          <div style="font-size:.75rem;color:#e53935;margin-top:4px" *ngIf="paymentAjustarPrecio && !paymentNotes?.trim()">
+            Debes explicar el motivo del ajuste
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group full" *ngIf="!paymentAjustarPrecio">
         <label class="form-label">Notas (opcional)</label>
-        <textarea class="form-textarea" [(ngModel)]="paymentNotes" rows="2"></textarea>
+        <textarea class="form-textarea" [(ngModel)]="paymentNotes" rows="2" placeholder="Observaciones adicionales..."></textarea>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closePaymentModal()">Cancelar</button>
-      <button class="btn-primary" (click)="savePayment()" [disabled]="savingPayment || !paymentConcept || paymentBaseAmount <= 0">
+      <button class="btn-primary" (click)="savePayment()"
+              [disabled]="savingPayment || paymentBaseAmount <= 0 || (paymentAjustarPrecio && !paymentNotes?.trim())">
         <span *ngIf="!savingPayment">💾 Registrar Pago</span><span *ngIf="savingPayment">Guardando...</span>
       </button>
     </div>

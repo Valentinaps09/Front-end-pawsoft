@@ -78,6 +78,9 @@
             </div>
             <div class="reg-fecha">{{ formatDate(r.appointmentDate) }}</div>
             <div class="reg-diagnostico">{{ r.diagnosticoPrincipal || '—' }}</div>
+            <div class="reg-costo" *ngIf="r.costoTotal && r.costoTotal > 0">
+              💲 {{ r.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}
+            </div>
             <div class="reg-chevron" [class.open]="isExpanded(r.id)">▼</div>
           </div>
 
@@ -182,6 +185,25 @@
                   <img *ngFor="let foto of parseFotos(r.fotosAdjuntas)"
                        [src]="foto" alt="Imagen del registro" class="foto-thumb"
                        (click)="abrirFoto(foto)">
+                </div>
+              </div>
+
+              <!-- Resumen de costos -->
+              <div class="detalle-seccion full-width" *ngIf="r.costoTotal && r.costoTotal > 0">
+                <div class="detalle-titulo">💲 Resumen de Costos</div>
+                <div class="costo-resumen-hist">
+                  <div class="costo-row-hist" *ngIf="r.precioServicioBase && r.precioServicioBase > 0">
+                    <span>Consulta ({{ r.appointmentReason }})</span>
+                    <span>{{ r.precioServicioBase | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                  <div class="costo-row-hist" *ngIf="r.costoMedicamentos && r.costoMedicamentos > 0">
+                    <span>Medicamentos</span>
+                    <span>{{ r.costoMedicamentos | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                  <div class="costo-row-hist costo-total-hist">
+                    <span>Total</span>
+                    <span>{{ r.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
                 </div>
               </div>
 

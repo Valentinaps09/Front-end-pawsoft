@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { AppointmentService, AppointmentResponse } from 'src/app/services/appointment.service';
 import { MedicalRecordService, MedicalRecordResponse } from 'src/app/services/medical-record.service';
+import { PaymentService, PaymentResponse } from 'src/app/services/Payment.service';
 import { forkJoin } from 'rxjs';
 
 type EstadoCita = 'upcoming' | 'completed' | 'cancelled' | 'confirmed' | 'no_show';
@@ -21,13 +22,14 @@ interface CitaView {
   status: EstadoCita;
   sortTimestamp: number;
   medicalRecord?: MedicalRecordResponse;
+  payment?: PaymentResponse;
   showingRecord: boolean;
 }
 
 @Component({
   selector: 'app-mis-citas',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSidebarComponent],
+  imports: [CommonModule, CurrencyPipe, FormsModule, AppSidebarComponent],
   templateUrl: './mis-citas.component.html',
   styleUrls: ['./mis-citas.component.scss']
 })
@@ -56,6 +58,7 @@ export class MisCitasComponent implements OnInit {
   constructor(
     private readonly appointmentService: AppointmentService,
     private readonly medicalRecordService: MedicalRecordService,
+    private readonly paymentService: PaymentService,
   ) {}
 
   ngOnInit(): void {
@@ -71,12 +74,15 @@ export class MisCitasComponent implements OnInit {
     // Cargar citas y registros médicos en paralelo
     forkJoin({
       citas:    this.appointmentService.getMyAppointments(),
-      registros: this.medicalRecordService.obtenerRegistrosCliente()
+      registros: this.medicalRecordService.obtenerRegistrosCliente(),
+      pagos:    this.paymentService.getMyPayments()
     }).subscribe({
-      next: ({ citas, registros }) => {
-        // Indexar registros por appointmentId para búsqueda O(1)
+      next: ({ citas, registros, pagos }) => {
         const recordMap = new Map<string, MedicalRecordResponse>();
         registros.forEach(r => recordMap.set(String(r.appointmentId), r));
+
+        const paymentMap = new Map<string, PaymentResponse>();
+        pagos.forEach(p => paymentMap.set(String(p.appointmentId), p));
 
         this.citas = citas.map(a => {
           const rawDateStr = a.date ?? a.dateFormatted ?? '';
@@ -95,6 +101,7 @@ export class MisCitasComponent implements OnInit {
             status:      ((a.status ?? 'upcoming').toLowerCase()) as EstadoCita,
             sortTimestamp: new Date(`${rawDateStr}T${rawTimeStr}`).getTime(),
             medicalRecord: recordMap.get(id),
+            payment:       paymentMap.get(id),
             showingRecord: false,
           };
         }).sort((a, b) => b.sortTimestamp - a.sortTimestamp);

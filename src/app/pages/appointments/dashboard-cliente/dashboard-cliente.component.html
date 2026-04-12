@@ -107,41 +107,6 @@
             </div>
           </div>
 
-          <!-- MIS PAGOS -->
-          <div class="section-card">
-            <div class="section-header">
-              <h3>💳 Mis Pagos</h3>
-            </div>
-
-            <div class="loading-slots" *ngIf="loadingPayments">
-              <div class="spinner"></div>
-              <p>Cargando historial...</p>
-            </div>
-
-            <div class="payments-list" *ngIf="!loadingPayments && myPayments.length > 0">
-              <div class="pay-item" *ngFor="let pay of myPayments">
-                <div class="pay-icon">🧾</div>
-                <div class="pay-info">
-                  <div class="appt-pet-name">{{ pay.concept }}</div>
-                  <div class="appt-datetime">{{ pay.petName }} · Dr. {{ pay.vetName }}</div>
-                  <div class="appt-reason">{{ pay.appointmentDate }}</div>
-                </div>
-                <div class="pay-right">
-                  <div class="pay-amount">$ {{ pay.amount | number:'1.0-0' }}</div>
-                  <span class="pay-badge"
-                        [class.paid]="pay.status === 'PAID'"
-                        [class.pending]="pay.status === 'PENDING'">
-                    {{ pay.status === 'PAID' ? 'Pagado' : 'Pendiente' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="no-appointments" *ngIf="!loadingPayments && myPayments.length === 0">
-              <p>No tienes pagos registrados aún</p>
-            </div>
-          </div>
-
         </div>
 
         <!-- COLUMNA DERECHA: Agendar -->

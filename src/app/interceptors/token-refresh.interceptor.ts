@@ -68,6 +68,18 @@ export const tokenRefreshInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 403 && !isRefreshing && refreshToken) {
+        // Solo intentar refresh si el error viene con un mensaje de token expirado
+        // No cerrar sesión por errores de permisos (RBAC)
+        const errorMsg = error.error?.message || error.error?.error || '';
+        const isTokenExpired = errorMsg.toLowerCase().includes('expired') ||
+                               errorMsg.toLowerCase().includes('jwt') ||
+                               errorMsg.toLowerCase().includes('token');
+
+        if (!isTokenExpired) {
+          // Es un error de permisos (RBAC), no de token — no cerrar sesión
+          return throwError(() => error);
+        }
+
         isRefreshing = true;
         
         return authService.refreshToken().pipe(

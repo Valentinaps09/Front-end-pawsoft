@@ -804,7 +804,8 @@
 
 .modal-card {
   background: #ffffff; border-radius: 18px; width: 100%;
-  max-height: 90vh; overflow: visible !important;
+  max-height: 90vh; overflow: hidden;
+  display: flex; flex-direction: column;
   box-shadow: 0 20px 60px rgba(18, 38, 30, 0.18);
   &.modal-lg { max-width: 620px; }
   &.modal-sm { max-width: 420px; }
@@ -813,6 +814,7 @@
 .modal-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 24px; border-bottom: 1px solid #EEF3EF;
+  flex-shrink: 0;
   h3 { font-size: 1.05rem; font-weight: 800; color: #163A2B; margin: 0; }
 }
 
@@ -823,11 +825,12 @@
   &:hover { background: #FEECEC; color: #D64545; }
 }
 
-.modal-body   { padding: 24px; overflow: visible !important; }
+.modal-body   { padding: 24px; overflow-y: auto; flex: 1; }
 .modal-footer {
   display: flex; justify-content: flex-end; gap: 10px;
   padding: 16px 24px; border-top: 1px solid #EEF3EF;
   background: #FAFCFA; border-radius: 0 0 18px 18px;
+  flex-shrink: 0;
 }
 
 .apt-edit-summary {
@@ -1277,4 +1280,50 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   filter: invert(0) brightness(0.3) !important;
   cursor: pointer;
   opacity: 1 !important;
+}
+
+/* Desglose de pago con medicamentos */
+.payment-desglose {
+  background: #F4F8F6;
+  border: 1px solid #C8E6D4;
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.desglose-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: .85rem;
+  color: #3D5A4C;
+}
+.desglose-total {
+  border-top: 1px solid #C8E6D4;
+  padding-top: 6px;
+  margin-top: 2px;
+  font-weight: 800;
+  font-size: .95rem;
+  color: #145C42;
+}
+
+/* Concepto de servicio fijo (no editable) */
+.payment-concept-display {
+  background: #F4F8F6;
+  border: 1.5px solid #DCEAE2;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: .875rem;
+  font-weight: 700;
+  color: #163A2B !important;
+}
+
+.modal-card {
+  .form-label { color: #2E4A3D !important; }
+  .desglose-row { color: #3D5A4C !important; }
+  .desglose-total { color: #145C42 !important; }
+  .payment-concept-display { color: #163A2B !important; }
+  .checkbox-label { color: #163A2B !important; }
+  input[type="number"].form-input { color: #163A2B !important; }
+  textarea.form-textarea { color: #163A2B !important; }
 }

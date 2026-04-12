@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
@@ -44,7 +44,7 @@ type EstadoGuardado = 'sin_cambios' | 'guardando' | 'guardado' | 'error';
 @Component({
   selector: 'app-formulario-consulta',
   standalone: true,
-  imports: [CommonModule, FormsModule, AppSidebarComponent],
+  imports: [CommonModule, CurrencyPipe, FormsModule, AppSidebarComponent],
   templateUrl: './formulario-consulta.component.html',
   styleUrls: ['./formulario-consulta.component.scss']
 })
@@ -138,6 +138,26 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
 
   readonly UNIDADES_DOSIS = ['mg', 'mg/kg', 'ml', 'ml/kg', 'UI', 'UI/kg', 'g', 'mcg'];
 
+  // Catálogo con precios del backend
+  catalogoMedicamentos: { id: number; name: string; price: number; unit: string }[] = [];
+  precioServicioBase = 0;
+
+  get costoMedicamentos(): number {
+    return this.medicamentos.reduce((total, med) => {
+      const item = this.catalogoMedicamentos.find(c => c.name === med.nombre);
+      return total + (item ? item.price : 0);
+    }, 0);
+  }
+
+  get costoTotal(): number {
+    return this.precioServicioBase + this.costoMedicamentos;
+  }
+
+  getPrecioMedicamento(nombre: string): number {
+    const item = this.catalogoMedicamentos.find(c => c.name === nombre);
+    return item ? item.price : 0;
+  }
+
   private debounceTimer?: ReturnType<typeof setTimeout>;
 
   constructor(
@@ -156,6 +176,18 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       this.router.navigate(['/veterinario/atencion-medica']);
       return;
     }
+
+    // Cargar catálogo de medicamentos con precios
+    this.medicalRecordService.obtenerCatalogoMedicamentos().subscribe({
+      next: (data) => { this.catalogoMedicamentos = data; },
+      error: () => { /* silencioso, el vet puede seguir sin precios */ }
+    });
+
+    // Cargar precio base del servicio
+    this.medicalRecordService.obtenerPrecioServicio(this.atencion.reason).subscribe({
+      next: (precio) => { this.precioServicioBase = precio ?? 0; },
+      error: () => { this.precioServicioBase = 0; }
+    });
 
     // Cargar borrador si existe
     const borrador = this.medicalRecordService.obtenerBorrador(this.atencion.appointmentId);
@@ -697,6 +729,8 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       proximoControlFecha:    this.requiereProximoControl ? this.proximoControlFecha : '',
       proximoControlMotivo:   this.requiereProximoControl ? this.proximoControlMotivo : '',
       fotosAdjuntas:          this.adjuntarFotos ? this.fotosAdjuntas : [],
+      costoMedicamentos:      this.costoMedicamentos,
+      costoTotal:             this.costoTotal,
     };
   }
 

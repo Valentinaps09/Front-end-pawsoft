@@ -169,6 +169,44 @@
               </div>
             </div>
 
+            <!-- Resumen de costos -->
+            <div class="resumen-seccion" *ngIf="c.medicalRecord.costoTotal && c.medicalRecord.costoTotal > 0">
+              <div class="resumen-titulo">💲 Resumen de Cobro</div>
+              <div class="costo-resumen-cliente">
+                <div class="costo-fila" *ngIf="c.medicalRecord.precioServicioBase && c.medicalRecord.precioServicioBase > 0">
+                  <span>{{ c.reason }}</span>
+                  <span>{{ c.medicalRecord.precioServicioBase | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+                <div class="costo-fila" *ngIf="c.medicalRecord.costoMedicamentos && c.medicalRecord.costoMedicamentos > 0">
+                  <span>Medicamentos aplicados</span>
+                  <span>{{ c.medicalRecord.costoMedicamentos | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+                <!-- Sin ajuste -->
+                <div class="costo-fila costo-total-cliente" *ngIf="!c.payment || c.payment.amount === c.payment.baseAmount">
+                  <span>Total</span>
+                  <span>{{ c.medicalRecord.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                </div>
+                <!-- Con ajuste (descuento o recargo) -->
+                <ng-container *ngIf="c.payment && c.payment.amount !== c.payment.baseAmount">
+                  <div class="costo-fila costo-tachado">
+                    <span>Subtotal original</span>
+                    <span><s>{{ c.payment.baseAmount | currency:'COP':'symbol-narrow':'1.0-0' }}</s></span>
+                  </div>
+                  <div class="costo-fila costo-ajuste" [class.descuento]="c.payment.amount < c.payment.baseAmount">
+                    <span>{{ c.payment.amount < c.payment.baseAmount ? '🎉 Descuento aplicado' : '⚠️ Ajuste aplicado' }}</span>
+                    <span>{{ c.payment.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                  <div class="costo-fila costo-motivo" *ngIf="c.payment.notes">
+                    <span>📝 {{ c.payment.notes }}</span>
+                  </div>
+                  <div class="costo-fila costo-total-cliente">
+                    <span>Total cobrado</span>
+                    <span>{{ c.payment.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                  </div>
+                </ng-container>
+              </div>
+            </div>
+
           </div>
         </div>
 
