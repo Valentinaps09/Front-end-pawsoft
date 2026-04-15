@@ -7,7 +7,7 @@
     <div class="topbar">
       <div>
         <div class="topbar-title">🩺 Atención Médica</div>
-        <div class="topbar-sub">Citas confirmadas pendientes de atención</div>
+        <div class="topbar-sub">Citas confirmadas y en progreso para atención médica</div>
       </div>
       <div class="today-badge">
         <span class="today-dot"></span>
@@ -26,6 +26,23 @@
             placeholder="Buscar por mascota o propietario..."
             [(ngModel)]="searchText"
             (input)="aplicarFiltros()">
+          
+          <!-- Botón para limpiar atención activa -->
+          <button
+            *ngIf="hayAtencionActiva()"
+            class="btn-limpiar-atencion"
+            (click)="limpiarAtencionManual()"
+            title="Limpiar atención en progreso">
+            🗑️ Limpiar atención activa
+          </button>
+
+          <!-- Botón para limpiar todas las atenciones -->
+          <button
+            class="btn-limpiar-atencion"
+            (click)="limpiarTodasLasAtenciones()"
+            title="Limpiar todas las atenciones en progreso">
+            🧹 Limpiar todas
+          </button>
         </div>
       </div>
 
@@ -89,14 +106,16 @@
             <button
               *ngIf="!isEnProceso(cita)"
               class="btn-iniciar"
-              [disabled]="medicalRecordService.getAtencionActiva() !== null"
+              [disabled]="hayAtencionActiva()"
+              [title]="hayAtencionActiva() ? 'Ya hay una atención en progreso' : 'Iniciar atención'"
               (click)="iniciarAtencion(cita)">
-              Iniciar atención →
+              {{ hayAtencionActiva() ? 'Atención ocupada' : 'Iniciar atención →' }}
             </button>
             <button
               *ngIf="isEnProceso(cita)"
               class="btn-continuar"
-              (click)="continuarAtencion()">
+              (click)="continuarAtencion()"
+              title="Continuar con la atención en progreso">
               Continuar →
             </button>
           </div>
@@ -105,8 +124,8 @@
         <!-- Vacío -->
         <div class="empty-state" *ngIf="citasFiltradas.length === 0">
           <div class="empty-icon">🩺</div>
-          <div class="empty-title">No hay citas confirmadas</div>
-          <div class="empty-sub">Las citas confirmadas por recepción aparecerán aquí</div>
+          <div class="empty-title">No hay citas para atender</div>
+          <div class="empty-sub">Las citas confirmadas y en progreso aparecerán aquí</div>
         </div>
       </div>
 

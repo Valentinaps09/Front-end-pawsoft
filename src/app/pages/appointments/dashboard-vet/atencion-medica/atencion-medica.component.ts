@@ -53,11 +53,19 @@ export class AtencionMedicaComponent implements OnInit {
     this.isLoading = true;
     this.errorMsg = '';
 
-    this.appointmentService.getVetAppointments().subscribe({
+    this.appointmentService.getTodayAppointments().subscribe({
       next: (data) => {
-        this.citas = data.filter(a => a.status === 'CONFIRMED');
-        this.limpiarAtencionHuerfana();
-        this.aplicarFiltros();
+        // Mostrar citas CONFIRMED (pendientes) e IN_PROGRESS (en progreso)
+        this.citas = data.filter(a => a.status === 'CONFIRMED' || a.status === 'IN_PROGRESS');
+        
+        // Dar tiempo para que las citas se carguen antes de limpiar huérfanas
+        setTimeout(() => {
+          this.limpiarAtencionHuerfana();
+          // Forzar sincronización del estado después de cargar citas
+          this.medicalRecordService.syncStateFromStorage();
+          this.aplicarFiltros();
+        }, 200);
+        
         this.isLoading = false;
       },
       error: () => {
@@ -67,13 +75,17 @@ export class AtencionMedicaComponent implements OnInit {
     });
   }
 
-  /** Si la atención activa en localStorage no corresponde a ninguna cita CONFIRMED visible, la limpia */
-  private limpiarAtencionHuerfana(): void {
+  limpiarAtencionHuerfana(): void {
     const activa = this.medicalRecordService.getAtencionActiva();
     if (!activa) return;
-    const existe = this.citas.some(c => c.id === activa.appointmentId);
-    if (!existe) {
-      this.medicalRecordService.cerrarAtencion();
+    
+    // Solo limpiar si las citas están completamente cargadas y la cita no existe
+    if (this.citas.length > 0) {
+      const existe = this.citas.some(c => c.id === activa.appointmentId);
+      if (!existe) {
+        console.log('Limpiando atención huérfana para cita inexistente:', activa.appointmentId);
+        this.medicalRecordService.cerrarAtencion();
+      }
     }
   }
 
@@ -98,7 +110,8 @@ export class AtencionMedicaComponent implements OnInit {
   }
 
   isEnProceso(cita: RecepAppointmentResponse): boolean {
-    return this.medicalRecordService.getAtencionActiva()?.appointmentId === cita.id;
+    const atencionActiva = this.medicalRecordService.getAtencionActiva();
+    return (atencionActiva?.appointmentId === cita.id) || cita.status === 'IN_PROGRESS';
   }
 
   hayAtencionActiva(): boolean {
@@ -106,12 +119,26 @@ export class AtencionMedicaComponent implements OnInit {
   }
 
   iniciarAtencion(cita: RecepAppointmentResponse): void {
-    this.medicalRecordService.iniciarAtencion(cita);
-    this.router.navigate(['/veterinario/formulario-consulta']);
+    this.appointmentService.startAppointment(cita.id).subscribe({
+      next: () => {
+        this.medicalRecordService.iniciarAtencion(cita);
+        this.router.navigate(['/veterinario/formulario-consulta']);
+      },
+      error: (err) => {
+        console.error('Error al iniciar atención:', err);
+        const errorMessage = err.error?.message || 'Error al iniciar la atención. Intenta de nuevo.';
+        this.errorMsg = errorMessage;
+      }
+    });
   }
 
   continuarAtencion(): void {
-    this.router.navigate(['/veterinario/formulario-consulta']);
+    const atencionActiva = this.medicalRecordService.getAtencionActiva();
+    if (atencionActiva) {
+      this.router.navigate(['/veterinario/formulario-consulta']);
+    } else {
+      this.errorMsg = 'No hay una atención activa para continuar.';
+    }
   }
 
   getEmojiBySpecies(species: string): string {
@@ -138,5 +165,29 @@ export class AtencionMedicaComponent implements OnInit {
   getInitials(name: string): string {
     if (!name) return '??';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  }
+
+  limpiarAtencionManual(): void {
+    if (confirm('¿Estás seguro de que quieres limpiar la atención activa? Se perderá cualquier progreso no guardado.')) {
+      this.medicalRecordService.cerrarAtencion();
+      this.aplicarFiltros();
+    }
+  }
+
+  limpiarTodasLasAtenciones(): void {
+    if (confirm('¿Estás seguro de que quieres limpiar todas las atenciones en progreso? Esto las regresará al estado "Confirmada".')) {
+      this.appointmentService.cleanupInProgressAppointments().subscribe({
+        next: () => {
+          // Limpiar también el localStorage
+          this.medicalRecordService.cerrarAtencion();
+          // Recargar las citas para reflejar los cambios
+          this.cargarCitas();
+        },
+        error: (err) => {
+          console.error('Error al limpiar atenciones:', err);
+          this.errorMsg = 'Error al limpiar las atenciones. Intenta de nuevo.';
+        }
+      });
+    }
   }
 }
