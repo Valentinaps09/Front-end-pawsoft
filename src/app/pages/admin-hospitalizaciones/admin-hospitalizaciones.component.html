@@ -1,0 +1,241 @@
+<div class="dashboard-layout">
+  <app-sidebar [userRole]="userRole" [userName]="userName"></app-sidebar>
+
+  <main class="main-content">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">🏥 Hospitalizaciones</div>
+        <div class="topbar-sub">Vista de solo lectura · Todas las hospitalizaciones del sistema</div>
+      </div>
+      <button class="btn-refresh" (click)="cargar()" title="Actualizar">
+        🔄 Actualizar
+      </button>
+    </div>
+
+    <div class="content-area">
+
+      <!-- RESUMEN STATS -->
+      <div class="stats-row">
+        <div class="stat-card stat-activa">
+          <div class="stat-icon">🏥</div>
+          <div class="stat-info">
+            <div class="stat-num">{{ totalActivas }}</div>
+            <div class="stat-label">Hospitalizadas</div>
+          </div>
+        </div>
+        <div class="stat-card stat-alta">
+          <div class="stat-icon">✅</div>
+          <div class="stat-info">
+            <div class="stat-num">{{ totalAlta }}</div>
+            <div class="stat-label">Dadas de alta</div>
+          </div>
+        </div>
+        <div class="stat-card stat-fallecida">
+          <div class="stat-icon">🕊️</div>
+          <div class="stat-info">
+            <div class="stat-num">{{ totalFallecidas }}</div>
+            <div class="stat-label">Fallecidas</div>
+          </div>
+        </div>
+        <div class="stat-card stat-total">
+          <div class="stat-icon">📊</div>
+          <div class="stat-info">
+            <div class="stat-num">{{ todas.length }}</div>
+            <div class="stat-label">Total registros</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="filtros-card">
+        <div class="filtros-row">
+          <div class="filtro-group filtro-busqueda">
+            <label class="filtro-label">🔍 Buscar</label>
+            <input
+              type="text"
+              class="filtro-input"
+              [(ngModel)]="filtroBusqueda"
+              placeholder="Mascota, especie, cliente, veterinario, motivo..."
+            />
+          </div>
+
+          <div class="filtro-group">
+            <label class="filtro-label">Estado</label>
+            <select class="filtro-select" [(ngModel)]="filtroEstado">
+              <option value="TODOS">Todos</option>
+              <option value="ACTIVE">Hospitalizadas</option>
+              <option value="DISCHARGED">Dadas de alta</option>
+              <option value="DECEASED">Fallecidas</option>
+            </select>
+          </div>
+
+          <div class="filtro-group">
+            <label class="filtro-label">Desde</label>
+            <input type="date" class="filtro-input" [(ngModel)]="filtroFechaDesde" />
+          </div>
+
+          <div class="filtro-group">
+            <label class="filtro-label">Hasta</label>
+            <input type="date" class="filtro-input" [(ngModel)]="filtroFechaHasta" />
+          </div>
+
+          <button class="btn-limpiar" (click)="limpiarFiltros()">✕ Limpiar</button>
+        </div>
+
+        <div class="filtros-resultado" *ngIf="!isLoading">
+          Mostrando <strong>{{ filtradas.length }}</strong> de <strong>{{ todas.length }}</strong> registros
+        </div>
+      </div>
+
+      <!-- LOADING -->
+      <div class="loading-wrap" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <span>Cargando hospitalizaciones...</span>
+      </div>
+
+      <!-- ERROR -->
+      <div class="error-card" *ngIf="errorMsg">⚠️ {{ errorMsg }}</div>
+
+      <!-- TABLA -->
+      <div class="tabla-wrap" *ngIf="!isLoading && !errorMsg">
+
+        <div class="empty-state" *ngIf="filtradas.length === 0">
+          <div class="empty-icon">🔍</div>
+          <div class="empty-title">Sin resultados</div>
+          <div class="empty-sub">Ajusta los filtros para encontrar hospitalizaciones</div>
+        </div>
+
+        <table class="hosp-tabla" *ngIf="filtradas.length > 0">
+          <thead>
+            <tr>
+              <th>Mascota</th>
+              <th>Especie</th>
+              <th>Cliente</th>
+              <th>Veterinario</th>
+              <th>Ingreso</th>
+              <th>Tiempo</th>
+              <th>Costo estimado</th>
+              <th>Estado</th>
+              <th>Detalle</th>
+            </tr>
+          </thead>
+          <tbody>
+            <ng-container *ngFor="let h of filtradas">
+              <!-- Fila principal -->
+              <tr class="fila-principal" [class.fila-expandida]="expandidaId === h.id">
+                <td>
+                  <div class="pet-cell">
+                    <span class="pet-emoji">{{ getEspecieEmoji(h.petSpecies || '') }}</span>
+                    <span class="pet-nombre">{{ h.petName }}</span>
+                  </div>
+                </td>
+                <td class="td-especie">{{ h.petSpecies || '—' }}</td>
+                <td class="td-cliente">{{ h.ownerEmail || '—' }}</td>
+                <td class="td-vet">{{ h.vetName }}</td>
+                <td class="td-fecha">{{ formatDate(h.admissionDate) }}</td>
+                <td class="td-tiempo">
+                  <span class="tiempo-chip" [class.tiempo-activo]="h.status === 'ACTIVE'">
+                    ⏱ {{ calcularTiempo(h.admissionDate, h.dischargeDate) }}
+                  </span>
+                </td>
+                <td class="td-costo">
+                  {{ calcularCostoActual(h) | currency:'COP':'symbol-narrow':'1.0-0' }}
+                </td>
+                <td>
+                  <span class="status-badge" [ngClass]="getStatusClass(h.status)">
+                    {{ getStatusLabel(h.status) }}
+                  </span>
+                </td>
+                <td>
+                  <button class="btn-detalle" (click)="toggleDetalle(h.id)"
+                          [attr.aria-expanded]="expandidaId === h.id">
+                    {{ expandidaId === h.id ? '▲ Cerrar' : '▼ Ver' }}
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Fila de detalle expandible -->
+              <tr class="fila-detalle" *ngIf="expandidaId === h.id">
+                <td colspan="9">
+                  <div class="detalle-panel">
+
+                    <div class="detalle-grid">
+
+                      <div class="detalle-seccion">
+                        <div class="detalle-titulo">📋 Información general</div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">ID hospitalización</span>
+                          <span class="detalle-val">#{{ h.id }}</span>
+                        </div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">Motivo</span>
+                          <span class="detalle-val">{{ h.reason }}</span>
+                        </div>
+                        <div class="detalle-fila" *ngIf="h.initialObservations">
+                          <span class="detalle-key">Observaciones iniciales</span>
+                          <span class="detalle-val">{{ h.initialObservations }}</span>
+                        </div>
+                        <div class="detalle-fila" *ngIf="h.causeOfDeath">
+                          <span class="detalle-key">Causa de fallecimiento</span>
+                          <span class="detalle-val causa-muerte">{{ h.causeOfDeath }}</span>
+                        </div>
+                      </div>
+
+                      <div class="detalle-seccion">
+                        <div class="detalle-titulo">💰 Costos y tiempos</div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">Tarifa por hora</span>
+                          <span class="detalle-val">{{ h.hourlyRate | currency:'COP':'symbol-narrow':'1.0-0' }}/h</span>
+                        </div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">Tiempo total</span>
+                          <span class="detalle-val">{{ calcularTiempo(h.admissionDate, h.dischargeDate) }}</span>
+                        </div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">Costo {{ h.status === 'ACTIVE' ? 'estimado' : 'final' }}</span>
+                          <span class="detalle-val costo-destacado">
+                            {{ calcularCostoActual(h) | currency:'COP':'symbol-narrow':'1.0-0' }}
+                          </span>
+                        </div>
+                        <div class="detalle-fila">
+                          <span class="detalle-key">Fecha de ingreso</span>
+                          <span class="detalle-val">{{ formatDate(h.admissionDate) }}</span>
+                        </div>
+                        <div class="detalle-fila" *ngIf="h.dischargeDate">
+                          <span class="detalle-key">{{ h.status === 'DECEASED' ? 'Fecha fallecimiento' : 'Fecha de alta' }}</span>
+                          <span class="detalle-val">{{ formatDate(h.dischargeDate) }}</span>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    <!-- Notas de evolución -->
+                    <div class="notas-seccion" *ngIf="h.notes && h.notes.length > 0">
+                      <div class="detalle-titulo">📝 Notas de evolución ({{ h.notes.length }})</div>
+                      <div class="nota-item" *ngFor="let nota of h.notes">
+                        <div class="nota-meta">
+                          <span class="nota-vet">👨‍⚕️ {{ nota.vetName }}</span>
+                          <span class="nota-fecha">{{ formatDate(nota.createdAt) }}</span>
+                        </div>
+                        <div class="nota-texto">{{ nota.note }}</div>
+                      </div>
+                    </div>
+
+                    <div class="notas-vacio" *ngIf="!h.notes || h.notes.length === 0">
+                      Sin notas de evolución registradas
+                    </div>
+
+                  </div>
+                </td>
+              </tr>
+            </ng-container>
+          </tbody>
+        </table>
+
+      </div>
+
+    </div>
+  </main>
+</div>

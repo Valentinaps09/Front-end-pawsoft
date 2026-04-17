@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -50,15 +50,16 @@ export interface PaymentAdjustmentResponse {
   providedIn: 'root'
 })
 export class AuditService {
-  private apiUrl = `${environment.apiUrl}/admin/payments`;
+  private apiUrl = `${environment.apiUrl}/api/admin/payments`;
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Obtiene todos los ajustes de pagos realizados
-   * @returns Observable con lista de ajustes de pagos
-   */
+  private headers(): HttpHeaders {
+    const token = localStorage.getItem('token') ?? '';
+    return new HttpHeaders({ Authorization: `Bearer ${token}` });
+  }
+
   getAllAdjustments(): Observable<PaymentAdjustmentResponse[]> {
-    return this.http.get<PaymentAdjustmentResponse[]>(`${this.apiUrl}/adjustments`);
+    return this.http.get<PaymentAdjustmentResponse[]>(`${this.apiUrl}/adjustments`, { headers: this.headers() });
   }
 }

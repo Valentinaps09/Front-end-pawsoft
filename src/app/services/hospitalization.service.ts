@@ -44,6 +44,8 @@ export interface HospitalizationDTO {
   id: number;
   petId: number;
   petName: string;
+  petSpecies?: string;
+  ownerEmail?: string;
   vetId: number;
   vetName: string;
   appointmentId: number | null;

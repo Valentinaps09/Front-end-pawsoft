@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { IonicModule } from '@ionic/angular';
 import { FormsModule } from '@angular/forms';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { AuditService, PaymentAdjustmentResponse } from 'src/app/services/audit.service';
@@ -8,7 +7,7 @@ import { AuditService, PaymentAdjustmentResponse } from 'src/app/services/audit.
 @Component({
   selector: 'app-admin-audit',
   standalone: true,
-  imports: [CommonModule, IonicModule, FormsModule, AppSidebarComponent],
+  imports: [CommonModule, FormsModule, AppSidebarComponent],
   templateUrl: './admin-audit.component.html',
   styleUrls: ['./admin-audit.component.scss']
 })

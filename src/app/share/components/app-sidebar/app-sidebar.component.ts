@@ -127,10 +127,11 @@ export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
 
       case 'ROLE_ADMIN':
         this.menuItems = [
-          { icon: '🏠', label: 'Dashboard',  route: '/dashboard-admin' },
-          { icon: '🩺', label: 'Servicios',  route: '/dashboard-admin/servicios' },
-          { icon: '💰', label: 'Pagos',      route: '/dashboard-admin/pagos' },
-          { icon: '📊', label: 'Auditoría',  route: '/dashboard-admin/auditoria' },
+          { icon: '🏠', label: 'Dashboard',        route: '/dashboard-admin' },
+          { icon: '🩺', label: 'Servicios',         route: '/dashboard-admin/servicios' },
+          { icon: '💰', label: 'Pagos',             route: '/dashboard-admin/pagos' },
+          { icon: '🏥', label: 'Hospitalizaciones', route: '/dashboard-admin/hospitalizaciones' },
+          { icon: '📊', label: 'Auditoría',         route: '/dashboard-admin/auditoria' },
         ];
         break;
 

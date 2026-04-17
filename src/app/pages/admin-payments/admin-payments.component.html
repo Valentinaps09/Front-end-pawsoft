@@ -129,15 +129,15 @@
 
               <td>
                 <button class="btn-action adjust"
-                        (click)="openAdjustmentModal(p)"
+                        (click)="openAdjustModal(p)"
                         title="Ajustar monto">
-                  Ajustar
+                  ✏️ Ajustar
                 </button>
                 <button class="btn-action revert"
                         *ngIf="p.status === 'PAID'"
                         (click)="revert(p)"
                         title="Revertir a pendiente">
-                  Revertir
+                  ↩ Revertir
                 </button>
               </td>
 
@@ -153,4 +153,72 @@
 
     </div>
   </main>
+</div>
+
+<!-- ── Modal ajuste de pago ── -->
+<div class="modal-overlay" *ngIf="showAdjustModal" (click)="closeAdjustModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <div class="modal-header-info">
+        <div class="modal-title">✏️ Ajustar monto del pago</div>
+        <div class="modal-subtitle" *ngIf="adjustingPayment">
+          Pago #{{ adjustingPayment.id }} · {{ adjustingPayment.clientName }} · {{ adjustingPayment.petName }}
+        </div>
+      </div>
+      <button class="modal-close" (click)="closeAdjustModal()">✕</button>
+    </div>
+
+    <div class="modal-body" *ngIf="adjustingPayment">
+
+      <div class="adjust-current">
+        <span class="adjust-current-label">Monto actual</span>
+        <span class="adjust-current-value">{{ formatCurrency(adjustingPayment.amount) }}</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Nuevo monto *</label>
+        <div class="input-prefix-wrap">
+          <span class="input-prefix">$</span>
+          <input type="number" class="input-with-prefix" [(ngModel)]="adjustedAmount"
+                 placeholder="0" min="0" step="1000" />
+        </div>
+        <div class="adjust-diff" *ngIf="adjustedAmount > 0 && adjustedAmount !== adjustingPayment.amount">
+          <span class="diff-neg" *ngIf="adjustedAmount < adjustingPayment.amount">
+            ▼ Descuento de {{ formatCurrency(adjustingPayment.amount - adjustedAmount) }}
+          </span>
+          <span class="diff-pos" *ngIf="adjustedAmount > adjustingPayment.amount">
+            ▲ Incremento de {{ formatCurrency(adjustedAmount - adjustingPayment.amount) }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Motivo del ajuste * <span class="required-note">(mínimo 10 caracteres)</span></label>
+        <textarea class="form-textarea" [(ngModel)]="adjustReason" rows="3"
+                  placeholder="Ej: Error en cobro, descuento autorizado, corrección de tarifa..."></textarea>
+        <div class="char-count" [class.char-ok]="adjustReason.trim().length >= 10">
+          {{ adjustReason.trim().length }}/10 caracteres mínimos
+        </div>
+      </div>
+
+      <div class="adjust-warning">
+        <span>⚠️</span>
+        <span>Este ajuste quedará registrado en el historial de auditoría con tu usuario y la fecha actual.</span>
+      </div>
+
+      <div class="error-msg" *ngIf="adjustError">⚠️ {{ adjustError }}</div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeAdjustModal()" [disabled]="savingAdjust">Cancelar</button>
+      <button class="btn-primary" (click)="confirmAdjust()"
+              [disabled]="savingAdjust || adjustedAmount <= 0 || adjustReason.trim().length < 10">
+        <span *ngIf="!savingAdjust">💾 Confirmar ajuste</span>
+        <span *ngIf="savingAdjust">Guardando...</span>
+      </button>
+    </div>
+
+  </div>
 </div>

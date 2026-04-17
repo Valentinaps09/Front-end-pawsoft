@@ -1377,3 +1377,125 @@ input[type="date"]::-webkit-calendar-picker-indicator {
   input[type="number"].form-input { color: #163A2B !important; }
   textarea.form-textarea { color: #163A2B !important; }
 }
+
+/* ── Ajuste de precio — modal de cobro ── */
+.ajuste-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  padding: 12px 16px;
+  background: #F4F8F6;
+  border: 1.5px solid #DCEAE2;
+  border-radius: 10px;
+  user-select: none;
+  transition: border-color 0.18s, background 0.18s;
+  margin-bottom: 8px;
+
+  &:hover { border-color: #22A06B; background: #EBF5EF; }
+}
+
+.ajuste-checkbox {
+  accent-color: #22A06B;
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.ajuste-toggle-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #163A2B;
+  flex: 1;
+}
+
+.ajuste-toggle-hint {
+  font-size: 0.72rem;
+  color: #7A9A8C;
+  font-weight: 400;
+}
+
+.ajuste-panel {
+  background: #FFFBF0;
+  border: 1.5px solid #F0D080;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ajuste-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.76rem;
+  color: #7A6020;
+  font-weight: 600;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #F0D080;
+}
+
+.input-prefix-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #D4E8DC;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #fff;
+  transition: border-color 0.18s;
+
+  &:focus-within { border-color: #22A06B; }
+}
+
+.input-prefix {
+  padding: 0 12px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #4A6359;
+  background: #F4F8F6;
+  border-right: 1.5px solid #D4E8DC;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.input-with-prefix {
+  border: none !important;
+  border-radius: 0 !important;
+  flex: 1;
+  height: 40px;
+  padding: 0 12px;
+  font-size: 0.9rem;
+  color: #163A2B;
+  background: transparent;
+  outline: none;
+
+  &:focus { box-shadow: none; }
+}
+
+.ajuste-diff {
+  margin-top: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+
+  .diff-neg { color: #22A06B; }
+  .diff-pos { color: #e53935; }
+  .diff-neutral { color: #7A9A8C; }
+}
+
+.required-mark {
+  color: #e53935;
+  font-weight: 400;
+  font-size: 0.75rem;
+}
+
+.field-error-msg {
+  font-size: 0.74rem;
+  color: #e53935;
+  margin-top: 4px;
+  font-weight: 500;
+}

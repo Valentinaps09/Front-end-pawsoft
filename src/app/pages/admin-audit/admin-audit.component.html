@@ -1,57 +1,83 @@
-<app-sidebar [userName]="userName" [userRole]="userRole"></app-sidebar>
+<div class="dashboard-layout">
+  <app-sidebar [userName]="userName" [userRole]="userRole"></app-sidebar>
 
-<ion-content class="admin-audit-content">
-  <div class="container">
-    <ion-header>
-      <ion-toolbar>
-        <ion-title>Auditoría de Ajustes de Pagos</ion-title>
-      </ion-toolbar>
-    </ion-header>
+  <main class="main-content">
 
-    <div class="filters">
-      <ion-searchbar
-        [(ngModel)]="searchText"
-        (ionInput)="filter()"
-        placeholder="Buscar por recepcionista o motivo"
-        debounce="300">
-      </ion-searchbar>
+    <div class="topbar">
+      <div>
+        <div class="topbar-title">📊 Auditoría de Pagos</div>
+        <div class="topbar-sub">Historial de ajustes de pagos realizados por recepcionistas</div>
+      </div>
     </div>
 
-    <div *ngIf="loading" class="loading-container">
-      <ion-spinner name="crescent"></ion-spinner>
-      <p>Cargando ajustes...</p>
-    </div>
+    <div class="content-area">
 
-    <div *ngIf="!loading && filteredAdjustments.length === 0" class="empty-state">
-      <ion-icon name="document-text-outline"></ion-icon>
-      <p>No se encontraron ajustes de pagos</p>
-    </div>
+      <!-- Filtro -->
+      <div class="filtros-card">
+        <div class="filtros-row">
+          <div class="filtro-group filtro-busqueda">
+            <label class="filtro-label">🔍 Buscar</label>
+            <input
+              type="text"
+              class="filtro-input"
+              [(ngModel)]="searchText"
+              (input)="filter()"
+              placeholder="Buscar por recepcionista o motivo..."
+            />
+          </div>
+        </div>
+        <div class="filtros-resultado" *ngIf="!loading">
+          Mostrando <strong>{{ filteredAdjustments.length }}</strong> de <strong>{{ adjustments.length }}</strong> ajustes
+        </div>
+      </div>
 
-    <div *ngIf="!loading && filteredAdjustments.length > 0" class="table-container">
-      <table class="audit-table">
-        <thead>
-          <tr>
-            <th>Fecha</th>
-            <th>Recepcionista</th>
-            <th>Monto Original</th>
-            <th>Monto Ajustado</th>
-            <th>Diferencia</th>
-            <th>Motivo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let adj of filteredAdjustments">
-            <td>{{ formatDate(adj.adjustedAt) }}</td>
-            <td>{{ adj.adjustedByName }}</td>
-            <td>{{ formatCurrency(adj.originalAmount) }}</td>
-            <td>{{ formatCurrency(adj.adjustedAmount) }}</td>
-            <td [class]="getDifferenceClass(adj.difference)">
-              {{ formatCurrency(adj.difference) }}
-            </td>
-            <td class="reason-cell">{{ adj.reason }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <!-- Loading -->
+      <div class="loading-wrap" *ngIf="loading">
+        <div class="spinner"></div>
+        <span>Cargando ajustes de pagos...</span>
+      </div>
+
+      <!-- Empty state -->
+      <div class="tabla-wrap" *ngIf="!loading && filteredAdjustments.length === 0">
+        <div class="empty-state">
+          <div class="empty-icon">📋</div>
+          <div class="empty-title">Sin ajustes registrados</div>
+          <div class="empty-sub">
+            Los ajustes de pagos aparecerán aquí cuando una recepcionista modifique el monto de un pago
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla -->
+      <div class="tabla-wrap" *ngIf="!loading && filteredAdjustments.length > 0">
+        <table class="audit-tabla">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Recepcionista</th>
+              <th>Monto original</th>
+              <th>Monto ajustado</th>
+              <th>Diferencia</th>
+              <th>Motivo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let adj of filteredAdjustments">
+              <td class="td-fecha">{{ formatDate(adj.adjustedAt) }}</td>
+              <td class="td-nombre">{{ adj.adjustedByName }}</td>
+              <td class="td-monto">{{ formatCurrency(adj.originalAmount) }}</td>
+              <td class="td-monto">{{ formatCurrency(adj.adjustedAmount) }}</td>
+              <td class="td-diferencia" [ngClass]="getDifferenceClass(adj.difference)">
+                <span class="diff-badge" [ngClass]="getDifferenceClass(adj.difference)">
+                  {{ adj.difference > 0 ? '+' : '' }}{{ formatCurrency(adj.difference) }}
+                </span>
+              </td>
+              <td class="td-motivo">{{ adj.reason }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
-  </div>
-</ion-content>
+  </main>
+</div>

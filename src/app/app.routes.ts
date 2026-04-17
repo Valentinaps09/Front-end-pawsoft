@@ -140,6 +140,15 @@ export const routes: Routes = [
   },
 
   {
+    path: 'dashboard-admin/hospitalizaciones',
+    canActivate: [authGuard, desktopOnlyGuard, roleGuard],
+    data: { roles: ['ROLE_ADMIN'] },
+    loadComponent: () =>
+      import('./pages/admin-hospitalizaciones/admin-hospitalizaciones.component')
+        .then(m => m.AdminHospitalizacionesComponent),
+  },
+
+  {
     path: 'dashboard-vet',
     canActivate: [authGuard, desktopOnlyGuard, roleGuard],
     data: { roles: ['ROLE_VETERINARIO'] },
