@@ -13,6 +13,8 @@ export interface Pet {
   sex: string;
   ownerEmail?: string;
   photoUrl?: string;
+  isDeceased?: boolean;      // Indica si la mascota está fallecida
+  isHospitalized?: boolean;  // Indica si la mascota está hospitalizada
   medicalProfileInitial?: CreateMedicalProfileInitialRequest;
 }
 

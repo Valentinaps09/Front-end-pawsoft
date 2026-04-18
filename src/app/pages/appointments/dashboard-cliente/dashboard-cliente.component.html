@@ -128,12 +128,16 @@
             <div class="pets-grid" *ngIf="pets.length > 0">
               <div class="pet-chip" *ngFor="let pet of pets"
                    [class.selected]="selectedPet?.id === pet.id"
+                   [class.hospitalized]="pet.isHospitalized"
                    (click)="selectPet(pet)">
                 <div class="pet-chip-avatar">
                   <img *ngIf="pet.photoUrl" [src]="pet.photoUrl" [alt]="pet.name" class="pet-chip-img">
                   <span *ngIf="!pet.photoUrl" class="pet-emoji">{{ pet.emoji }}</span>
+                  <!-- Indicador de hospitalización -->
+                  <div class="hospitalized-badge" *ngIf="pet.isHospitalized" title="Hospitalizada">🏥</div>
                 </div>
                 <span class="pet-name">{{ pet.name }}</span>
+                <div class="pet-status" *ngIf="pet.isHospitalized">Hospitalizada</div>
               </div>
             </div>
           </div>

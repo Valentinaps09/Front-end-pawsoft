@@ -15,6 +15,8 @@ export interface Pet {
   sex: string;
   ownerEmail?: string;
   photoUrl?: string;
+  isDeceased?: boolean;      // Indica si la mascota está fallecida
+  isHospitalized?: boolean;  // Indica si la mascota está hospitalizada
   medicalProfileInitial?: CreateMedicalProfileInitialRequest;
 }
 
@@ -191,6 +193,11 @@ export class PetComponent implements OnInit {
   }
 
   openEditModal(pet: Pet): void {
+    // No permitir editar mascotas fallecidas
+    if (pet.isDeceased) {
+      return;
+    }
+    
     this.editingPet = pet;
     this.selectedFile = null;
     this.photoPreview = pet.photoUrl || null;
@@ -292,7 +299,14 @@ export class PetComponent implements OnInit {
     }
   }
 
-  openDeleteModal(pet: Pet): void { this.petToDelete = pet; this.showDeleteModal = true; }
+  openDeleteModal(pet: Pet): void { 
+    // No permitir eliminar mascotas fallecidas
+    if (pet.isDeceased) {
+      return;
+    }
+    this.petToDelete = pet; 
+    this.showDeleteModal = true; 
+  }
   closeDeleteModal(): void { this.showDeleteModal = false; this.petToDelete = null; }
 
   confirmDelete(): void {

@@ -130,7 +130,7 @@ export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
           { icon: '🏠', label: 'Dashboard',        route: '/dashboard-admin' },
           { icon: '🩺', label: 'Servicios',         route: '/dashboard-admin/servicios' },
           { icon: '💰', label: 'Pagos',             route: '/dashboard-admin/pagos' },
-          { icon: '🏥', label: 'Hospitalizaciones', route: '/dashboard-admin/hospitalizaciones' },
+          { icon: '🏥', label: 'Registros especiales', route: '/dashboard-admin/hospitalizaciones' },
           { icon: '📊', label: 'Auditoría',         route: '/dashboard-admin/auditoria' },
         ];
         break;
@@ -162,7 +162,7 @@ export class AppSidebarComponent implements OnInit, OnChanges, OnDestroy {
       },
       {
         icon: '🏥',
-        label: 'Hospitalizaciones',
+        label: 'Registros especiales',
         route: '/veterinario/hospitalizaciones',
         disabled: false,
       },

@@ -5,20 +5,20 @@
 
     <div class="topbar">
       <div>
-        <div class="topbar-title">Pagos</div>
+        <div class="topbar-title">💳 Pagos</div>
         <div class="topbar-sub">Historial completo de pagos del sistema</div>
       </div>
     </div>
 
     <div class="content-area">
 
-      <!-- ═══ STATS ═══ -->
+      <!-- STATS -->
       <div class="stats-strip" *ngIf="stats">
         <div class="stat-card">
           <div class="stat-icon-wrap">✅</div>
           <div class="stat-info">
             <div class="stat-value">{{ stats.totalPaid }}</div>
-            <div class="stat-label">Pagos cobrados</div>
+            <div class="stat-label">Cobrados</div>
           </div>
         </div>
         <div class="stat-card">
@@ -44,108 +44,258 @@
         </div>
       </div>
 
-      <!-- ═══ FILTROS ═══ -->
-      <div class="section-card">
+      <!-- FILTROS -->
+      <div class="section-card filtros-card">
         <div class="filters-row">
           <input type="text" class="form-input search-input"
-                 placeholder="Buscar por cliente, mascota, veterinario, concepto..."
+                 placeholder="🔍  Buscar cliente, mascota, veterinario, servicio..."
                  [(ngModel)]="searchText" (input)="filter()">
-          <select class="form-select filter-select" [(ngModel)]="statusFilter" (change)="filter()">
-            <option value="">Todos los estados</option>
-            <option value="PAID">Cobrado</option>
-            <option value="PENDING">Pendiente</option>
-          </select>
+          <div class="filtro-group">
+            <label class="filtro-label">Desde</label>
+            <input type="date" class="filtro-date" [(ngModel)]="fechaDesde" (change)="filter()" />
+          </div>
+          <div class="filtro-group">
+            <label class="filtro-label">Hasta</label>
+            <input type="date" class="filtro-date" [(ngModel)]="fechaHasta" (change)="filter()" />
+          </div>
+          <button class="btn-limpiar-fecha" *ngIf="fechaDesde || fechaHasta" (click)="limpiarFechas()">✕ Fechas</button>
+          <span class="filter-count-inline">
+            <strong>{{ filteredPayments.length }}</strong> / {{ payments.length }}
+          </span>
+        </div>
+        <div class="filter-tabs">
+          <button class="filter-tab" [class.active]="activeFilter === 'all'"             (click)="setFilter('all')">Todos</button>
+          <button class="filter-tab" [class.active]="activeFilter === 'paid'"            (click)="setFilter('paid')">✓ Cobrado</button>
+          <button class="filter-tab" [class.active]="activeFilter === 'pending'"         (click)="setFilter('pending')">⏳ Pendiente</button>
+          <button class="filter-tab" [class.active]="activeFilter === 'paid_discount'"   (click)="setFilter('paid_discount')">✓ Cobrado con descuento</button>
+          <button class="filter-tab" [class.active]="activeFilter === 'paid_no_discount'"(click)="setFilter('paid_no_discount')">✓ Cobrado sin descuento</button>
         </div>
       </div>
 
-      <!-- ═══ TABLA ═══ -->
+      <!-- TABLA -->
       <div class="section-card table-card">
 
         <div class="loading-row" *ngIf="loading">
+          <div class="spinner-sm"></div>
           <span>Cargando pagos...</span>
         </div>
 
         <div class="table-wrapper" *ngIf="!loading">
           <table class="data-table">
             <thead>
-            <tr>
-              <th>#</th>
-              <th>Cliente</th>
-              <th>Mascota</th>
-              <th>Veterinario</th>
-              <th>Fecha cita</th>
-              <th>Concepto</th>
-              <th>Monto</th>
-              <th>Estado</th>
-              <th>Fecha cobro</th>
-              <th>Acciones</th>
-            </tr>
+              <tr>
+                <th class="th-id">#</th>
+                <th>Cliente / Mascota</th>
+                <th>Servicio</th>
+                <th>Monto</th>
+                <th>Estado</th>
+                <th>Fecha</th>
+                <th class="th-acciones">Acciones</th>
+              </tr>
             </thead>
             <tbody>
-            <tr *ngFor="let p of filteredPayments" class="table-row">
+              <ng-container *ngFor="let p of filteredPayments; let i = index">
 
-              <td class="cell-text">#{{ p.id }}</td>
+                <!-- Fila principal -->
+                <tr class="fila-pago"
+                    [class.fila-par]="i % 2 === 0"
+                    [class.fila-impar]="i % 2 !== 0"
+                    [class.fila-expandida]="expandedId === p.id"
+                    [class.fila-paid]="p.status === 'PAID'"
+                    [class.fila-pending]="p.status === 'PENDING'">
 
-              <td>
-                <div class="cell-name">{{ p.clientName }}</div>
-                <div class="cell-sub">{{ p.clientEmail }}</div>
-              </td>
+                  <td class="td-id">#{{ p.id }}</td>
 
-              <td>
-                <div class="cell-name">{{ p.petName }}</div>
-              </td>
+                  <td class="td-cliente">
+                    <div class="cliente-nombre">{{ p.clientName }}</div>
+                    <div class="cliente-mascota">🐾 {{ p.petName }}</div>
+                  </td>
 
-              <td>
-                <div class="cell-name">{{ p.vetName }}</div>
-              </td>
+                  <td class="td-servicio">
+                    <span class="servicio-chip">{{ p.concept }}</span>
+                  </td>
 
-              <td class="cell-text">
-                {{ formatDate(p.appointmentDate) }}
-                <div class="cell-sub">{{ p.appointmentTime }}</div>
-              </td>
+                  <td class="td-monto">
+                    <div class="monto-valor">{{ formatCurrency(p.amount) }}</div>
+                    <span class="descuento-badge" *ngIf="hasDiscount(p)">
+                      {{ getDiscountPct(p) > 0 ? '−' + getDiscountPct(p) + '%' : 'Ajustado' }}
+                    </span>
+                  </td>
 
-              <td class="cell-text">{{ p.concept }}</td>
+                  <td class="td-estado">
+                    <span class="status-badge" [class.paid]="p.status === 'PAID'" [class.pending]="p.status === 'PENDING'">
+                      {{ p.status === 'PAID' ? '✓ Cobrado' : '⏳ Pendiente' }}
+                    </span>
+                  </td>
 
-              <td>
-                <div class="cell-name">{{ formatCurrency(p.amount) }}</div>
-                <div class="cell-sub" *ngIf="p.amount !== p.baseAmount">
-                  Sin descuento: {{ formatCurrency(p.baseAmount) }}
-                </div>
-                <div class="cell-sub descuento-motivo" *ngIf="p.amount !== p.baseAmount && p.notes">
-                  📝 {{ p.notes }}
-                </div>
-              </td>
+                  <td class="td-fecha">
+                    <div>{{ formatDate(p.appointmentDate) }}</div>
+                    <div class="fecha-hora">{{ p.appointmentTime }}</div>
+                  </td>
 
-              <td>
-                  <span class="status-badge" [class.paid]="p.status === 'PAID'" [class.pending]="p.status === 'PENDING'">
-                    {{ p.status === 'PAID' ? 'Cobrado' : 'Pendiente' }}
-                  </span>
-              </td>
+                  <td class="td-acciones" (click)="$event.stopPropagation()">
+                    <div class="acciones-col">
+                      <!-- Acción principal: ver detalle -->
+                      <button class="btn-detalle"
+                              (click)="toggleRow(p.id)"
+                              [class.btn-detalle-open]="expandedId === p.id">
+                        {{ expandedId === p.id ? '▲ Ocultar detalle' : '▼ Ver detalle' }}
+                      </button>
+                      <!-- Acciones de modificación centradas debajo -->
+                      <div class="acciones-modificar">
+                        <button class="btn-action adjust" (click)="openAdjustModal(p)" title="Editar monto del pago">
+                          ✏️ Editar
+                        </button>
+                        <button class="btn-action revert"
+                                *ngIf="p.status === 'PAID'"
+                                (click)="revert(p)"
+                                title="Revertir pago a pendiente">
+                          ↩ Revertir
+                        </button>
+                      </div>
+                    </div>
+                  </td>
 
-              <td class="cell-text">
-                {{ p.paymentDate ? formatDate(p.paymentDate) : '—' }}
-                <div class="cell-sub" *ngIf="p.receivedBy">{{ p.receivedBy }}</div>
-              </td>
+                </tr>
 
-              <td>
-                <button class="btn-action adjust"
-                        (click)="openAdjustModal(p)"
-                        title="Ajustar monto">
-                  ✏️ Ajustar
-                </button>
-                <button class="btn-action revert"
-                        *ngIf="p.status === 'PAID'"
-                        (click)="revert(p)"
-                        title="Revertir a pendiente">
-                  ↩ Revertir
-                </button>
-              </td>
+                <!-- Panel expandible -->
+                <tr class="fila-detalle" *ngIf="expandedId === p.id">
+                  <td colspan="7">
+                    <div class="detalle-panel">
+                      <div class="detalle-grid">
 
-            </tr>
+                        <!-- Info del pago -->
+                        <div class="detalle-seccion">
+                          <div class="detalle-titulo">📋 Información del pago</div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Cliente</span>
+                            <span class="detalle-val">{{ p.clientName }}</span>
+                          </div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Correo cliente</span>
+                            <span class="detalle-val">{{ p.clientEmail }}</span>
+                          </div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Mascota</span>
+                            <span class="detalle-val">{{ p.petName }}</span>
+                          </div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Veterinario</span>
+                            <span class="detalle-val">{{ p.vetName }}</span>
+                          </div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Precio base</span>
+                            <span class="detalle-val">{{ formatCurrency(p.baseAmount) }}</span>
+                          </div>
+                          <div class="detalle-fila">
+                            <span class="detalle-key">Monto cobrado</span>
+                            <span class="detalle-val" [class.monto-ajustado]="hasDiscount(p)">
+                              {{ formatCurrency(p.amount) }}
+                              <span *ngIf="hasDiscount(p) && getDiscountPct(p) > 0"> (−{{ getDiscountPct(p) }}%)</span>
+                            </span>
+                          </div>
+                          <div class="detalle-fila" *ngIf="p.paymentDate">
+                            <span class="detalle-key">Fecha cobro</span>
+                            <span class="detalle-val">{{ formatDate(p.paymentDate) }}</span>
+                          </div>
+                          <div class="detalle-fila" *ngIf="p.receivedBy">
+                            <span class="detalle-key">Recepcionista</span>
+                            <span class="detalle-val">
+                              <span class="recep-nombre" *ngIf="p.receivedByName && p.receivedByName !== p.receivedBy">{{ p.receivedByName }}</span>
+                              <span class="recep-email">{{ p.receivedBy }}</span>
+                            </span>
+                          </div>
+                        </div>
 
-            <tr *ngIf="filteredPayments.length === 0">
-              <td colspan="10" class="empty-row">No se encontraron pagos</td>
-            </tr>
+                        <!-- Ajustes / descuentos -->
+                        <div class="detalle-seccion">
+                          <div class="detalle-titulo">🔧 Descuentos y ajustes</div>
+
+                          <div class="detalle-sin-descuento" *ngIf="!hasDiscount(p)">
+                            ✅ Sin ajustes — cobrado al precio base del servicio
+                          </div>
+
+                          <ng-container *ngIf="hasDiscount(p)">
+                            <div class="ajustes-lista">
+
+                              <!-- Descuento inicial al crear el pago -->
+                              <div class="ajuste-item ajuste-inicial-entry"
+                                   *ngIf="p.adjustments && p.adjustments.length > 0 && p.adjustments[0].originalAmount !== p.baseAmount">
+                                <div class="ajuste-meta">
+                                  <span class="ajuste-quien">👤 {{ p.receivedByName || p.receivedBy }}</span>
+                                  <span class="ajuste-email-tag">{{ p.receivedBy }}</span>
+                                  <span class="ajuste-fecha">Al registrar el pago</span>
+                                  <span class="badge-anterior">Inicial</span>
+                                </div>
+                                <div class="ajuste-montos">
+                                  <span class="ajuste-original">{{ formatCurrency(p.baseAmount) }}</span>
+                                  <span class="ajuste-arrow">→</span>
+                                  <span class="ajuste-nuevo">{{ formatCurrency(p.adjustments[0].originalAmount) }}</span>
+                                  <span class="diff-chip diff-neg">−{{ formatCurrency(p.baseAmount - p.adjustments[0].originalAmount) }}</span>
+                                </div>
+                                <div class="ajuste-motivo" *ngIf="p.notes">
+                                  <span class="ajuste-motivo-label">Motivo:</span> {{ p.notes }}
+                                </div>
+                              </div>
+
+                              <!-- Sin ajustes formales: solo descuento inicial vigente -->
+                              <div class="ajuste-item ajuste-vigente"
+                                   *ngIf="!p.adjustments || p.adjustments.length === 0">
+                                <div class="ajuste-meta">
+                                  <span class="ajuste-quien">👤 {{ p.receivedByName || p.receivedBy }}</span>
+                                  <span class="ajuste-email-tag">{{ p.receivedBy }}</span>
+                                  <span class="ajuste-fecha">Al registrar el pago</span>
+                                  <span class="badge-vigente">✓ Vigente</span>
+                                </div>
+                                <div class="ajuste-montos">
+                                  <span class="ajuste-original">{{ formatCurrency(p.baseAmount) }}</span>
+                                  <span class="ajuste-arrow">→</span>
+                                  <span class="ajuste-nuevo">{{ formatCurrency(p.amount) }}</span>
+                                  <span class="diff-chip diff-neg">−{{ formatCurrency(p.baseAmount - p.amount) }}</span>
+                                </div>
+                                <div class="ajuste-motivo" *ngIf="p.notes">
+                                  <span class="ajuste-motivo-label">Motivo:</span> {{ p.notes }}
+                                </div>
+                              </div>
+
+                              <!-- Todos los ajustes formales en orden cronológico -->
+                              <div class="ajuste-item"
+                                   *ngFor="let adj of p.adjustments; let last = last"
+                                   [class.ajuste-vigente]="last">
+                                <div class="ajuste-meta">
+                                  <span class="ajuste-quien">👤 {{ adj.adjustedByName }}</span>
+                                  <span class="ajuste-email-tag">{{ adj.adjustedBy }}</span>
+                                  <span class="ajuste-fecha">{{ formatDateTime(adj.adjustedAt) }}</span>
+                                  <span class="badge-vigente" *ngIf="last">✓ Vigente</span>
+                                  <span class="badge-anterior" *ngIf="!last">Anterior</span>
+                                </div>
+                                <div class="ajuste-montos">
+                                  <span class="ajuste-original">{{ formatCurrency(adj.originalAmount) }}</span>
+                                  <span class="ajuste-arrow">→</span>
+                                  <span class="ajuste-nuevo">{{ formatCurrency(adj.adjustedAmount) }}</span>
+                                  <span class="diff-chip" [class.diff-neg]="adj.difference < 0" [class.diff-pos]="adj.difference > 0">
+                                    {{ adj.difference > 0 ? '+' : '' }}{{ formatCurrency(adj.difference) }}
+                                  </span>
+                                </div>
+                                <div class="ajuste-motivo">
+                                  <span class="ajuste-motivo-label">Motivo:</span> {{ adj.reason }}
+                                </div>
+                              </div>
+
+                            </div>
+                          </ng-container>
+                        </div>
+
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+              </ng-container>
+
+              <tr *ngIf="filteredPayments.length === 0">
+                <td colspan="7" class="empty-row">No se encontraron pagos</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -155,13 +305,13 @@
   </main>
 </div>
 
-<!-- ── Modal ajuste de pago ── -->
+<!-- Modal editar pago -->
 <div class="modal-overlay" *ngIf="showAdjustModal" (click)="closeAdjustModal()">
   <div class="modal-card" (click)="$event.stopPropagation()">
 
     <div class="modal-header">
       <div class="modal-header-info">
-        <div class="modal-title">✏️ Ajustar monto del pago</div>
+        <div class="modal-title">✏️ Editar monto del pago</div>
         <div class="modal-subtitle" *ngIf="adjustingPayment">
           Pago #{{ adjustingPayment.id }} · {{ adjustingPayment.clientName }} · {{ adjustingPayment.petName }}
         </div>
@@ -172,39 +322,69 @@
     <div class="modal-body" *ngIf="adjustingPayment">
 
       <div class="adjust-current">
-        <span class="adjust-current-label">Monto actual</span>
-        <span class="adjust-current-value">{{ formatCurrency(adjustingPayment.amount) }}</span>
+        <div class="adjust-current-row">
+          <span class="adjust-current-label">Precio original</span>
+          <span class="adjust-current-value">{{ formatCurrency(adjustingPayment.baseAmount) }}</span>
+        </div>
+        <div class="adjust-current-row adjust-current-row--sub">
+          <span class="adjust-current-label">Monto actual</span>
+          <span class="adjust-current-value-sm">{{ formatCurrency(adjustingPayment.amount) }}</span>
+        </div>
+      </div>
+
+      <div class="range-info">
+        <div class="range-item range-min">
+          <span class="range-label">Mínimo permitido</span>
+          <span class="range-value">{{ formatCurrency(minAllowed) }}</span>
+          <span class="range-hint">50% del precio original</span>
+        </div>
+        <div class="range-divider">—</div>
+        <div class="range-item range-max">
+          <span class="range-label">Máximo permitido</span>
+          <span class="range-value">{{ formatCurrency(maxAllowed) }}</span>
+          <span class="range-hint">200% del precio original</span>
+        </div>
       </div>
 
       <div class="form-group">
         <label class="form-label">Nuevo monto *</label>
-        <div class="input-prefix-wrap">
+        <div class="input-prefix-wrap" [class.input-error]="adjustedAmount !== adjustingPayment.amount && !isAmountValid">
           <span class="input-prefix">$</span>
           <input type="number" class="input-with-prefix" [(ngModel)]="adjustedAmount"
-                 placeholder="0" min="0" step="1000" />
+                 [min]="minAllowed" [max]="maxAllowed" step="1000"
+                 placeholder="{{ minAllowed }}" />
         </div>
-        <div class="adjust-diff" *ngIf="adjustedAmount > 0 && adjustedAmount !== adjustingPayment.amount">
-          <span class="diff-neg" *ngIf="adjustedAmount < adjustingPayment.amount">
-            ▼ Descuento de {{ formatCurrency(adjustingPayment.amount - adjustedAmount) }}
+        <div class="validation-msg validation-error" *ngIf="adjustedAmount !== adjustingPayment.amount && !isAmountValid">
+          ❌ {{ amountValidationError }}
+        </div>
+        <div class="validation-msg validation-ok" *ngIf="isAmountValid && adjustedAmount !== adjustingPayment.amount && adjustedAmount > 0">
+          ✅ Monto válido
+          <span class="diff-inline diff-neg" *ngIf="adjustedAmount < adjustingPayment.amount">
+            — descuento de {{ formatCurrency(adjustingPayment.amount - adjustedAmount) }}
           </span>
-          <span class="diff-pos" *ngIf="adjustedAmount > adjustingPayment.amount">
-            ▲ Incremento de {{ formatCurrency(adjustedAmount - adjustingPayment.amount) }}
+          <span class="diff-inline diff-pos" *ngIf="adjustedAmount > adjustingPayment.amount">
+            — incremento de {{ formatCurrency(adjustedAmount - adjustingPayment.amount) }}
           </span>
         </div>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Motivo del ajuste * <span class="required-note">(mínimo 10 caracteres)</span></label>
+        <label class="form-label">
+          Motivo del ajuste *
+          <span class="required-note">(mínimo 10 caracteres)</span>
+        </label>
         <textarea class="form-textarea" [(ngModel)]="adjustReason" rows="3"
-                  placeholder="Ej: Error en cobro, descuento autorizado, corrección de tarifa..."></textarea>
+                  placeholder="Ej: Descuento autorizado por gerencia, corrección de tarifa..."></textarea>
         <div class="char-count" [class.char-ok]="adjustReason.trim().length >= 10">
           {{ adjustReason.trim().length }}/10 caracteres mínimos
         </div>
       </div>
 
       <div class="adjust-warning">
-        <span>⚠️</span>
-        <span>Este ajuste quedará registrado en el historial de auditoría con tu usuario y la fecha actual.</span>
+        <div>
+          <div class="warning-title">Este motivo es visible para todos los administradores</div>
+          <div class="warning-body">El ajuste quedará registrado en el historial de auditoría con tu usuario, la fecha y el motivo que escribas.</div>
+        </div>
       </div>
 
       <div class="error-msg" *ngIf="adjustError">⚠️ {{ adjustError }}</div>
@@ -214,8 +394,8 @@
     <div class="modal-footer">
       <button class="btn-secondary" (click)="closeAdjustModal()" [disabled]="savingAdjust">Cancelar</button>
       <button class="btn-primary" (click)="confirmAdjust()"
-              [disabled]="savingAdjust || adjustedAmount <= 0 || adjustReason.trim().length < 10">
-        <span *ngIf="!savingAdjust">💾 Confirmar ajuste</span>
+              [disabled]="savingAdjust || !isAmountValid || adjustedAmount <= 0 || adjustReason.trim().length < 10">
+        <span *ngIf="!savingAdjust">💾 Confirmar edición</span>
         <span *ngIf="savingAdjust">Guardando...</span>
       </button>
     </div>

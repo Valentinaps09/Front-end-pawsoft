@@ -19,19 +19,31 @@
       </div>
 
       <div class="pets-grid" *ngIf="pets.length > 0">
-        <div class="pet-card" *ngFor="let pet of pets">
+        <div class="pet-card" *ngFor="let pet of pets" [class.deceased]="pet.isDeceased">
+          <!-- Indicador de mascota fallecida -->
+          <div class="deceased-banner" *ngIf="pet.isDeceased">
+            <span class="deceased-icon">🌈</span>
+            <span class="deceased-text">En nuestros corazones</span>
+          </div>
+          
           <div class="pet-card-header">
-            <div class="pet-avatar">
+            <div class="pet-avatar" [class.deceased-avatar]="pet.isDeceased">
               <img *ngIf="pet.photoUrl" [src]="pet.photoUrl" alt="Foto de {{ pet.name }}" class="pet-photo">
               <span *ngIf="!pet.photoUrl">{{ getEmoji(pet.species) }}</span>
             </div>
             <div class="pet-card-info">
-              <div class="pet-card-name">{{ pet.name }}</div>
+              <div class="pet-card-name" [class.deceased-name]="pet.isDeceased">
+                {{ pet.name }}
+                <span class="deceased-heart" *ngIf="pet.isDeceased">💙</span>
+              </div>
               <div class="pet-card-species">{{ pet.species }} · {{ pet.breed || 'Sin raza' }}</div>
             </div>
-            <div class="pet-card-actions">
+            <div class="pet-card-actions" *ngIf="!pet.isDeceased">
               <button class="btn-icon" title="Editar" (click)="openEditModal(pet)">✏️</button>
               <button class="btn-icon danger" title="Eliminar" (click)="openDeleteModal(pet)">🗑️</button>
+            </div>
+            <div class="pet-card-readonly" *ngIf="pet.isDeceased">
+              <span class="readonly-label">Solo lectura</span>
             </div>
           </div>
           <div class="pet-card-body">

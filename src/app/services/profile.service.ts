@@ -13,7 +13,17 @@ export interface VerifyAndSaveRequest {
   code:        string;
   email:       string;
   phone:       string;
+  currentPassword?: string;
   newPassword?: string;
+}
+
+export interface ValidatePasswordRequest {
+  currentPassword: string;
+}
+
+export interface ValidatePasswordResponse {
+  valid: boolean;
+  message?: string;
 }
 
 export interface ProfileResponse {
@@ -26,6 +36,11 @@ export class ProfileService {
   private readonly base = `${environment.apiUrl}/api/profile`;
 
   constructor(private readonly http: HttpClient) {}
+
+  /** Valida la contraseña actual del usuario */
+  validateCurrentPassword(payload: ValidatePasswordRequest): Observable<ValidatePasswordResponse> {
+    return this.http.post<ValidatePasswordResponse>(`${this.base}/validate-password`, payload);
+  }
 
   /** Envía un código 2FA al correo actual del usuario autenticado */
   requestVerification(): Observable<ProfileResponse> {

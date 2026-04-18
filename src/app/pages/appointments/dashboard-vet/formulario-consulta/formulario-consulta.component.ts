@@ -2,6 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Observable } from 'rxjs';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import {
@@ -15,6 +16,8 @@ import {
 import { AppointmentService } from 'src/app/services/appointment.service';
 import { MedicalProfileService } from 'src/app/services/medical-profile.service';
 import { HospitalizationService } from 'src/app/services/hospitalization.service';
+import { ChatbotService } from 'src/app/services/chatbot.service';
+import { MedicalFormSuggestionRequest, MedicalFormSuggestionResponse } from 'src/app/pages/chat-bot/chatbot.model';
 import { PetMedicalProfileDTO, UpdateMedicalProfileRequest } from 'src/app/models/medical-profile.model';
 import {
   evaluarTemperatura,
@@ -118,22 +121,33 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
   fotosAdjuntas: string[] = [];
   uploadingPhoto = false;
   uploadError = '';
+  descargandoPdf = false;
 
   // Hospitalización
   requiereHospitalizacion = false;
   hospitalizacionMotivo = '';
   hospitalizacionObservaciones = '';
-  hospitalizacionTarifa = 50000;
+  hospitalizacionTarifa: number | null = null;
 
   // Fallecimiento durante la atención
   fallecioEnAtencion = false;
   causaMuerteAtencion = '';
+
+  // Estado del paciente (radio buttons)
+  estadoPaciente: 'estable' | 'hospitalizacion' | 'fallecido' = 'estable';
 
   // Control de secciones
   seccionActiva: 'interno' | 'cliente' = 'interno';
 
   // Modal de confirmación
   mostrarModalCancelar = false;
+
+  // Autocompletado médico con IA
+  mostrarAutocompletado = false;
+  descripcionSintomas = '';
+  cargandoSugerencias = false;
+  sugerenciasMedicas: MedicalFormSuggestionResponse | null = null;
+  errorSugerencias = '';
 
   // Errores inline
   errores = {
@@ -149,6 +163,7 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     notasClinicas: '',
     indicacionesCliente: '',
     hospitalizacionMotivo: '',
+    hospitalizacionTarifa: '',
     causaMuerteAtencion: '',
     medicamentos: [] as string[],
     medicamentosRecetados: [] as string[]
@@ -207,6 +222,8 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     private readonly appointmentService: AppointmentService,
     private readonly medicalProfileService: MedicalProfileService,
     private readonly hospitalizationService: HospitalizationService,
+    private readonly chatbotService: ChatbotService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -409,7 +426,7 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     if (this.frecuenciaCardiaca !== null && this.frecuenciaCardiaca !== undefined) {
       const valor = Number(this.frecuenciaCardiaca);
       if (!isNaN(valor)) {
-        if (valor > 999) this.frecuenciaCardiaca = 999;
+        if (valor > 300) this.frecuenciaCardiaca = 300;
         else if (valor <= 0) this.frecuenciaCardiaca = 1;
       }
     }
@@ -419,8 +436,18 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     if (this.frecuenciaRespiratoria !== null && this.frecuenciaRespiratoria !== undefined) {
       const valor = Number(this.frecuenciaRespiratoria);
       if (!isNaN(valor)) {
-        if (valor > 999) this.frecuenciaRespiratoria = 999;
+        if (valor > 150) this.frecuenciaRespiratoria = 150;
         else if (valor <= 0) this.frecuenciaRespiratoria = 1;
+      }
+    }
+  }
+
+  limitarHospitalizacionTarifa(): void {
+    if (this.hospitalizacionTarifa !== null && this.hospitalizacionTarifa !== undefined) {
+      const valor = Number(this.hospitalizacionTarifa);
+      if (!isNaN(valor)) {
+        if (valor > 80000) this.hospitalizacionTarifa = 80000;
+        else if (valor < 0) this.hospitalizacionTarifa = 5000;
       }
     }
   }
@@ -549,8 +576,8 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       this.errores.frecuenciaCardiaca = 'La frecuencia cardíaca es obligatoria';
     } else if (this.frecuenciaCardiaca <= 0) {
       this.errores.frecuenciaCardiaca = 'La frecuencia cardíaca debe ser mayor a 0 lpm';
-    } else if (this.frecuenciaCardiaca > 999) {
-      this.errores.frecuenciaCardiaca = 'La frecuencia cardíaca no puede superar 999 lpm';
+    } else if (this.frecuenciaCardiaca > 300) {
+      this.errores.frecuenciaCardiaca = 'La frecuencia cardíaca no puede superar 300 lpm';
     } else {
       this.errores.frecuenciaCardiaca = '';
     }
@@ -561,8 +588,8 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       this.errores.frecuenciaRespiratoria = 'La frecuencia respiratoria es obligatoria';
     } else if (this.frecuenciaRespiratoria <= 0) {
       this.errores.frecuenciaRespiratoria = 'La frecuencia respiratoria debe ser mayor a 0 rpm';
-    } else if (this.frecuenciaRespiratoria > 999) {
-      this.errores.frecuenciaRespiratoria = 'La frecuencia respiratoria no puede superar 999 rpm';
+    } else if (this.frecuenciaRespiratoria > 150) {
+      this.errores.frecuenciaRespiratoria = 'La frecuencia respiratoria no puede superar 150 rpm';
     } else {
       this.errores.frecuenciaRespiratoria = '';
     }
@@ -590,6 +617,46 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     } else {
       this.errores.indicacionesCliente = '';
     }
+  }
+
+  validarHospitalizacionTarifa(): void {
+    if (this.hospitalizacionTarifa === null || this.hospitalizacionTarifa === undefined || String(this.hospitalizacionTarifa).trim() === '') {
+      this.errores.hospitalizacionTarifa = 'La tarifa por hora es obligatoria';
+    } else if (this.hospitalizacionTarifa < 5000) {
+      this.errores.hospitalizacionTarifa = 'La tarifa mínima es de $5.000 COP';
+    } else if (this.hospitalizacionTarifa > 80000) {
+      this.errores.hospitalizacionTarifa = 'La tarifa máxima es de $80.000 COP';
+    } else {
+      this.errores.hospitalizacionTarifa = '';
+    }
+  }
+
+  tieneErroresValidacion(): boolean {
+    // Verificar si hay errores según el estado del paciente
+    if (this.estadoPaciente === 'estable') {
+      return !!(
+        this.errores.diagnosticoPrincipal ||
+        this.errores.diagnosticoCliente ||
+        this.errores.proximoControlFecha ||
+        this.errores.proximoControlMotivo ||
+        this.errores.medicamentos.some(e => e) ||
+        this.errores.medicamentosRecetados.some(e => e)
+      );
+    } else if (this.estadoPaciente === 'hospitalizacion') {
+      return !!(
+        this.errores.diagnosticoPrincipal ||
+        this.errores.hospitalizacionMotivo ||
+        this.errores.hospitalizacionTarifa ||
+        this.errores.medicamentos.some(e => e)
+      );
+    } else if (this.estadoPaciente === 'fallecido') {
+      return !!(
+        this.errores.diagnosticoPrincipal ||
+        this.errores.causaMuerteAtencion ||
+        this.errores.medicamentos.some(e => e)
+      );
+    }
+    return false;
   }
 
   validarProximoControl(): void {
@@ -637,7 +704,9 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     } else {
       this.hospitalizacionMotivo = '';
       this.hospitalizacionObservaciones = '';
+      this.hospitalizacionTarifa = null;
       this.errores.hospitalizacionMotivo = '';
+      this.errores.hospitalizacionTarifa = '';
     }
     this.onFormChange();
   }
@@ -648,11 +717,44 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       this.requiereHospitalizacion = false;
       this.hospitalizacionMotivo = '';
       this.hospitalizacionObservaciones = '';
+      this.hospitalizacionTarifa = null;
       this.errores.hospitalizacionMotivo = '';
+      this.errores.hospitalizacionTarifa = '';
     } else {
       this.causaMuerteAtencion = '';
       this.errores.causaMuerteAtencion = '';
     }
+    this.onFormChange();
+  }
+
+  onEstadoPacienteChange(): void {
+    // Sincronizar con las variables booleanas existentes
+    this.requiereHospitalizacion = this.estadoPaciente === 'hospitalizacion';
+    this.fallecioEnAtencion = this.estadoPaciente === 'fallecido';
+
+    // Limpiar campos según el estado
+    if (this.estadoPaciente === 'estable') {
+      // Limpiar campos de hospitalización y fallecimiento
+      this.hospitalizacionMotivo = '';
+      this.hospitalizacionObservaciones = '';
+      this.hospitalizacionTarifa = null;
+      this.causaMuerteAtencion = '';
+      this.errores.hospitalizacionMotivo = '';
+      this.errores.hospitalizacionTarifa = '';
+      this.errores.causaMuerteAtencion = '';
+    } else if (this.estadoPaciente === 'hospitalizacion') {
+      // Limpiar campos de fallecimiento
+      this.causaMuerteAtencion = '';
+      this.errores.causaMuerteAtencion = '';
+    } else if (this.estadoPaciente === 'fallecido') {
+      // Limpiar campos de hospitalización
+      this.hospitalizacionMotivo = '';
+      this.hospitalizacionObservaciones = '';
+      this.hospitalizacionTarifa = null;
+      this.errores.hospitalizacionMotivo = '';
+      this.errores.hospitalizacionTarifa = '';
+    }
+
     this.onFormChange();
   }
 
@@ -677,8 +779,8 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
       return;
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      this.uploadError = 'El archivo no debe superar 2MB';
+    if (file.size > 3 * 1024 * 1024) {
+      this.uploadError = 'El archivo no debe superar 3MB';
       input.value = '';
       return;
     }
@@ -701,8 +803,64 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     });
   }
 
+  pdfSeleccionado: SafeResourceUrl | null = null;
+  pdfUrlOriginal: string | null = null; // URL original sin sanitizar para descarga
+
   esPdf(url: string): boolean {
     return url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/');
+  }
+
+  abrirPdf(url: string): void {
+    // Guardar URL original para descarga
+    this.pdfUrlOriginal = url;
+    // Sanitizar la URL para que Angular permita cargarla en el iframe
+    this.pdfSeleccionado = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+  }
+
+  cerrarPdf(): void {
+    this.pdfSeleccionado = null;
+    this.pdfUrlOriginal = null;
+  }
+
+  descargarPdf(url: string, numero: number): void {
+    this.descargandoPdf = true;
+    
+    // Transformar la URL de Cloudinary para forzar descarga
+    // Cloudinary permite agregar fl_attachment para forzar descarga
+    let downloadUrl = url;
+    
+    // Si es una URL de Cloudinary, agregar el flag de attachment
+    if (url.includes('cloudinary.com')) {
+      // Para URLs de tipo /raw/upload/, insertar fl_attachment después de /upload/
+      if (url.includes('/raw/upload/')) {
+        downloadUrl = url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+      } else if (url.includes('/image/upload/')) {
+        downloadUrl = url.replace('/image/upload/', '/image/upload/fl_attachment/');
+      }
+    }
+    
+    // Crear un link temporal y hacer clic para descargar
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `documento-${numero}.pdf`;
+    link.target = '_blank';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    
+    try {
+      link.click();
+      
+      // Limpiar después de un pequeño delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+        this.descargandoPdf = false;
+      }, 100);
+    } catch (error) {
+      console.error('Error descargando PDF:', error);
+      this.uploadError = 'Error al descargar el PDF. Intenta de nuevo.';
+      this.descargandoPdf = false;
+      document.body.removeChild(link);
+    }
   }
 
   /**
@@ -797,34 +955,36 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
   cerrarAtencion(): void {
     if (!this.atencion || this.isSubmitting) return;
 
-    // Validar solo campos realmente obligatorios
+    // Validar campos obligatorios comunes
     this.validarDiagnosticoPrincipal();
-    this.validarDiagnosticoCliente();
-    this.validarProximoControl();
     this.validarMedicamentos();
     this.validarMedicamentosRecetados();
 
-    // Validar hospitalización si está marcada
-    if (this.requiereHospitalizacion && !this.hospitalizacionMotivo.trim()) {
-      this.errores.hospitalizacionMotivo = 'El motivo de hospitalización es obligatorio';
-    } else {
-      this.errores.hospitalizacionMotivo = '';
-    }
-
-    // Validar fallecimiento si está marcado
-    if (this.fallecioEnAtencion && !this.causaMuerteAtencion.trim()) {
-      this.errores.causaMuerteAtencion = 'La causa de muerte es obligatoria';
-    } else {
-      this.errores.causaMuerteAtencion = '';
+    // Validar campos específicos según el estado del paciente
+    if (this.estadoPaciente === 'estable') {
+      this.validarDiagnosticoCliente();
+      this.validarProximoControl();
+    } else if (this.estadoPaciente === 'hospitalizacion') {
+      if (!this.hospitalizacionMotivo.trim()) {
+        this.errores.hospitalizacionMotivo = 'El motivo de hospitalización es obligatorio';
+      } else {
+        this.errores.hospitalizacionMotivo = '';
+      }
+      this.validarHospitalizacionTarifa();
+    } else if (this.estadoPaciente === 'fallecido') {
+      if (!this.causaMuerteAtencion.trim()) {
+        this.errores.causaMuerteAtencion = 'La causa de defunción es obligatoria';
+      } else {
+        this.errores.causaMuerteAtencion = '';
+      }
     }
 
     const hayErrores =
       this.errores.diagnosticoPrincipal ||
-      this.errores.diagnosticoCliente ||
-      this.errores.proximoControlFecha ||
-      this.errores.proximoControlMotivo ||
-      this.errores.hospitalizacionMotivo ||
-      this.errores.causaMuerteAtencion ||
+      (this.estadoPaciente === 'estable' && this.errores.diagnosticoCliente) ||
+      (this.estadoPaciente === 'estable' && (this.errores.proximoControlFecha || this.errores.proximoControlMotivo)) ||
+      (this.estadoPaciente === 'hospitalizacion' && (this.errores.hospitalizacionMotivo || this.errores.hospitalizacionTarifa)) ||
+      (this.estadoPaciente === 'fallecido' && this.errores.causaMuerteAtencion) ||
       this.errores.medicamentos.some(e => e) ||
       this.errores.medicamentosRecetados.some(e => e);
 
@@ -885,12 +1045,34 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
           },
           error: (err) => {
             console.error('Error al cerrar atención:', err);
+            
+            // Intentar extraer mensaje de error del backend
+            let errorDetail = '';
+            if (err.error?.message) {
+              errorDetail = err.error.message;
+            } else if (err.error?.errors) {
+              // Si hay errores de validación específicos
+              errorDetail = Object.values(err.error.errors).join(', ');
+            }
+            
             if (err.status === 403) {
-              this.errorMsg = 'Error de permisos (403). Verifica que tu sesión no haya expirado.';
+              this.errorMsg = 'Error de permisos. Verifica que tu sesión no haya expirado.';
             } else if (err.status === 400) {
-              this.errorMsg = 'Datos inválidos (400). Verifica que todos los campos estén correctos.';
+              this.errorMsg = errorDetail 
+                ? `Datos inválidos: ${errorDetail}` 
+                : 'Datos inválidos. Verifica que todos los campos obligatorios estén completos y correctos.';
+              
+              // Scroll al primer error visible
+              setTimeout(() => {
+                const firstError = document.querySelector('.field-error');
+                if (firstError) {
+                  firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+              }, 100);
             } else {
-              this.errorMsg = `Error al cerrar la atención (${err.status}). Intenta de nuevo.`;
+              this.errorMsg = errorDetail 
+                ? `Error: ${errorDetail}` 
+                : `Error al cerrar la atención (${err.status}). Intenta de nuevo.`;
             }
             this.isSubmitting = false;
           }
@@ -1053,6 +1235,151 @@ export class FormularioConsultaComponent implements OnInit, OnDestroy {
     if (meses < 0) { años--; meses += 12; }
     if (años === 0) return `${meses} mes${meses !== 1 ? 'es' : ''}`;
     return `${años} año${años !== 1 ? 's' : ''}`;
+  }
+
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════════
+  // AUTOCOMPLETADO MÉDICO CON IA
+  // ═══════════════════════════════════════════════════════════════════════════════════════════════════
+
+  abrirAutocompletado(): void {
+    this.mostrarAutocompletado = true;
+    this.descripcionSintomas = '';
+    this.sugerenciasMedicas = null;
+    this.errorSugerencias = '';
+  }
+
+  cerrarAutocompletado(): void {
+    this.mostrarAutocompletado = false;
+    this.descripcionSintomas = '';
+    this.sugerenciasMedicas = null;
+    this.errorSugerencias = '';
+  }
+
+  obtenerSugerenciasMedicas(): void {
+    if (!this.descripcionSintomas.trim()) {
+      this.errorSugerencias = 'Por favor describe los síntomas observados';
+      return;
+    }
+
+    this.cargandoSugerencias = true;
+    this.errorSugerencias = '';
+    this.sugerenciasMedicas = null;
+
+    const request: MedicalFormSuggestionRequest = {
+      symptoms: this.descripcionSintomas,
+      animalType: this.atencion?.petSpecies || '',
+      age: this.atencion?.petBirthday ? this.calcularEdad(this.atencion.petBirthday) : '',
+      weight: this.peso ? `${this.peso} kg` : '',
+      breed: '', // No disponible en AtencionActiva
+      additionalInfo: this.observacionesGenerales || ''
+    };
+
+    this.chatbotService.getMedicalFormSuggestions(request).subscribe({
+      next: (response) => {
+        this.cargandoSugerencias = false;
+        if (response.success) {
+          this.sugerenciasMedicas = response;
+        } else {
+          this.errorSugerencias = response.errorMessage || 'Error obteniendo sugerencias médicas';
+        }
+      },
+      error: (error) => {
+        this.cargandoSugerencias = false;
+        this.errorSugerencias = 'Error conectando con el servicio de IA médica';
+        console.error('Error obteniendo sugerencias médicas:', error);
+      }
+    });
+  }
+
+  aplicarDiagnosticoSugerido(): void {
+    if (!this.sugerenciasMedicas) return;
+    this.diagnosticoPrincipal = this.sugerenciasMedicas.suggestedDiagnosis;
+    this.diagnosticoCliente = this.sugerenciasMedicas.suggestedDiagnosis;
+    this.onFormChange();
+  }
+
+  aplicarTratamientoSugerido(): void {
+    if (!this.sugerenciasMedicas) return;
+    this.indicaciones = this.sugerenciasMedicas.recommendedTreatment;
+    this.indicacionesCliente = this.sugerenciasMedicas.recommendedTreatment;
+    this.onFormChange();
+  }
+
+  aplicarMedicamentosSugeridos(): void {
+    if (!this.sugerenciasMedicas?.medications) return;
+    
+    // Agregar medicamentos sugeridos a la lista actual
+    this.sugerenciasMedicas.medications.forEach(medText => {
+      // Parsear el texto del medicamento (ej: "Amoxicilina 10mg/kg BID")
+      const parts = medText.split(' ');
+      const nombre = parts[0];
+      const dosisText = parts.slice(1).join(' ');
+      
+      const nuevoMed: Medicamento = {
+        nombre: nombre,
+        dosisValor: '',
+        dosisUnidad: 'mg/kg',
+        via: 'Oral',
+        frecuencia: dosisText, // Usar frecuencia para almacenar la información adicional
+        duracion: ''
+      };
+      
+      this.medicamentos.push(nuevoMed);
+      this.errores.medicamentos.push('');
+    });
+    
+    this.onFormChange();
+  }
+
+  aplicarExamenesSugeridos(): void {
+    if (!this.sugerenciasMedicas?.complementaryExams) return;
+    
+    const examenes = this.sugerenciasMedicas.complementaryExams.join(', ');
+    if (this.notasClinicas) {
+      this.notasClinicas += `\n\nExámenes recomendados: ${examenes}`;
+    } else {
+      this.notasClinicas = `Exámenes recomendados: ${examenes}`;
+    }
+    
+    this.onFormChange();
+  }
+
+  aplicarPronosticoSugerido(): void {
+    if (!this.sugerenciasMedicas?.prognosis) return;
+    
+    if (this.notasClinicas) {
+      this.notasClinicas += `\n\nPronóstico: ${this.sugerenciasMedicas.prognosis}`;
+    } else {
+      this.notasClinicas = `Pronóstico: ${this.sugerenciasMedicas.prognosis}`;
+    }
+    
+    this.onFormChange();
+  }
+
+  aplicarRecomendacionesSugeridas(): void {
+    if (!this.sugerenciasMedicas?.ownerRecommendations) return;
+    
+    const recomendaciones = this.sugerenciasMedicas.ownerRecommendations.join('\n• ');
+    if (this.indicacionesCliente) {
+      this.indicacionesCliente += `\n\nRecomendaciones adicionales:\n• ${recomendaciones}`;
+    } else {
+      this.indicacionesCliente = `Recomendaciones:\n• ${recomendaciones}`;
+    }
+    
+    this.onFormChange();
+  }
+
+  aplicarTodasLasSugerencias(): void {
+    if (!this.sugerenciasMedicas) return;
+    
+    this.aplicarDiagnosticoSugerido();
+    this.aplicarTratamientoSugerido();
+    this.aplicarMedicamentosSugeridos();
+    this.aplicarExamenesSugeridos();
+    this.aplicarPronosticoSugerido();
+    this.aplicarRecomendacionesSugeridas();
+    
+    this.cerrarAutocompletado();
   }
 }
 

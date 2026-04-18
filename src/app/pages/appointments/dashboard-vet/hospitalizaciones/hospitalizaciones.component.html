@@ -6,12 +6,66 @@
     <!-- TOPBAR -->
     <div class="topbar">
       <div>
-        <div class="topbar-title">🏥 Hospitalizaciones</div>
-        <div class="topbar-sub">Mascotas bajo cuidado hospitalario · Las hospitalizaciones se registran al cerrar una atención médica</div>
+        <div class="topbar-title">🏥 Registros especiales</div>
+        <div class="topbar-sub">Mascotas bajo cuidado hospitalario · Los registros especiales se generan al cerrar una atención médica</div>
       </div>
     </div>
 
     <div class="content-area">
+
+      <!-- FILTROS -->
+      <div class="filters-card">
+        <div class="filters-row">
+          <!-- Búsqueda -->
+          <div class="filter-group">
+            <label class="filter-label">🔍 Buscar mascota</label>
+            <input 
+              type="text" 
+              class="form-input" 
+              [(ngModel)]="searchTerm"
+              placeholder="Nombre de la mascota..."
+            />
+          </div>
+
+          <!-- Fecha desde -->
+          <div class="filter-group">
+            <label class="filter-label">📅 Desde</label>
+            <input 
+              type="date" 
+              class="form-input" 
+              [(ngModel)]="fechaDesde"
+              [max]="fechaMaxima"
+            />
+          </div>
+
+          <!-- Fecha hasta -->
+          <div class="filter-group">
+            <label class="filter-label">📅 Hasta</label>
+            <input 
+              type="date" 
+              class="form-input" 
+              [(ngModel)]="fechaHasta"
+              [max]="fechaMaxima"
+            />
+          </div>
+
+          <!-- Botón limpiar -->
+          <div class="filter-group filter-actions">
+            <button 
+              class="btn-clear-filters" 
+              (click)="limpiarFiltros()"
+              [disabled]="!searchTerm && !fechaDesde && !fechaHasta"
+            >
+              🗑️ Limpiar
+            </button>
+          </div>
+        </div>
+
+        <!-- Contador de resultados -->
+        <div class="results-count" *ngIf="!isLoading">
+          Mostrando <strong>{{ hospitalizacionesFiltradas.length }}</strong> de <strong>{{ todasHospitalizaciones.length }}</strong> registros especiales
+        </div>
+      </div>
 
       <!-- TABS -->
       <div class="tabs-row">
@@ -20,7 +74,7 @@
           <span class="tab-badge" *ngIf="hospitalizacionesActivas.length > 0">{{ hospitalizacionesActivas.length }}</span>
         </button>
         <button class="tab-btn" [class.active]="tabActiva === 'alta'" (click)="tabActiva = 'alta'">
-          ✅ Dadas de alta
+          ✅ Dados de Alta
           <span class="tab-badge alta" *ngIf="hospitalizacionesAlta.length > 0">{{ hospitalizacionesAlta.length }}</span>
         </button>
         <button class="tab-btn" [class.active]="tabActiva === 'fallecidas'" (click)="tabActiva = 'fallecidas'">
@@ -33,26 +87,28 @@
 
       <div class="loading-wrap" *ngIf="isLoading">
         <div class="spinner"></div>
-        <span>Cargando hospitalizaciones...</span>
+        <span>Cargando registros especiales...</span>
       </div>
 
       <!-- LISTA -->
       <div class="hosp-grid" *ngIf="!isLoading">
 
-        <div class="empty-state" *ngIf="hospitalizacionesTab.length === 0">
+        <div class="empty-state" *ngIf="hospitalizacionesFiltradas.length === 0">
           <div class="empty-icon">
             <span *ngIf="tabActiva === 'activas'">🏥</span>
             <span *ngIf="tabActiva === 'alta'">✅</span>
             <span *ngIf="tabActiva === 'fallecidas'">🕊️</span>
           </div>
-          <div class="empty-title" *ngIf="tabActiva === 'activas'">No hay mascotas hospitalizadas</div>
-          <div class="empty-title" *ngIf="tabActiva === 'alta'">No hay mascotas dadas de alta</div>
-          <div class="empty-title" *ngIf="tabActiva === 'fallecidas'">No hay registros de fallecimiento</div>
-          <div class="empty-sub" *ngIf="tabActiva === 'activas'">Las hospitalizaciones se generan al cerrar una atención médica marcando "Requiere hospitalización"</div>
+          <div class="empty-title" *ngIf="todasHospitalizaciones.length === 0 && tabActiva === 'activas'">No hay mascotas hospitalizadas</div>
+          <div class="empty-title" *ngIf="todasHospitalizaciones.length === 0 && tabActiva === 'alta'">No hay mascotas dadas de alta</div>
+          <div class="empty-title" *ngIf="todasHospitalizaciones.length === 0 && tabActiva === 'fallecidas'">No hay registros de fallecimiento</div>
+          <div class="empty-title" *ngIf="todasHospitalizaciones.length > 0">No se encontraron resultados</div>
+          <div class="empty-sub" *ngIf="todasHospitalizaciones.length === 0 && tabActiva === 'activas'">Los registros especiales se generan al cerrar una atención médica marcando "Requiere hospitalización"</div>
+          <div class="empty-sub" *ngIf="todasHospitalizaciones.length > 0">Intenta ajustar los filtros de búsqueda</div>
         </div>
 
         <div class="hosp-card"
-             *ngFor="let h of hospitalizacionesTab"
+             *ngFor="let h of hospitalizacionesFiltradas"
              [class.card-alta]="h.status === 'DISCHARGED'"
              [class.card-fallecida]="h.status === 'DECEASED'">
 

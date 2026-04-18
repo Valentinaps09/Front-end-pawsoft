@@ -27,7 +27,6 @@
           </div>
         </div>
 
-        <div class="alert alert-success" *ngIf="successMessage">✅ {{ successMessage }}</div>
         <div class="alert alert-error"   *ngIf="errorMessage">⚠️ {{ errorMessage }}</div>
 
         <!-- ══ Información personal ══ -->
@@ -85,23 +84,51 @@
             <h3>🔒 Cambiar contraseña <span class="optional-badge">Opcional</span></h3>
           </div>
 
-          <div class="section-hint">Déjalo en blanco si no deseas cambiar tu contraseña.</div>
+          <div class="section-hint">Para cambiar tu contraseña, primero debes ingresar tu contraseña actual.</div>
+
+          <!-- Contraseña actual -->
+          <div class="field-group">
+            <label class="field-label" for="currentPass">Contraseña actual</label>
+            <div class="field-input-wrapper" [class.field-error]="currentPassTocado && currentPassError">
+              <input id="currentPass" [type]="showCurrentPass ? 'text' : 'password'"
+                     class="field-input" [(ngModel)]="currentPassword"
+                     placeholder="Tu contraseña actual"
+                     (input)="onCurrentPassInput()"
+                     autocomplete="current-password" />
+              <button class="toggle-pass" type="button" (click)="showCurrentPass = !showCurrentPass"
+                      [attr.aria-label]="showCurrentPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                {{ showCurrentPass ? '👁️' : '🙈' }}
+              </button>
+              <span class="validation-icon" *ngIf="currentPassword && !validatingCurrentPassword">
+                <span *ngIf="passwordValidated" class="valid-icon">✅</span>
+                <span *ngIf="currentPassError && !passwordValidated" class="invalid-icon">❌</span>
+              </span>
+              <span class="validating-spinner" *ngIf="validatingCurrentPassword">⏳</span>
+            </div>
+            <span class="match-hint match-ok" *ngIf="passwordValidated">✅ Contraseña verificada</span>
+            <span class="match-hint match-err" *ngIf="currentPassTocado && currentPassError">❌ {{ currentPassError }}</span>
+          </div>
 
           <!-- Nueva contraseña -->
           <div class="field-group">
             <label class="field-label" for="newPass">Nueva contraseña</label>
-            <div class="field-input-wrapper" [class.field-error]="passTocado && passError && newPassword">
+            <div class="field-input-wrapper" [class.field-error]="passTocado && passError && newPassword" [class.field-disabled]="!passwordValidated && currentPassword">
               <span class="field-icon">🔑</span>
               <input id="newPass" [type]="showNewPass ? 'text' : 'password'"
                      class="field-input" [(ngModel)]="newPassword"
                      placeholder="Mínimo 8 caracteres"
+                     [disabled]="currentPassword && !passwordValidated"
                      (blur)="onPassBlur()"
                      (input)="onPassInput()"
                      autocomplete="new-password" />
               <button class="toggle-pass" type="button" (click)="showNewPass = !showNewPass"
-                      [attr.aria-label]="showNewPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                      [attr.aria-label]="showNewPass ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                      [disabled]="currentPassword && !passwordValidated">
                 {{ showNewPass ? '🙈' : '👁️' }}
               </button>
+            </div>
+            <div class="field-hint" *ngIf="currentPassword && !passwordValidated">
+              Primero verifica tu contraseña actual
             </div>
             <div class="strength-bar-wrapper" *ngIf="newPassword">
               <div class="strength-bar">
@@ -122,18 +149,23 @@
           <!-- Confirmar contraseña -->
           <div class="field-group">
             <label class="field-label" for="confirmPass">Confirmar contraseña</label>
-            <div class="field-input-wrapper" [class.field-error]="passTocado && confirmPassword && newPassword !== confirmPassword">
+            <div class="field-input-wrapper" [class.field-error]="passTocado && confirmPassword && newPassword !== confirmPassword" [class.field-disabled]="!passwordValidated && currentPassword">
               <span class="field-icon">🔑</span>
               <input id="confirmPass" [type]="showConfirmPass ? 'text' : 'password'"
                      class="field-input" [(ngModel)]="confirmPassword"
                      placeholder="Repite la nueva contraseña"
+                     [disabled]="currentPassword && !passwordValidated"
                      (blur)="onPassBlur()"
                      (input)="onPassInput()"
                      autocomplete="new-password" />
               <button class="toggle-pass" type="button" (click)="showConfirmPass = !showConfirmPass"
-                      [attr.aria-label]="showConfirmPass ? 'Ocultar contraseña' : 'Mostrar contraseña'">
+                      [attr.aria-label]="showConfirmPass ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+                      [disabled]="currentPassword && !passwordValidated">
                 {{ showConfirmPass ? '🙈' : '👁️' }}
               </button>
+            </div>
+            <div class="field-hint" *ngIf="currentPassword && !passwordValidated">
+              Primero verifica tu contraseña actual
             </div>
             <span class="match-hint match-ok"
                   *ngIf="confirmPassword && newPassword === confirmPassword">✅ Las contraseñas coinciden</span>
@@ -249,5 +281,14 @@
       </button>
     </div>
 
+  </div>
+</div>
+
+<!-- ══ MODAL éxito ══ -->
+<div class="modal-overlay" *ngIf="showSuccessModal">
+  <div class="success-modal">
+    <div class="success-icon">✅</div>
+    <div class="success-title">¡Perfil actualizado!</div>
+    <div class="success-message">{{ successModalMessage }}</div>
   </div>
 </div>

@@ -239,7 +239,7 @@
           <div class="seccion-title">🔬 Examen Físico</div>
           <div class="form-grid">
             <div class="form-group">
-              <label>Peso (kg)</label>
+              <label>Peso (kg) <span class="required">*</span></label>
               <input type="number" class="form-input"
                      [class.input-error]="errores.peso"
                      [(ngModel)]="peso"
@@ -252,7 +252,7 @@
               <div class="field-error" *ngIf="errores.peso">{{ errores.peso }}</div>
             </div>
             <div class="form-group">
-              <label>Temperatura (°C)</label>
+              <label>Temperatura (°C) <span class="required">*</span></label>
               <input type="number" class="form-input"
                      [class.input-error]="errores.temperatura"
                      [(ngModel)]="temperatura"
@@ -265,7 +265,7 @@
               <div class="field-error" *ngIf="errores.temperatura">{{ errores.temperatura }}</div>
             </div>
             <div class="form-group">
-              <label>Frec. cardíaca (lpm)</label>
+              <label>Frec. cardíaca (lpm) <span class="required">*</span></label>
               <input type="number" class="form-input"
                      [class.input-error]="errores.frecuenciaCardiaca"
                      [(ngModel)]="frecuenciaCardiaca"
@@ -273,12 +273,12 @@
                      (ngModelChange)="onFormChange()"
                      (blur)="validarFrecuenciaCardiaca()"
                      placeholder="Ej: 80"
-                     min="1" max="999" step="1"
-                     oninput="if(this.value > 999) this.value = 999; if(this.value <= 0 && this.value !== '') this.value = 1;">
+                     min="1" max="300" step="1"
+                     oninput="if(this.value > 300) this.value = 300; if(this.value <= 0 && this.value !== '') this.value = 1;">
               <div class="field-error" *ngIf="errores.frecuenciaCardiaca">{{ errores.frecuenciaCardiaca }}</div>
             </div>
             <div class="form-group">
-              <label>Frec. respiratoria (rpm)</label>
+              <label>Frec. respiratoria (rpm) <span class="required">*</span></label>
               <input type="number" class="form-input"
                      [class.input-error]="errores.frecuenciaRespiratoria"
                      [(ngModel)]="frecuenciaRespiratoria"
@@ -286,13 +286,13 @@
                      (ngModelChange)="onFormChange()"
                      (blur)="validarFrecuenciaRespiratoria()"
                      placeholder="Ej: 20"
-                     min="1" max="999" step="1"
-                     oninput="if(this.value > 999) this.value = 999; if(this.value <= 0 && this.value !== '') this.value = 1;">
+                     min="1" max="150" step="1"
+                     oninput="if(this.value > 150) this.value = 150; if(this.value <= 0 && this.value !== '') this.value = 1;">
               <div class="field-error" *ngIf="errores.frecuenciaRespiratoria">{{ errores.frecuenciaRespiratoria }}</div>
             </div>
           </div>
           <div class="form-group">
-            <label>Observaciones generales <span class="char-hint">máx. 500 caracteres</span></label>
+            <label>Observaciones generales <span class="required">*</span> <span class="char-hint">máx. 500 caracteres</span></label>
             <textarea class="form-textarea"
                       [class.input-error]="errores.observacionesGenerales"
                       [(ngModel)]="observacionesGenerales"
@@ -306,7 +306,12 @@
 
         <!-- Diagnóstico clínico -->
         <div class="seccion-card">
-          <div class="seccion-title">🩺 Diagnóstico Clínico</div>
+          <div class="seccion-title-with-ai">
+            <div class="seccion-title">🩺 Diagnóstico Clínico</div>
+            <button type="button" class="btn-ai-autocompletado" (click)="abrirAutocompletado()" title="Obtener sugerencias médicas con IA">
+              🤖 Autocompletado IA
+            </button>
+          </div>
           <div class="form-group">
             <label>Diagnóstico principal <span class="required">*</span></label>
             <input type="text" class="form-input"
@@ -323,7 +328,7 @@
                    (ngModelChange)="onFormChange()" placeholder="Diagnóstico secundario" maxlength="200">
           </div>
           <div class="form-group">
-            <label>Notas clínicas internas <span class="char-hint">máx. 500 caracteres</span></label>
+            <label>Notas clínicas internas <span class="required">*</span> <span class="char-hint">máx. 500 caracteres</span></label>
             <textarea class="form-textarea"
                       [class.input-error]="errores.notasClinicas"
                       [(ngModel)]="notasClinicas"
@@ -402,8 +407,55 @@
       <!-- SECCIÓN CLIENTE -->
       <div *ngIf="seccionActiva === 'cliente'" class="seccion-content">
 
-        <!-- Diagnóstico para el cliente -->
-        <div class="seccion-card">
+        <!-- ESTADO DEL PACIENTE (RADIO BUTTONS) -->
+        <div class="seccion-card estado-paciente-card">
+          <div class="seccion-title">🏥 Estado del Paciente</div>
+          <p class="seccion-hint">Selecciona el estado del paciente al finalizar esta atención</p>
+          
+          <div class="radio-group-estado">
+            <label class="radio-label-estado radio-estable" [class.selected]="estadoPaciente === 'estable'">
+              <input type="radio" name="estadoPaciente" value="estable" 
+                     [(ngModel)]="estadoPaciente" 
+                     (ngModelChange)="onEstadoPacienteChange()">
+              <div class="radio-content">
+                <span class="radio-icon">✅</span>
+                <div>
+                  <div class="radio-title">Paciente estable</div>
+                  <div class="radio-desc">Tratamiento ambulatorio normal</div>
+                </div>
+              </div>
+            </label>
+
+            <label class="radio-label-estado radio-hospitalizacion" [class.selected]="estadoPaciente === 'hospitalizacion'">
+              <input type="radio" name="estadoPaciente" value="hospitalizacion" 
+                     [(ngModel)]="estadoPaciente" 
+                     (ngModelChange)="onEstadoPacienteChange()">
+              <div class="radio-content">
+                <span class="radio-icon">🏥</span>
+                <div>
+                  <div class="radio-title">Requiere hospitalización</div>
+                  <div class="radio-desc">Ingreso para observación o tratamiento intensivo</div>
+                </div>
+              </div>
+            </label>
+
+            <label class="radio-label-estado radio-fallecido" [class.selected]="estadoPaciente === 'fallecido'">
+              <input type="radio" name="estadoPaciente" value="fallecido" 
+                     [(ngModel)]="estadoPaciente" 
+                     (ngModelChange)="onEstadoPacienteChange()">
+              <div class="radio-content">
+                <span class="radio-icon">🕊️</span>
+                <div>
+                  <div class="radio-title">Paciente falleció</div>
+                  <div class="radio-desc">Fallecimiento durante esta atención</div>
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Diagnóstico para el cliente (SOLO para paciente estable) -->
+        <div class="seccion-card" *ngIf="estadoPaciente === 'estable'">
           <div class="seccion-title">📝 Diagnóstico para el Cliente</div>
           <p class="seccion-hint">Explicación en lenguaje simple para el propietario</p>
           <div class="form-group">
@@ -419,8 +471,8 @@
           </div>
         </div>
 
-        <!-- Medicamentos recetados para casa -->
-        <div class="seccion-card">
+        <!-- Medicamentos recetados para casa (SOLO para paciente estable) -->
+        <div class="seccion-card" *ngIf="estadoPaciente === 'estable'">
           <div class="seccion-title">💊 Medicamentos Recetados</div>
           <p class="seccion-hint">Medicamentos que el propietario debe administrar en casa</p>
 
@@ -474,11 +526,11 @@
           <button class="btn-agregar" (click)="agregarMedicamentoRecetado()">＋ Agregar medicamento recetado</button>
         </div>
 
-        <!-- Indicaciones de cuidado en casa -->
-        <div class="seccion-card">
+        <!-- Indicaciones de cuidado en casa (SOLO para paciente estable) -->
+        <div class="seccion-card" *ngIf="estadoPaciente === 'estable'">
           <div class="seccion-title">🏠 Indicaciones de Cuidado en Casa</div>
           <div class="form-group">
-            <label>Instrucciones para el propietario <span class="char-hint">máx. 500 caracteres</span></label>
+            <label>Instrucciones para el propietario <span class="required">*</span> <span class="char-hint">máx. 500 caracteres</span></label>
             <textarea class="form-textarea"
                       [class.input-error]="errores.indicacionesCliente"
                       [(ngModel)]="indicacionesCliente"
@@ -491,7 +543,7 @@
         </div>
 
         <!-- Próximo control -->
-        <div class="seccion-card">
+        <div class="seccion-card" *ngIf="estadoPaciente === 'estable'">
           <div class="seccion-title">📅 Próximo Control</div>
 
           <div class="form-group">
@@ -527,85 +579,91 @@
           </div>
         </div>
 
-        <!-- Hospitalización / Fallecimiento -->
-        <div class="seccion-card hosp-card-form">
-          <div class="seccion-title">🏥 Estado del Paciente al Cerrar</div>
-          <p class="seccion-hint">Indica qué ocurrió con el paciente durante o tras esta atención</p>
-
-          <!-- Opción 1: Hospitalización -->
+        <!-- Campos específicos para HOSPITALIZACIÓN -->
+        <div class="seccion-card" *ngIf="estadoPaciente === 'hospitalizacion'">
+          <div class="seccion-title">🏥 Información de Hospitalización</div>
+          
           <div class="form-group">
-            <label class="checkbox-label">
-              <input type="checkbox" class="form-checkbox" [(ngModel)]="requiereHospitalizacion"
-                     (ngModelChange)="onRequiereHospitalizacionChange()">
-              <span>El paciente requiere hospitalización</span>
-            </label>
+            <label>Motivo de hospitalización <span class="required">*</span></label>
+            <textarea class="form-textarea"
+                      [class.input-error]="errores.hospitalizacionMotivo"
+                      [(ngModel)]="hospitalizacionMotivo"
+                      (ngModelChange)="onFormChange()"
+                      rows="2"
+                      placeholder="Ej: Post-operatorio, observación por trauma, tratamiento intensivo..."
+                      maxlength="300"></textarea>
+            <div class="field-error" *ngIf="errores.hospitalizacionMotivo">{{ errores.hospitalizacionMotivo }}</div>
           </div>
-
-          <div *ngIf="requiereHospitalizacion" class="hosp-fields">
-            <div class="form-group">
-              <label>Motivo de hospitalización <span class="required">*</span></label>
-              <textarea class="form-textarea"
-                        [class.input-error]="errores.hospitalizacionMotivo"
-                        [(ngModel)]="hospitalizacionMotivo"
-                        (ngModelChange)="onFormChange()"
-                        rows="2"
-                        placeholder="Ej: Post-operatorio, observación por trauma, tratamiento intensivo..."
-                        maxlength="300"></textarea>
-              <div class="field-error" *ngIf="errores.hospitalizacionMotivo">{{ errores.hospitalizacionMotivo }}</div>
-            </div>
-            <div class="form-group">
-              <label>Observaciones iniciales</label>
-              <textarea class="form-textarea"
-                        [(ngModel)]="hospitalizacionObservaciones"
-                        (ngModelChange)="onFormChange()"
-                        rows="2"
-                        placeholder="Estado al ingreso, signos vitales relevantes, indicaciones especiales..."
-                        maxlength="500"></textarea>
-            </div>
-            <div class="form-group">
-              <label>Tarifa por hora (COP)</label>
-              <input type="number" class="form-input"
-                     [(ngModel)]="hospitalizacionTarifa"
-                     (ngModelChange)="onFormChange()"
-                     min="0" step="1000"
-                     placeholder="50000">
-            </div>
-            <div class="hosp-aviso">
-              <span>⚠️</span>
-              <span>Al cerrar la atención, la mascota quedará registrada como hospitalizada en el módulo de Hospitalizaciones.</span>
-            </div>
+          
+          <div class="form-group">
+            <label>Indicaciones iniciales</label>
+            <textarea class="form-textarea"
+                      [(ngModel)]="hospitalizacionObservaciones"
+                      (ngModelChange)="onFormChange()"
+                      rows="2"
+                      placeholder="Estado al ingreso, signos vitales relevantes, indicaciones especiales..."
+                      maxlength="500"></textarea>
           </div>
-
-          <!-- Opción 2: Fallecimiento durante la atención -->
-          <div class="form-group" style="margin-top: 0.75rem;">
-            <label class="checkbox-label checkbox-label-danger">
-              <input type="checkbox" class="form-checkbox" [(ngModel)]="fallecioEnAtencion"
-                     (ngModelChange)="onFallecioEnAtencionChange()">
-              <span>El paciente falleció durante esta atención</span>
-            </label>
+          
+          <div class="form-group">
+            <label>Medicamentos al ingreso</label>
+            <div class="readonly-field medicamentos-ingreso-list">
+              <div *ngIf="medicamentos.length === 0" class="empty-field">
+                No se han registrado medicamentos en la sección de información clínica
+              </div>
+              <div *ngIf="medicamentos.length > 0">
+                <div *ngFor="let med of medicamentos; let i = index" class="medicamento-ingreso-item">
+                  💊 {{ med.nombre }} - {{ med.dosisValor }} {{ med.dosisUnidad }} ({{ med.via }})
+                </div>
+              </div>
+            </div>
+            <p class="field-hint">Medicamentos registrados en la sección de Información Clínica</p>
           </div>
-
-          <div *ngIf="fallecioEnAtencion" class="hosp-fields hosp-fields-danger">
-            <div class="form-group">
-              <label>Causa de muerte <span class="required">*</span></label>
-              <textarea class="form-textarea"
-                        [class.input-error]="errores.causaMuerteAtencion"
-                        [(ngModel)]="causaMuerteAtencion"
-                        (ngModelChange)="onFormChange()"
-                        rows="2"
-                        placeholder="Describe la causa del fallecimiento..."
-                        maxlength="500"></textarea>
-              <div class="field-error" *ngIf="errores.causaMuerteAtencion">{{ errores.causaMuerteAtencion }}</div>
-            </div>
-            <div class="hosp-aviso hosp-aviso-danger">
-              <span>🕊️</span>
-              <span>Se registrará el fallecimiento en el historial clínico de la mascota.</span>
-            </div>
+          
+          <div class="form-group">
+            <label>Tarifa por hora (COP) <span class="required">*</span></label>
+            <input type="number" class="form-input"
+                   [class.input-error]="errores.hospitalizacionTarifa"
+                   [(ngModel)]="hospitalizacionTarifa"
+                   (input)="limitarHospitalizacionTarifa()"
+                   (ngModelChange)="onFormChange(); validarHospitalizacionTarifa()"
+                   min="5000" max="80000" step="1000"
+                   placeholder="Ej: 50000"
+                   oninput="if(this.value > 80000) this.value = 80000; if(this.value < 0 && this.value !== '') this.value = 5000;">
+            <div class="field-error" *ngIf="errores.hospitalizacionTarifa">{{ errores.hospitalizacionTarifa }}</div>
+            <p class="field-hint">Mínimo: $5.000 - Máximo: $80.000</p>
+          </div>
+          
+          <div class="hosp-aviso">
+            <span>⚠️</span>
+            <span>Al cerrar la atención, la mascota quedará registrada como hospitalizada en el módulo de Registros especiales.</span>
           </div>
         </div>
 
-        <!-- Fotos adjuntas -->
-        <div class="seccion-card">
+        <!-- Campos específicos para FALLECIMIENTO -->
+        <div class="seccion-card" *ngIf="estadoPaciente === 'fallecido'">
+          <div class="seccion-title">🕊️ Información de Fallecimiento</div>
+          
+          <div class="form-group">
+            <label>Causa de defunción <span class="required">*</span></label>
+            <textarea class="form-textarea"
+                      [class.input-error]="errores.causaMuerteAtencion"
+                      [(ngModel)]="causaMuerteAtencion"
+                      (ngModelChange)="onFormChange()"
+                      rows="3"
+                      placeholder="Describe la causa del fallecimiento..."
+                      maxlength="500"></textarea>
+            <div class="field-error" *ngIf="errores.causaMuerteAtencion">{{ errores.causaMuerteAtencion }}</div>
+          </div>
+          
+          <div class="hosp-aviso hosp-aviso-danger">
+            <span>🕊️</span>
+            <span>Se registrará el fallecimiento en el historial clínico. La mascota se moverá a "Mascotas fallecidas" en el perfil del cliente. Su historial clínico quedará en modo solo lectura.</span>
+          </div>
+        </div>
+
+        <!-- Fotos adjuntas (disponible solo para estable y hospitalización) -->
+        <div class="seccion-card" *ngIf="estadoPaciente !== 'fallecido'">
           <div class="seccion-title">📸 Archivos Adjuntos</div>
           <p class="seccion-hint">Radiografías, análisis de laboratorio u otras imágenes relevantes</p>
 
@@ -622,10 +680,21 @@
             <div class="fotos-grid" *ngIf="fotosAdjuntas.length > 0">
               <div class="foto-item" *ngFor="let foto of fotosAdjuntas; let i = index">
                 <!-- PDF -->
-                <a *ngIf="esPdf(foto)" [href]="foto" target="_blank" class="pdf-item" rel="noopener">
-                  <span class="pdf-icon">📄</span>
-                  <span class="pdf-label">PDF {{ i + 1 }}</span>
-                </a>
+                <div *ngIf="esPdf(foto)" class="pdf-preview-container">
+                  <div class="pdf-icon-large">📄</div>
+                  <div class="pdf-info">
+                    <span class="pdf-name">Documento PDF {{ i + 1 }}</span>
+                    <div class="pdf-buttons">
+                      <button (click)="abrirPdf(foto)" class="pdf-view-btn" title="Ver PDF">
+                        👁️ Ver
+                      </button>
+                      <button (click)="descargarPdf(foto, i + 1)" class="pdf-download-btn" [disabled]="descargandoPdf" title="Descargar PDF">
+                        <span *ngIf="!descargandoPdf">📥 Descargar</span>
+                        <span *ngIf="descargandoPdf">⏳...</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
                 <!-- Imagen -->
                 <img *ngIf="!esPdf(foto)" [src]="foto" [alt]="'Foto ' + (i + 1)">
                 <button class="btn-eliminar-foto" (click)="eliminarFoto(i)" title="Eliminar">✕</button>
@@ -638,7 +707,7 @@
                 <span *ngIf="!uploadingPhoto">📤 Subir imagen o PDF</span>
                 <span *ngIf="uploadingPhoto">⏳ Subiendo...</span>
               </button>
-              <span class="upload-hint">Máx. 2MB · JPG, PNG, WEBP, PDF</span>
+              <span class="upload-hint">Máx. 3MB · JPG, PNG, WEBP, PDF</span>
             </div>
             <div class="upload-error" *ngIf="uploadError">⚠️ {{ uploadError }}</div>
 
@@ -657,7 +726,7 @@
       <button *ngIf="seccionActiva === 'interno'" class="btn-continuar-cliente" (click)="continuarACliente()">
         Continuar al resumen →
       </button>
-      <button *ngIf="seccionActiva === 'cliente'" class="btn-cerrar" (click)="cerrarAtencion()" [disabled]="isSubmitting">
+      <button *ngIf="seccionActiva === 'cliente'" class="btn-cerrar" (click)="cerrarAtencion()" [disabled]="isSubmitting || tieneErroresValidacion()">
         <span *ngIf="!isSubmitting">✓ Cerrar atención</span>
         <span *ngIf="isSubmitting">Guardando...</span>
       </button>
@@ -683,6 +752,163 @@
       </div>
     </div>
 
+    <!-- MODAL VISUALIZAR PDF -->
+    <div class="modal-overlay" *ngIf="pdfSeleccionado" (click)="cerrarPdf()">
+      <div class="modal-pdf-container" (click)="$event.stopPropagation()">
+        <div class="modal-pdf-header">
+          <h3>📄 Visualizar PDF</h3>
+          <button class="modal-close-btn" (click)="cerrarPdf()">✕</button>
+        </div>
+        <div class="modal-pdf-content">
+          <iframe [src]="pdfSeleccionado" class="pdf-viewer"></iframe>
+        </div>
+    <div class="modal-pdf-footer">
+      <button class="btn-secondary" (click)="cerrarPdf()">Cerrar</button>
+      <button class="btn-primary" (click)="descargarPdf(pdfUrlOriginal!, 1)" [disabled]="!pdfUrlOriginal">📥 Descargar</button>
+    </div>
+      </div>
+    </div>
+
   </main>
 
+</div>
+
+<!-- MODAL AUTOCOMPLETADO MÉDICO CON IA -->
+<div class="modal-overlay" *ngIf="mostrarAutocompletado" (click)="cerrarAutocompletado()">
+  <div class="modal-ai-container" (click)="$event.stopPropagation()">
+    <div class="modal-ai-header">
+      <h3>🤖 Autocompletado Médico con IA</h3>
+      <button class="modal-close-btn" (click)="cerrarAutocompletado()">✕</button>
+    </div>
+    
+    <div class="modal-ai-content">
+      <!-- Paso 1: Descripción de síntomas -->
+      <div class="ai-step" *ngIf="!sugerenciasMedicas">
+        <h4>📝 Describe los síntomas observados</h4>
+        <p class="ai-hint">Describe los síntomas, comportamiento y hallazgos clínicos que has observado en la mascota:</p>
+        
+        <div class="form-group">
+          <textarea class="form-textarea ai-textarea"
+                    [(ngModel)]="descripcionSintomas"
+                    rows="4"
+                    placeholder="Ejemplo: Perro presenta vómito intermitente desde hace 2 días, letargo, no quiere comer, temperatura elevada..."
+                    maxlength="1000"></textarea>
+        </div>
+        
+        <div class="ai-patient-info" *ngIf="atencion">
+          <h5>📋 Información del paciente (se incluirá automáticamente):</h5>
+          <div class="patient-info-grid">
+            <span><strong>Especie:</strong> {{ atencion.petSpecies }}</span>
+            <span><strong>Edad:</strong> {{ calcularEdad(atencion.petBirthday) }}</span>
+            <span><strong>Peso:</strong> {{ peso ? peso + ' kg' : 'No registrado' }}</span>
+            <span><strong>Raza:</strong> No especificada</span>
+          </div>
+        </div>
+        
+        <div class="field-error" *ngIf="errorSugerencias">{{ errorSugerencias }}</div>
+        
+        <div class="ai-actions">
+          <button type="button" class="btn-secondary" (click)="cerrarAutocompletado()">Cancelar</button>
+          <button type="button" class="btn-primary" 
+                  (click)="obtenerSugerenciasMedicas()" 
+                  [disabled]="cargandoSugerencias || !descripcionSintomas.trim()">
+            <span *ngIf="!cargandoSugerencias">🔍 Obtener Sugerencias</span>
+            <span *ngIf="cargandoSugerencias">⏳ Analizando...</span>
+          </button>
+        </div>
+      </div>
+      
+      <!-- Paso 2: Sugerencias médicas -->
+      <div class="ai-suggestions" *ngIf="sugerenciasMedicas && sugerenciasMedicas.success">
+        <h4>💡 Sugerencias Médicas</h4>
+        
+        <!-- Diagnóstico sugerido -->
+        <div class="suggestion-section">
+          <div class="suggestion-header">
+            <h5>🔍 Diagnóstico Sugerido</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarDiagnosticoSugerido()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <p class="suggestion-content">{{ sugerenciasMedicas.suggestedDiagnosis }}</p>
+        </div>
+        
+        <!-- Diagnósticos diferenciales -->
+        <div class="suggestion-section" *ngIf="sugerenciasMedicas.differentialDiagnoses?.length">
+          <h5>🔍 Diagnósticos Diferenciales</h5>
+          <ul class="differential-list">
+            <li *ngFor="let diff of sugerenciasMedicas.differentialDiagnoses">{{ diff }}</li>
+          </ul>
+        </div>
+        
+        <!-- Tratamiento recomendado -->
+        <div class="suggestion-section">
+          <div class="suggestion-header">
+            <h5>💊 Tratamiento Recomendado</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarTratamientoSugerido()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <p class="suggestion-content">{{ sugerenciasMedicas.recommendedTreatment }}</p>
+        </div>
+        
+        <!-- Medicamentos -->
+        <div class="suggestion-section" *ngIf="sugerenciasMedicas.medications?.length">
+          <div class="suggestion-header">
+            <h5>💉 Medicamentos Sugeridos</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarMedicamentosSugeridos()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <ul class="medication-list">
+            <li *ngFor="let med of sugerenciasMedicas.medications">{{ med }}</li>
+          </ul>
+        </div>
+        
+        <!-- Exámenes complementarios -->
+        <div class="suggestion-section" *ngIf="sugerenciasMedicas.complementaryExams?.length">
+          <div class="suggestion-header">
+            <h5>🧪 Exámenes Complementarios</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarExamenesSugeridos()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <ul class="exam-list">
+            <li *ngFor="let exam of sugerenciasMedicas.complementaryExams">{{ exam }}</li>
+          </ul>
+        </div>
+        
+        <!-- Pronóstico -->
+        <div class="suggestion-section">
+          <div class="suggestion-header">
+            <h5>📋 Pronóstico</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarPronosticoSugerido()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <p class="suggestion-content">{{ sugerenciasMedicas.prognosis }}</p>
+        </div>
+        
+        <!-- Recomendaciones al propietario -->
+        <div class="suggestion-section" *ngIf="sugerenciasMedicas.ownerRecommendations?.length">
+          <div class="suggestion-header">
+            <h5>🏠 Recomendaciones al Propietario</h5>
+            <button type="button" class="btn-apply-suggestion" (click)="aplicarRecomendacionesSugeridas()">
+              ✓ Aplicar
+            </button>
+          </div>
+          <ul class="recommendation-list">
+            <li *ngFor="let rec of sugerenciasMedicas.ownerRecommendations">{{ rec }}</li>
+          </ul>
+        </div>
+        
+        <div class="ai-actions">
+          <button type="button" class="btn-secondary" (click)="cerrarAutocompletado()">Cerrar</button>
+          <button type="button" class="btn-primary" (click)="aplicarTodasLasSugerencias()">
+            ✓ Aplicar Todas las Sugerencias
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

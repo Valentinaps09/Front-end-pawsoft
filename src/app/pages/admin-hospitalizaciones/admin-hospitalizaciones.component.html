@@ -6,8 +6,8 @@
     <!-- TOPBAR -->
     <div class="topbar">
       <div>
-        <div class="topbar-title">🏥 Hospitalizaciones</div>
-        <div class="topbar-sub">Vista de solo lectura · Todas las hospitalizaciones del sistema</div>
+        <div class="topbar-title">🏥 Registros especiales</div>
+        <div class="topbar-sub">Vista de solo lectura · Todos los registros especiales del sistema</div>
       </div>
       <button class="btn-refresh" (click)="cargar()" title="Actualizar">
         🔄 Actualizar
@@ -92,7 +92,7 @@
       <!-- LOADING -->
       <div class="loading-wrap" *ngIf="isLoading">
         <div class="spinner"></div>
-        <span>Cargando hospitalizaciones...</span>
+        <span>Cargando registros especiales...</span>
       </div>
 
       <!-- ERROR -->
@@ -104,7 +104,7 @@
         <div class="empty-state" *ngIf="filtradas.length === 0">
           <div class="empty-icon">🔍</div>
           <div class="empty-title">Sin resultados</div>
-          <div class="empty-sub">Ajusta los filtros para encontrar hospitalizaciones</div>
+          <div class="empty-sub">Ajusta los filtros para encontrar registros especiales</div>
         </div>
 
         <table class="hosp-tabla" *ngIf="filtradas.length > 0">

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { AppointmentService, AppointmentResponse } from 'src/app/services/appointment.service';
 import { MedicalRecordService, MedicalRecordResponse } from 'src/app/services/medical-record.service';
@@ -46,6 +47,18 @@ export class MisCitasComponent implements OnInit {
   filtroEstado = '';
   filtroTexto = '';
 
+  // Modal de cancelación
+  showCancelModal = false;
+  citaToCancel: CitaView | null = null;
+  cancelReason = '';
+  cancelling = false;
+
+  // PDF y fotos
+  fotoSeleccionada: string | null = null;
+  pdfSeleccionado: SafeResourceUrl | null = null;
+  pdfUrlOriginal: string | null = null;
+  descargandoPdf = false;
+
   readonly ESTADOS: { value: string; label: string }[] = [
     { value: '',          label: 'Todos los estados' },
     { value: 'upcoming',  label: 'Pendiente' },
@@ -59,6 +72,7 @@ export class MisCitasComponent implements OnInit {
     private readonly appointmentService: AppointmentService,
     private readonly medicalRecordService: MedicalRecordService,
     private readonly paymentService: PaymentService,
+    private readonly sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -132,7 +146,9 @@ export class MisCitasComponent implements OnInit {
     cita.showingRecord = !cita.showingRecord;
   }
 
-  fotoSeleccionada: string | null = null;
+  // ═══════════════════════════════════════════════════════════════
+  // MANEJO DE FOTOS Y PDFs
+  // ═══════════════════════════════════════════════════════════════
 
   abrirFoto(url: string): void {
     this.fotoSeleccionada = url;
@@ -140,6 +156,59 @@ export class MisCitasComponent implements OnInit {
 
   cerrarFoto(): void {
     this.fotoSeleccionada = null;
+  }
+
+  abrirPdf(url: string): void { 
+    // Abrir en nueva pestaña (más confiable con Cloudinary)
+    window.open(url, '_blank');
+  }
+
+  cerrarPdf(): void { 
+    this.pdfSeleccionado = null; 
+    this.pdfUrlOriginal = null;
+  }
+
+  esPdf(url: string): boolean {
+    return url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/');
+  }
+
+  descargarPdf(url: string, numero: number): void {
+    this.descargandoPdf = true;
+    
+    // Transformar la URL de Cloudinary para forzar descarga
+    let downloadUrl = url;
+    
+    // Si es una URL de Cloudinary, agregar el flag de attachment
+    if (url.includes('cloudinary.com')) {
+      // Para URLs de tipo /raw/upload/, insertar fl_attachment después de /upload/
+      if (url.includes('/raw/upload/')) {
+        downloadUrl = url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+      } else if (url.includes('/image/upload/')) {
+        downloadUrl = url.replace('/image/upload/', '/image/upload/fl_attachment/');
+      }
+    }
+    
+    // Crear un link temporal y hacer clic para descargar
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `documento-${numero}.pdf`;
+    link.target = '_blank';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    
+    try {
+      link.click();
+      
+      // Limpiar después de un pequeño delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+        this.descargandoPdf = false;
+      }, 100);
+    } catch (error) {
+      console.error('Error descargando PDF:', error);
+      this.descargandoPdf = false;
+      document.body.removeChild(link);
+    }
   }
 
   parseMeds(json: string): any[] {
@@ -189,5 +258,43 @@ export class MisCitasComponent implements OnInit {
     const ampm = hour >= 12 ? 'PM' : 'AM';
     const h12  = hour % 12 || 12;
     return `${h12}:${m} ${ampm}`;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // CANCELACIÓN DE CITAS
+  // ═══════════════════════════════════════════════════════════════
+
+  openCancelModal(cita: CitaView): void {
+    this.citaToCancel = cita;
+    this.cancelReason = '';
+    this.showCancelModal = true;
+  }
+
+  closeCancelModal(): void {
+    this.showCancelModal = false;
+    this.citaToCancel = null;
+    this.cancelReason = '';
+  }
+
+  confirmCancel(): void {
+    if (!this.citaToCancel || !this.cancelReason.trim()) return;
+    
+    this.cancelling = true;
+    this.appointmentService.cancelAppointment(this.citaToCancel.id).subscribe({
+      next: () => {
+        // Actualizar el estado de la cita localmente
+        const cita = this.citas.find(c => c.id === this.citaToCancel!.id);
+        if (cita) {
+          cita.status = 'cancelled';
+        }
+        this.aplicarFiltros();
+        this.cancelling = false;
+        this.closeCancelModal();
+      },
+      error: () => {
+        this.cancelling = false;
+        // Aquí podrías mostrar un mensaje de error
+      }
+    });
   }
 }

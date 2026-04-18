@@ -65,6 +65,14 @@
               <span class="status-badge" [ngClass]="getStatusClass(c.status)">
                 {{ getStatusLabel(c.status) }}
               </span>
+              <!-- Botón cancelar solo para citas pendientes -->
+              <span class="status-badge badge-cancelled btn-cancel-cita" 
+                      *ngIf="c.status === 'upcoming'"
+                      (click)="openCancelModal(c)"
+                      title="Cancelar cita"
+                      style="cursor: pointer;">
+                Cancelar cita
+              </span>
               <button class="btn-ver-resumen"
                       *ngIf="c.status === 'completed' && c.medicalRecord"
                       (click)="toggleResumen(c)">
@@ -159,13 +167,30 @@
               </p>
             </div>
 
-            <!-- Fotos -->
+            <!-- Fotos y PDFs -->
             <div class="resumen-seccion" *ngIf="parseFotos(c.medicalRecord.fotosAdjuntas).length > 0">
               <div class="resumen-titulo">🔬 Estudios y Evidencia Clínica</div>
               <div class="fotos-grid">
-                <img *ngFor="let foto of parseFotos(c.medicalRecord.fotosAdjuntas)"
-                     [src]="foto" alt="Imagen" class="foto-thumb"
-                     (click)="abrirFoto(foto)">
+                <ng-container *ngFor="let foto of parseFotos(c.medicalRecord.fotosAdjuntas); let i = index">
+                  <!-- PDF -->
+                  <div *ngIf="esPdf(foto)" class="pdf-item-cliente">
+                    <div class="pdf-icon">📄</div>
+                    <span class="pdf-label">PDF {{ i + 1 }}</span>
+                    <div class="pdf-buttons-cliente">
+                      <button (click)="abrirPdf(foto)" class="btn-ver-pdf-cliente" title="Ver PDF">
+                        Ver
+                      </button>
+                      <button (click)="descargarPdf(foto, i + 1)" class="btn-descargar-pdf-cliente" [disabled]="descargandoPdf" title="Descargar PDF">
+                        <span *ngIf="!descargandoPdf">📥 Descargar</span>
+                        <span *ngIf="descargandoPdf">⏳...</span>
+                      </button>
+                    </div>
+                  </div>
+                  <!-- Imagen -->
+                  <img *ngIf="!esPdf(foto)"
+                       [src]="foto" alt="Imagen" class="foto-thumb"
+                       (click)="abrirFoto(foto)">
+                </ng-container>
               </div>
             </div>
 
@@ -181,17 +206,26 @@
                   <span>Medicamentos aplicados</span>
                   <span>{{ c.medicalRecord.costoMedicamentos | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                 </div>
-                <!-- Sin ajuste -->
-                <div class="costo-fila costo-total-cliente" *ngIf="!c.payment || c.payment.amount === c.payment.baseAmount">
-                  <span>Total</span>
-                  <span>{{ c.medicalRecord.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                
+                <!-- Mostrar precio inicial si hay ajustes -->
+                <div class="costo-fila" *ngIf="c.payment && c.payment.adjustments && c.payment.adjustments.length > 0">
+                  <span>Subtotal inicial</span>
+                  <span>{{ c.payment.baseAmount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                 </div>
-                <!-- Con ajuste (descuento o recargo) -->
-                <ng-container *ngIf="c.payment && c.payment.amount !== c.payment.baseAmount">
-                  <div class="costo-fila costo-tachado">
-                    <span>Subtotal original</span>
-                    <span><s>{{ c.payment.baseAmount | currency:'COP':'symbol-narrow':'1.0-0' }}</s></span>
+                
+                <!-- Descuento inicial al crear el pago (si existe) -->
+                <ng-container *ngIf="c.payment && c.payment.adjustments && c.payment.adjustments.length > 0 && c.payment.adjustments[0].originalAmount !== c.payment.baseAmount">
+                  <div class="costo-fila costo-ajuste descuento">
+                    <span>🎉 Descuento inicial</span>
+                    <span>{{ c.payment.adjustments[0].originalAmount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                   </div>
+                  <div class="costo-fila costo-motivo" *ngIf="c.payment.notes">
+                    <span>📝 {{ c.payment.notes }}</span>
+                  </div>
+                </ng-container>
+
+                <!-- Sin ajustes formales: solo descuento inicial -->
+                <ng-container *ngIf="c.payment && (!c.payment.adjustments || c.payment.adjustments.length === 0) && c.payment.amount !== c.payment.baseAmount">
                   <div class="costo-fila costo-ajuste" [class.descuento]="c.payment.amount < c.payment.baseAmount">
                     <span>{{ c.payment.amount < c.payment.baseAmount ? '🎉 Descuento aplicado' : '⚠️ Ajuste aplicado' }}</span>
                     <span>{{ c.payment.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
@@ -199,11 +233,26 @@
                   <div class="costo-fila costo-motivo" *ngIf="c.payment.notes">
                     <span>📝 {{ c.payment.notes }}</span>
                   </div>
-                  <div class="costo-fila costo-total-cliente">
-                    <span>Total cobrado</span>
-                    <span>{{ c.payment.amount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                  </div>
                 </ng-container>
+                
+                <!-- Todos los ajustes formales en orden cronológico -->
+                <ng-container *ngIf="c.payment && c.payment.adjustments && c.payment.adjustments.length > 0">
+                  <ng-container *ngFor="let adj of c.payment.adjustments; let i = index">
+                    <div class="costo-fila costo-ajuste" [class.descuento]="adj.difference < 0">
+                      <span>{{ adj.difference < 0 ? '🎉 Descuento' : '⚠️ Ajuste' }} {{ i + 1 }}</span>
+                      <span>{{ adj.adjustedAmount | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="costo-fila costo-motivo">
+                      <span>📝 {{ adj.reason }}</span>
+                    </div>
+                  </ng-container>
+                </ng-container>
+                
+                <!-- Total final -->
+                <div class="costo-fila costo-total-cliente">
+                  <span>{{ c.payment && c.payment.adjustments && c.payment.adjustments.length > 0 ? 'Total final cobrado' : 'Total' }}</span>
+                  <span>{{ c.payment ? (c.payment.amount | currency:'COP':'symbol-narrow':'1.0-0') : (c.medicalRecord.costoTotal | currency:'COP':'symbol-narrow':'1.0-0') }}</span>
+                </div>
               </div>
             </div>
 
@@ -227,5 +276,60 @@
   <div class="lightbox-content" (click)="$event.stopPropagation()">
     <button class="lightbox-close" (click)="cerrarFoto()" aria-label="Cerrar">✕</button>
     <img [src]="fotoSeleccionada" alt="Imagen ampliada" class="lightbox-img">
+  </div>
+</div>
+
+<!-- MODAL VISUALIZAR PDF -->
+<div class="modal-overlay" *ngIf="pdfSeleccionado" (click)="cerrarPdf()">
+  <div class="modal-pdf-container" (click)="$event.stopPropagation()">
+    <div class="modal-pdf-header">
+      <h3>📄 Visualizar PDF</h3>
+      <button class="modal-close-btn" (click)="cerrarPdf()">✕</button>
+    </div>
+    <div class="modal-pdf-content">
+      <iframe [src]="pdfSeleccionado" class="pdf-viewer"></iframe>
+    </div>
+    <div class="modal-pdf-footer">
+      <button class="btn-secondary" (click)="cerrarPdf()">Cerrar</button>
+      <button class="btn-primary" (click)="descargarPdf(pdfUrlOriginal!, 1)" [disabled]="!pdfUrlOriginal">📥 Descargar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELAR CITA -->
+<div class="modal-overlay" *ngIf="showCancelModal" (click)="closeCancelModal()">
+  <div class="modal-card small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Cancelar Cita</h3>
+      <button class="modal-close" (click)="closeCancelModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="cancel-info" *ngIf="citaToCancel">
+        <div class="cancel-cita-details">
+          <div class="cancel-pet">{{ citaToCancel.petEmoji }} {{ citaToCancel.petName }}</div>
+          <div class="cancel-date">{{ citaToCancel.date }} · {{ citaToCancel.time }}</div>
+          <div class="cancel-vet">🩺 {{ citaToCancel.vetName }}</div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="cancelReason">Motivo de cancelación *</label>
+        <textarea id="cancelReason" 
+                  class="form-textarea" 
+                  [(ngModel)]="cancelReason"
+                  placeholder="Por favor, indica el motivo de la cancelación..."
+                  rows="3"
+                  maxlength="200"></textarea>
+        <div class="char-count">{{ cancelReason.length }}/200</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCancelModal()">Cerrar</button>
+      <button class="btn-danger" 
+              (click)="confirmCancel()" 
+              [disabled]="!cancelReason.trim() || cancelling">
+        <span *ngIf="!cancelling">Confirmar cancelación</span>
+        <span *ngIf="cancelling">Cancelando...</span>
+      </button>
+    </div>
   </div>
 </div>

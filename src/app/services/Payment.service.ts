@@ -16,6 +16,17 @@ export interface ServicePrice {
   active:      boolean;
 }
 
+export interface PaymentAdjustmentDetail {
+  id:              number;
+  originalAmount:  number;
+  adjustedAmount:  number;
+  difference:      number;
+  reason:          string;
+  adjustedBy:      string;
+  adjustedByName:  string;
+  adjustedAt:      string;
+}
+
 export interface PaymentResponse {
   id:              number;
   appointmentId:   number;
@@ -31,8 +42,10 @@ export interface PaymentResponse {
   status:          'PENDING' | 'PAID';
   paymentDate:     string | null;
   receivedBy:      string;
+  receivedByName?: string;
   notes:           string | null;
   createdAt:       string;
+  adjustments?:    PaymentAdjustmentDetail[];
 }
 
 export interface PaymentRequest {

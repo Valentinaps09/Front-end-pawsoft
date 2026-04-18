@@ -136,8 +136,10 @@
 
     <!-- FOOTER -->
     <div class="modal-footer">
-      <button class="btn-secondary" (click)="onClose()">Cancelar</button>
-      <button class="btn-primary" (click)="onContinue()" [disabled]="loading">
+      <button class="btn-secondary" (click)="onClose()">
+        {{ readOnly ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      <button class="btn-primary" *ngIf="!readOnly" (click)="onContinue()" [disabled]="loading">
         <span *ngIf="!loading">🩺 Continuar con la atención</span>
         <span *ngIf="loading">Cargando...</span>
       </button>

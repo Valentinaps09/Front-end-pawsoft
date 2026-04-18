@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -14,7 +14,7 @@ import { AuthService } from 'src/app/services/auth';
   templateUrl: './perfil-cliente.component.html',
   styleUrls: ['./perfil-cliente.component.scss']
 })
-export class PerfilClienteComponent implements OnInit {
+export class PerfilClienteComponent implements OnInit, OnDestroy {
 
   userName = '';
   userRole = '';
@@ -25,24 +25,31 @@ export class PerfilClienteComponent implements OnInit {
   phone = '';
 
   /* ── Cambio de contraseña (opcional) ── */
+  currentPassword = '';
   newPassword     = '';
   confirmPassword = '';
+  showCurrentPass = false;
   showNewPass     = false;
   showConfirmPass = false;
+  passwordValidated = false;
 
   /* ── Errores de campo ── */
   emailError = '';
   phoneError = '';
   passError  = '';
+  currentPassError = '';
 
   /* ── Tocado (para mostrar error solo si interactuó) ── */
   emailTocado = false;
   phoneTocado = false;
   passTocado  = false;
+  currentPassTocado = false;
 
   /* ── Estados ── */
   loadingProfile = false;
   sendingCode    = false;
+  validatingCurrentPassword = false;
+  private passwordValidationTimeout: any = null;
 
   /* ── Modal verificación ── */
   showVerifyModal  = false;
@@ -50,14 +57,18 @@ export class PerfilClienteComponent implements OnInit {
   verifyingCode    = false;
   verifyError      = '';
 
+  /* ── Modal éxito ── */
+  showSuccessModal = false;
+  successModalMessage = 'Los cambios se guardaron correctamente';
+
   /* ── Snapshot para enviar al backend ── */
   private pendingEmail       = '';
   private pendingPhone       = '';
+  private pendingCurrentPassword = '';
   private pendingNewPassword = '';
   private emailActual        = '';
 
   /* ── Mensajes globales ── */
-  successMessage = '';
   errorMessage   = '';
 
   constructor(
@@ -71,6 +82,12 @@ export class PerfilClienteComponent implements OnInit {
     this.userName = localStorage.getItem('email') || 'Usuario';
     this.userRole = localStorage.getItem('rol')   || 'ROLE_CLIENTE';
     this.loadProfile();
+  }
+
+  ngOnDestroy(): void {
+    if (this.passwordValidationTimeout) {
+      clearTimeout(this.passwordValidationTimeout);
+    }
   }
 
   /* ══════════════════════════════
@@ -160,7 +177,60 @@ export class PerfilClienteComponent implements OnInit {
   }
 
   /* ══════════════════════════════
-     CONTRASEÑA
+     CONTRASEÑA ACTUAL
+  ══════════════════════════════ */
+
+  onCurrentPassInput(): void {
+    this.currentPassTocado = true;
+    this.passwordValidated = false;
+    this.currentPassError = '';
+
+    // Limpiar timeout anterior si existe
+    if (this.passwordValidationTimeout) {
+      clearTimeout(this.passwordValidationTimeout);
+    }
+
+    // Si no hay contraseña, no validar
+    if (!this.currentPassword.trim()) {
+      this.passwordValidated = false;
+      return;
+    }
+
+    // Validar después de 500ms de que el usuario deje de escribir
+    this.passwordValidationTimeout = setTimeout(() => {
+      this.validarCurrentPassword();
+    }, 500);
+  }
+
+  private validarCurrentPassword(): void {
+    if (!this.currentPassword.trim()) {
+      this.currentPassError = '';
+      this.passwordValidated = false;
+      return;
+    }
+
+    this.validatingCurrentPassword = true;
+    this.profileService.validateCurrentPassword({ currentPassword: this.currentPassword }).subscribe({
+      next: (response) => {
+        this.validatingCurrentPassword = false;
+        if (response.valid) {
+          this.currentPassError = '';
+          this.passwordValidated = true;
+        } else {
+          this.currentPassError = 'Contraseña actual incorrecta.';
+          this.passwordValidated = false;
+        }
+      },
+      error: () => {
+        this.validatingCurrentPassword = false;
+        this.currentPassError = 'Error al validar la contraseña.';
+        this.passwordValidated = false;
+      }
+    });
+  }
+
+  /* ══════════════════════════════
+     CONTRASEÑA NUEVA
   ══════════════════════════════ */
 
   onPassBlur(): void {
@@ -174,7 +244,24 @@ export class PerfilClienteComponent implements OnInit {
   }
 
   private validarPass(): void {
-    if (!this.newPassword && !this.confirmPassword) { this.passError = ''; return; }
+    // Si no hay contraseña actual, no validar las nuevas
+    if (!this.currentPassword && !this.newPassword && !this.confirmPassword) { 
+      this.passError = ''; 
+      return; 
+    }
+    
+    // Si hay contraseña actual pero no está validada, no permitir continuar
+    if (this.currentPassword && !this.passwordValidated) {
+      this.passError = 'Primero valida tu contraseña actual.';
+      return;
+    }
+    
+    // Si no hay nueva contraseña pero sí actual, requerir nueva contraseña
+    if (this.currentPassword && !this.newPassword) {
+      this.passError = 'Ingresa tu nueva contraseña.';
+      return;
+    }
+    
     const p = this.newPassword;
     const faltan: string[] = [];
     if (p.length < 8)             faltan.push('mínimo 8 caracteres');
@@ -198,7 +285,7 @@ export class PerfilClienteComponent implements OnInit {
     this.validarEmail();
     this.validarTelefono();
     this.validarPass();
-    return !this.emailError && !this.phoneError && !this.passError;
+    return !this.emailError && !this.phoneError && !this.passError && !this.currentPassError;
   }
 
   requestSave(): void {
@@ -206,12 +293,13 @@ export class PerfilClienteComponent implements OnInit {
     this.emailTocado = true;
     this.phoneTocado = true;
     this.passTocado  = true;
+    this.currentPassTocado = true;
 
     this.validarEmail();
     this.validarTelefono();
     this.validarPass();
 
-    if (this.emailError || this.phoneError || this.passError) {
+    if (this.emailError || this.phoneError || this.passError || this.currentPassError) {
       this.errorMessage = 'Corrige los errores antes de continuar.';
       return;
     }
@@ -220,6 +308,7 @@ export class PerfilClienteComponent implements OnInit {
 
     this.pendingEmail       = this.email.trim();
     this.pendingPhone       = this.phone.trim();
+    this.pendingCurrentPassword = this.currentPassword;
     this.pendingNewPassword = this.newPassword;
 
     // Guardamos el email actual antes de cualquier cambio
@@ -257,6 +346,7 @@ export class PerfilClienteComponent implements OnInit {
       code:        this.verificationCode.trim(),
       email:       this.pendingEmail,
       phone:       this.pendingPhone ?? '',
+      currentPassword: this.pendingCurrentPassword || undefined,
       newPassword: this.pendingNewPassword || undefined
     }).subscribe({
       next: () => {
@@ -264,22 +354,48 @@ export class PerfilClienteComponent implements OnInit {
 
         this.verifyingCode   = false;
         this.showVerifyModal = false;
+        this.currentPassword = '';
         this.newPassword     = '';
         this.confirmPassword = '';
+        this.passwordValidated = false;
         this.passError       = '';
+        this.currentPassError = '';
 
         if (emailCambio) {
           // El JWT tiene el email viejo — hay que volver a hacer login
-          this.successMessage = '¡Correo actualizado! Por favor inicia sesión de nuevo.';
+          this.verifyingCode   = false;
+          this.showVerifyModal = false;
+          this.successModalMessage = 'Correo actualizado. Serás redirigido al login';
+          this.showSuccessModal = true;
+          this.currentPassword = '';
+          this.newPassword     = '';
+          this.confirmPassword = '';
+          this.passwordValidated = false;
+          this.passError       = '';
+          this.currentPassError = '';
+          
           setTimeout(() => {
+            this.showSuccessModal = false;
             localStorage.clear();
             this.router.navigate(['/login']);
-          }, 2000);
+          }, 2500);
         } else {
           localStorage.setItem('email', this.pendingEmail);
           this.userName       = this.pendingEmail;
-          this.successMessage = '¡Perfil actualizado correctamente!';
-          setTimeout(() => this.successMessage = '', 4000);
+          this.verifyingCode   = false;
+          this.showVerifyModal = false;
+          this.successModalMessage = 'Los cambios se guardaron correctamente';
+          this.showSuccessModal = true;
+          this.currentPassword = '';
+          this.newPassword     = '';
+          this.confirmPassword = '';
+          this.passwordValidated = false;
+          this.passError       = '';
+          this.currentPassError = '';
+          
+          setTimeout(() => {
+            this.showSuccessModal = false;
+          }, 2000);
         }
       },
       error: (err) => {
@@ -325,7 +441,6 @@ export class PerfilClienteComponent implements OnInit {
   }
 
   private clearMessages(): void {
-    this.successMessage = '';
     this.errorMessage   = '';
   }
 

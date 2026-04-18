@@ -15,6 +15,7 @@ export class MedicalProfileModalComponent implements OnChanges {
 
   @Input() petId!: number;
   @Input() show = false;
+  @Input() readOnly = false;
   @Output() close = new EventEmitter<void>();
   @Output() continue = new EventEmitter<void>();
 

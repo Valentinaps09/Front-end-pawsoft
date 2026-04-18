@@ -55,15 +55,6 @@
               placeholder="Buscar por mascota o propietario..."
               [(ngModel)]="searchToday"
               (input)="filterTodayAppointments()">
-            
-            <!-- Botón para limpiar atenciones en progreso -->
-            <button
-              *ngIf="hasActiveAttention()"
-              class="btn-limpiar-atencion"
-              (click)="cleanupInProgressAppointments()"
-              title="Limpiar atenciones en progreso">
-              🗑️ Limpiar atenciones
-            </button>
           </div>
         </div>
 
@@ -119,15 +110,14 @@
                 </td>
                 <td>
                   <div class="action-buttons">
-                    <!-- Botón Iniciar Atención -->
-                    <button 
-                      *ngIf="canStartAttention(apt)"
-                      class="btn-action btn-start"
+                    <!-- Botón Ver Paciente — abre el resumen clínico -->
+                    <button
+                      class="btn-action btn-view-patient"
                       (click)="openMedicalProfileModal(apt)"
-                      title="Iniciar atención">
-                      🩺 Iniciar
+                      title="Ver resumen clínico del paciente">
+                      Ver paciente
                     </button>
-                    
+
                     <!-- Botón deshabilitado cuando hay atención activa -->
                     <button 
                       *ngIf="(apt.status === 'CONFIRMED' || apt.status === 'UPCOMING') && hasActiveAttention()"
@@ -265,6 +255,7 @@
 <app-medical-profile-modal
   [show]="showMedicalProfileModal"
   [petId]="selectedPetId!"
+  [readOnly]="true"
   (close)="closeMedicalProfileModal()"
   (continue)="continueWithAttention(selectedAppointment!)">
 </app-medical-profile-modal>

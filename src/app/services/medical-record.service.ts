@@ -80,6 +80,7 @@ export interface MedicalRecordResponse {
   petBirthDate: string;
   petSex: string;
   petPhotoUrl: string | null;
+  petIsDeceased: boolean; // Indica si la mascota está fallecida
   ownerName: string;
   ownerEmail: string;
   vetName: string;
@@ -310,12 +311,28 @@ export class MedicalRecordService {
     formData.append('file', file);
     formData.append('upload_preset', environment.cloudinary.uploadPreset);
 
-    // PDFs y documentos van a /raw/upload, imágenes a /image/upload
-    const resourceType = file.type === 'application/pdf' ? 'raw' : 'image';
+    // Para PDFs, intentar subirlos como 'auto' en lugar de 'raw'
+    // Esto evita el problema de "untrusted customer" en cuentas nuevas
+    let resourceType: string;
+    if (file.type === 'application/pdf') {
+      resourceType = 'auto'; // Cloudinary detecta automáticamente el tipo
+      formData.append('resource_type', 'auto');
+    } else {
+      resourceType = 'image';
+    }
 
     return this.http.post<{ secure_url: string }>(
       `https://api.cloudinary.com/v1_1/${environment.cloudinary.cloudName}/${resourceType}/upload`,
       formData
+    ).pipe(
+      catchError((error) => {
+        console.error('Error subiendo archivo a Cloudinary:', error);
+        // Si falla, mostrar mensaje más claro
+        if (error.error?.error?.message?.includes('untrusted')) {
+          throw new Error('Tu cuenta de Cloudinary necesita verificación. Por favor verifica tu email y agrega un método de pago en cloudinary.com');
+        }
+        throw error;
+      })
     );
   }
 

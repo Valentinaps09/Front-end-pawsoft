@@ -10,6 +10,10 @@
   flex-direction: column;
   height: 100vh;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { width: 6px; }
+  &::-webkit-scrollbar-track { background: transparent; }
+  &::-webkit-scrollbar-thumb { background: #C8E6D4; border-radius: 3px; }
 }
 
 /* Topbar */
@@ -69,7 +73,7 @@
 .content-area {
   padding: 24px 28px 100px;
   display: flex; flex-direction: column; gap: 20px;
-  max-width: 900px; width: 100%; margin: 0 auto;
+  max-width: 1400px; width: 100%; margin: 0 auto;
   box-sizing: border-box;
 }
 
@@ -354,13 +358,12 @@ label {
 
 .fotos-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
 }
 
 .foto-item {
   position: relative;
-  aspect-ratio: 1;
   border-radius: 10px;
   overflow: hidden;
   border: 1.5px solid #DCEAE2;
@@ -369,7 +372,59 @@ label {
   img {
     width: 100%;
     height: 100%;
+    aspect-ratio: 1;
     object-fit: cover;
+  }
+}
+
+.pdf-preview-container {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(135deg, #F8FBF9 0%, #EAF5EE 100%);
+  padding: 20px;
+}
+
+.pdf-icon-large {
+  font-size: 3rem;
+  opacity: 0.8;
+}
+
+.pdf-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.pdf-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #145C42;
+}
+
+.pdf-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #145C42;
+  color: #fff;
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  transition: background 0.2s;
+
+  &:hover {
+    background: #0F4531;
   }
 }
 
@@ -579,6 +634,32 @@ label {
 
   &:hover:not(:disabled) {
     background: #8f2626;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.pdf-view-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: #145C42;
+  color: #fff;
+  border: none;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: 'Manrope', sans-serif;
+
+  &:hover:not(:disabled) {
+    background: #0F4531;
   }
 
   &:disabled {
@@ -1249,5 +1330,596 @@ label {
     strong {
       color: #ffffff !important;
     }
+  }
+}
+
+/* Estado del paciente - Radio buttons */
+.estado-paciente-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid #E8EFE9;
+  box-shadow: 0 2px 8px rgba(18,38,30,.06);
+}
+
+.radio-group-estado {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.radio-label-estado {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border: 2px solid #E8EFE9;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s ease;
+  background: #F8FBF9;
+
+  input[type="radio"] {
+    margin-right: 12px;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    accent-color: #22A06B;
+  }
+
+  .radio-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+
+  .radio-icon {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+
+  .radio-title {
+    font-size: .95rem;
+    font-weight: 700;
+    color: #163A2B;
+  }
+
+  .radio-desc {
+    font-size: .8rem;
+    color: #5F7F71;
+    margin-top: 2px;
+  }
+
+  &:hover {
+    border-color: #C8E6D4;
+    background: #EAF5EE;
+  }
+
+  &.selected {
+    border-color: #22A06B;
+    background: #EAF5EE;
+    box-shadow: 0 0 0 3px rgba(34, 160, 107, 0.1);
+  }
+}
+
+.radio-label-estado.radio-estable.selected {
+  border-color: #22A06B;
+  background: #EAF5EE;
+}
+
+.radio-label-estado.radio-hospitalizacion.selected {
+  border-color: #F4B860;
+  background: #FFF8EC;
+  box-shadow: 0 0 0 3px rgba(244, 184, 96, 0.1);
+}
+
+.radio-label-estado.radio-fallecido.selected {
+  border-color: #E57373;
+  background: #FEECEC;
+  box-shadow: 0 0 0 3px rgba(229, 115, 115, 0.1);
+}
+
+/* Medicamentos al ingreso (solo lectura) */
+.medicamentos-ingreso-list {
+  padding: 12px;
+  background: #F8FBF9;
+  border: 1px solid #E8EFE9;
+  border-radius: 8px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.medicamento-ingreso-item {
+  padding: 8px 0;
+  border-bottom: 1px solid #E8EFE9;
+  font-size: .85rem;
+  color: #163A2B;
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.field-hint {
+  font-size: .75rem;
+  color: #7A9A8C;
+  margin-top: 6px;
+  font-style: italic;
+}
+
+
+/* ── Modal PDF ────────────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-pdf-container {
+  background: #fff;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 900px;
+  max-height: 90vh;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.modal-pdf-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #E8EFE9;
+  background: #F8FBF9;
+
+  h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #163A2B;
+  }
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #5F7F71;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all .2s;
+
+  &:hover {
+    background: #E8EFE9;
+    color: #163A2B;
+  }
+}
+
+.modal-pdf-content {
+  flex: 1;
+  overflow: auto;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.pdf-viewer {
+  width: 100%;
+  height: 100%;
+  border: none;
+  min-height: 500px;
+}
+
+.modal-pdf-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #E8EFE9;
+  background: #F8FBF9;
+  justify-content: flex-end;
+}
+
+.btn-primary,
+.btn-secondary {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: .9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  transition: all .2s;
+}
+
+.btn-primary {
+  background: #22A06B;
+  color: #fff;
+
+  &:hover {
+    background: #1A7A4C;
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-secondary {
+  background: #E8EFE9;
+  color: #163A2B;
+
+  &:hover {
+    background: #D4EDE0;
+  }
+}
+
+/* ── PDF Preview Container ────────────────────────────────────────────────── */
+.pdf-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px;
+  background: #FFF3F3;
+  border: 2px solid #FFCDD2;
+  border-radius: 12px;
+  min-height: 140px;
+  position: relative;
+}
+
+.pdf-icon-large {
+  font-size: 2.5rem;
+}
+
+.pdf-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+
+.pdf-name {
+  font-size: .9rem;
+  font-weight: 600;
+  color: #b03030;
+  text-align: center;
+}
+
+.pdf-buttons {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  justify-content: center;
+}
+
+.pdf-view-btn,
+.pdf-download-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: .8rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  transition: all .2s;
+  white-space: nowrap;
+}
+
+.pdf-view-btn {
+  background: #E8EFE9;
+  color: #163A2B;
+
+  &:hover {
+    background: #D4EDE0;
+  }
+}
+
+.pdf-download-btn {
+  background: #22A06B;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #1A7A4C;
+  }
+
+  &:disabled {
+    opacity: .5;
+    cursor: not-allowed;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+/* AUTOCOMPLETADO MÉDICO CON IA */
+/* ═══════════════════════════════════════════════════════════════════════════════════════════════════ */
+
+.seccion-title-with-ai {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.btn-ai-autocompletado {
+  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  border: none;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(74, 144, 226, 0.2);
+
+  &:hover {
+    background: linear-gradient(135deg, #357ABD 0%, #2E6BA8 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(74, 144, 226, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.modal-ai-container {
+  background: white;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.modal-ai-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #E7EFEA;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #F8FBFA 0%, #EAF5EE 100%);
+  border-radius: 16px 16px 0 0;
+
+  h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #163A2B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.modal-ai-content {
+  padding: 24px;
+}
+
+.ai-step {
+  h4 {
+    margin: 0 0 12px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #163A2B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.ai-hint {
+  color: #5F7F71;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.ai-textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  border: 2px solid #E7EFEA;
+  border-radius: 8px;
+  font-family: 'Manrope', sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  transition: border-color 0.3s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4A90E2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+  }
+}
+
+.ai-patient-info {
+  background: #F8FBFA;
+  border: 1px solid #E7EFEA;
+  border-radius: 8px;
+  padding: 16px;
+  margin-top: 16px;
+
+  h5 {
+    margin: 0 0 12px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #163A2B;
+  }
+}
+
+.patient-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #5F7F71;
+
+  span {
+    strong {
+      color: #163A2B;
+    }
+  }
+}
+
+.ai-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #E7EFEA;
+}
+
+.ai-suggestions {
+  h4 {
+    margin: 0 0 20px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #163A2B;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.suggestion-section {
+  background: #F8FBFA;
+  border: 1px solid #E7EFEA;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+
+  h5 {
+    margin: 0 0 12px 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #163A2B;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.btn-apply-suggestion {
+  background: #22A06B;
+  border: none;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Manrope', sans-serif;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #1E8F5E;
+    transform: translateY(-1px);
+  }
+}
+
+.suggestion-content {
+  margin: 0;
+  color: #1B2B23;
+  line-height: 1.5;
+  font-size: 0.9rem;
+}
+
+.differential-list,
+.medication-list,
+.exam-list,
+.recommendation-list {
+  margin: 0;
+  padding-left: 20px;
+  color: #1B2B23;
+  font-size: 0.9rem;
+  line-height: 1.6;
+
+  li {
+    margin-bottom: 4px;
+  }
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .modal-ai-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .seccion-title-with-ai {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .btn-ai-autocompletado {
+    align-self: stretch;
+    justify-content: center;
+  }
+
+  .suggestion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .btn-apply-suggestion {
+    align-self: flex-start;
+  }
+
+  .ai-actions {
+    flex-direction: column;
+  }
+
+  .patient-info-grid {
+    grid-template-columns: 1fr;
   }
 }

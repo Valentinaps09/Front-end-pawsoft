@@ -38,6 +38,8 @@ export interface AdminPet {
   photoUrl?: string;
   ownerName: string;
   ownerEmail: string;
+  isDeceased?: boolean;      // Indica si la mascota está fallecida
+  isHospitalized?: boolean;  // Indica si la mascota está hospitalizada
 }
 
 @Injectable({ providedIn: 'root' })

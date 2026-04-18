@@ -56,7 +56,7 @@ export class AdminHospitalizacionesComponent implements OnInit {
         this.isLoading = false;
       },
       error: () => {
-        this.errorMsg = 'No se pudieron cargar las hospitalizaciones.';
+        this.errorMsg = 'No se pudieron cargar los registros especiales.';
         this.isLoading = false;
       }
     });

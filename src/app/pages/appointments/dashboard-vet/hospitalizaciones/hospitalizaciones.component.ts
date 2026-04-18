@@ -23,6 +23,11 @@ export class HospitalizacionesComponent implements OnInit {
   isLoading = false;
   errorMsg = '';
 
+  // Filtros
+  searchTerm = '';
+  fechaDesde = '';
+  fechaHasta = '';
+
   // Modal dar de alta
   mostrarModalAlta = false;
   hospSeleccionada: HospitalizationDTO | null = null;
@@ -53,18 +58,18 @@ export class HospitalizacionesComponent implements OnInit {
   cargarHospitalizaciones(): void {
     this.isLoading = true;
     this.errorMsg = '';
-    console.log('Cargando hospitalizaciones...');
+    console.log('Cargando registros especiales...');
     
     // Cambiar de getActive() a getAll() para obtener todas las hospitalizaciones
     this.hospitalizationService.getAll().subscribe({
       next: (data) => { 
-        console.log('Hospitalizaciones cargadas:', data);
+        console.log('Registros especiales cargados:', data);
         this.todasHospitalizaciones = data; 
         this.isLoading = false; 
       },
       error: (err) => { 
-        console.error('Error cargando hospitalizaciones:', err);
-        this.errorMsg = 'No se pudieron cargar las hospitalizaciones.'; 
+        console.error('Error cargando registros especiales:', err);
+        this.errorMsg = 'No se pudieron cargar los registros especiales.'; 
         this.isLoading = false; 
       }
     });
@@ -75,6 +80,7 @@ export class HospitalizacionesComponent implements OnInit {
   }
 
   get hospitalizacionesAlta(): HospitalizationDTO[] {
+    // Solo incluye las dadas de alta (excluye fallecidas)
     return this.todasHospitalizaciones.filter(h => h.status === 'DISCHARGED');
   }
 
@@ -86,6 +92,61 @@ export class HospitalizacionesComponent implements OnInit {
     if (this.tabActiva === 'activas') return this.hospitalizacionesActivas;
     if (this.tabActiva === 'alta') return this.hospitalizacionesAlta;
     return this.hospitalizacionesFallecidas;
+  }
+
+  get hospitalizacionesFiltradas(): HospitalizationDTO[] {
+    let resultado = [...this.todasHospitalizaciones];
+
+    // Filtro por tab activo
+    if (this.tabActiva === 'activas') {
+      resultado = resultado.filter(h => h.status === 'ACTIVE');
+    } else if (this.tabActiva === 'alta') {
+      // Solo incluye altas (excluye fallecimientos)
+      resultado = resultado.filter(h => h.status === 'DISCHARGED');
+    } else if (this.tabActiva === 'fallecidas') {
+      resultado = resultado.filter(h => h.status === 'DECEASED');
+    }
+
+    // Filtro por búsqueda (nombre de mascota)
+    if (this.searchTerm.trim()) {
+      const term = this.searchTerm.toLowerCase().trim();
+      resultado = resultado.filter(h => 
+        h.petName.toLowerCase().includes(term)
+      );
+    }
+
+    // Filtro por fecha desde
+    if (this.fechaDesde) {
+      const desde = new Date(this.fechaDesde);
+      resultado = resultado.filter(h => {
+        const fecha = new Date(h.admissionDate);
+        return fecha >= desde;
+      });
+    }
+
+    // Filtro por fecha hasta
+    if (this.fechaHasta) {
+      const hasta = new Date(this.fechaHasta);
+      hasta.setHours(23, 59, 59, 999); // Incluir todo el día
+      resultado = resultado.filter(h => {
+        const fecha = new Date(h.admissionDate);
+        return fecha <= hasta;
+      });
+    }
+
+    return resultado;
+  }
+
+  limpiarFiltros(): void {
+    this.searchTerm = '';
+    this.fechaDesde = '';
+    this.fechaHasta = '';
+  }
+
+  get fechaMaxima(): string {
+    // Retorna la fecha de hoy en formato YYYY-MM-DD
+    const hoy = new Date();
+    return hoy.toISOString().split('T')[0];
   }
 
   // ── Dar de alta ──────────────────────────────────────────────────────────

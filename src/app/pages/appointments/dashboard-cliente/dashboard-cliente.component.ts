@@ -12,6 +12,7 @@ import { MedicalRecordService, MedicalRecordResponse, Medicamento } from 'src/ap
 interface Pet {
   id: string; name: string; species: string; breed: string;
   emoji: string; gender: string; birthDate: string; photoUrl?: string;
+  isDeceased?: boolean; isHospitalized?: boolean;
 }
 
 interface CalendarDay {
@@ -160,11 +161,22 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   loadPets(): void {
     this.petService.getMyPets().subscribe({
       next: (data) => {
-        this.pets = data.map(p => ({
+        // Separar mascotas vivas de fallecidas
+        const alivePets = data.filter(p => !p.isDeceased);
+        const deceasedPets = data.filter(p => p.isDeceased);
+        
+        // Solo mostrar mascotas vivas para agendar citas
+        this.pets = alivePets.map(p => ({
           id: String(p.id), name: p.name, species: p.species,
           breed: p.breed || '', emoji: this.getEmojiBySpecies(p.species),
-          gender: p.sex, birthDate: p.birthDate || '', photoUrl: p.photoUrl
+          gender: p.sex, birthDate: p.birthDate || '', photoUrl: p.photoUrl,
+          isDeceased: p.isDeceased, isHospitalized: p.isHospitalized
         }));
+
+        // Mostrar mensaje de condolencias si hay mascotas fallecidas
+        if (deceasedPets.length > 0) {
+          this.showDeceasedPetsMessage(deceasedPets);
+        }
       },
       error: () => {}
     });
@@ -179,6 +191,16 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       },
       error: () => { this.veterinarians = []; this.loadingVets = false; }
     });
+  }
+
+  showDeceasedPetsMessage(deceasedPets: any[]): void {
+    const petNames = deceasedPets.map(p => p.name).join(', ');
+    const message = deceasedPets.length === 1 
+      ? `Nuestras condolencias por la pérdida de ${petNames}. 🌈💙`
+      : `Nuestras condolencias por la pérdida de ${petNames}. 🌈💙`;
+    
+    // Mostrar mensaje de condolencias (puedes usar un toast o modal)
+    console.log(message); // Por ahora solo log, puedes implementar un toast
   }
 
   loadMyAppointments(): void {
@@ -287,6 +309,12 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
   ══════════════════════════════ */
 
   selectPet(pet: Pet): void {
+    // Validar que la mascota no esté hospitalizada
+    if (pet.isHospitalized) {
+      alert(`${pet.name} está actualmente hospitalizada. No se pueden agendar citas hasta que termine la hospitalización.`);
+      return;
+    }
+    
     this.selectedPet = pet;
     this.resetBookingState();
   }
@@ -412,11 +440,11 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       petId:  Number(this.selectedPet.id),
       vetId:  Number(this.selectedVet.id),
       date:   `${year}-${month}-${day}`,
-      time:   this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
+      time:   this.selectedTimeSlot.time, // Enviar la hora tal como está (HH:mm)
       reason: this.appointmentReason,
     };
     // Optimistic UI — agrega la cita visualmente antes de confirmar el backend
-    const newTimestamp = new Date(`${year}-${month}-${day}T${this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time}`).getTime();
+    const newTimestamp = new Date(`${year}-${month}-${day}T${this.selectedTimeSlot.time}:00`).getTime();
     const now = new Date();
 
     const newAppointment: AppointmentView = {
@@ -430,7 +458,7 @@ export class DashboardClienteComponent implements OnInit, OnDestroy {
       status: 'upcoming',
       canCancel: true,
       rawDate: `${year}-${month}-${day}`,
-      rawTime: this.selectedTimeSlot.time.length === 5 ? `${this.selectedTimeSlot.time}:00` : this.selectedTimeSlot.time,
+      rawTime: `${this.selectedTimeSlot.time}:00`,
       sortTimestamp: newTimestamp,
       isPast: newTimestamp < now.getTime()
     };

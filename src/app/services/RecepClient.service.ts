@@ -23,6 +23,8 @@ export interface RecepPet {
   birthDate:  string;
   photoUrl?:  string;
   ownerEmail: string;
+  isDeceased?: boolean;      // Indica si la mascota está fallecida
+  isHospitalized?: boolean;  // Indica si la mascota está hospitalizada
 }
 
 // ── Sin campo password — se genera en el backend y se envía por correo

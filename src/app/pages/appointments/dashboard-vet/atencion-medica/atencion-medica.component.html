@@ -26,22 +26,13 @@
             placeholder="Buscar por mascota o propietario..."
             [(ngModel)]="searchText"
             (input)="aplicarFiltros()">
-          
-          <!-- Botón para limpiar atención activa -->
-          <button
-            *ngIf="hayAtencionActiva()"
-            class="btn-limpiar-atencion"
-            (click)="limpiarAtencionManual()"
-            title="Limpiar atención en progreso">
-            🗑️ Limpiar atención activa
-          </button>
 
           <!-- Botón para limpiar todas las atenciones -->
           <button
             class="btn-limpiar-atencion"
             (click)="limpiarTodasLasAtenciones()"
             title="Limpiar todas las atenciones en progreso">
-            🧹 Limpiar todas
+            Limpiar todas
           </button>
         </div>
       </div>
@@ -114,7 +105,7 @@
             <button
               *ngIf="isEnProceso(cita)"
               class="btn-continuar"
-              (click)="continuarAtencion()"
+              (click)="continuarAtencion(cita)"
               title="Continuar con la atención en progreso">
               Continuar →
             </button>

@@ -31,6 +31,7 @@ interface ClientPet {
   color:     string;
   birthDate?: string;
   photoUrl?:  string;
+  isHospitalized?: boolean;  // Indica si la mascota está hospitalizada
 }
 
 interface Client {
@@ -144,9 +145,8 @@ export class DashboardRecComponent implements OnInit {
 
   readonly ALL_SLOTS = [
     '08:00','08:30','09:00','09:30','10:00','10:30',
-    '11:00','11:30','12:00','12:30','13:00','13:30',
-    '14:00','14:30','15:00','15:30','16:00','16:30',
-    '17:00','17:30','18:00'
+    '11:00','11:30','14:00','14:30','15:00','15:30','16:00','16:30',
+    '17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30'
   ];
 
   // ── Calendario citas ───────────────────────────────────────────────────────
@@ -337,10 +337,12 @@ export class DashboardRecComponent implements OnInit {
   loadPetsForClient(client: Client): void {
     const pets = this.allPets
       .filter(p => p.ownerEmail === client.email)
+      .filter(p => !p.isDeceased) // Filtrar mascotas fallecidas - no se pueden agendar citas
       .map(p => ({
         id: String(p.id), name: p.name, emoji: this.getEmojiBySpecies(p.species),
         species: p.species, breed: p.breed ?? '—', age: 0, gender: p.sex ?? '',
-        color: '', birthDate: p.birthDate, photoUrl: p.photoUrl
+        color: '', birthDate: p.birthDate, photoUrl: p.photoUrl,
+        isHospitalized: p.isHospitalized // Pasar información de hospitalización
       }));
     this.selectedExistingClient = { ...client, pets };
   }
@@ -1142,7 +1144,9 @@ export class DashboardRecComponent implements OnInit {
     this.clientSearchResults = []; this.clientSearchTouched = false; this.loadPetsForClient(c);
   }
 
-  countPetsForClient(email: string): number { return this.allPets.filter(p => p.ownerEmail === email).length; }
+  countPetsForClient(email: string): number { 
+    return this.allPets.filter(p => p.ownerEmail === email && !p.isDeceased).length; 
+  }
 
   clearSelectedClient(): void {
     this.selectedExistingClient = null; this.selectedPet = null;

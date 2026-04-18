@@ -873,3 +873,132 @@
 button, .btn-icon { cursor: pointer; }
 
 .form-select option[value=""] { color: #aaa; }
+
+/* ═══════════════════════════════════════════
+   MASCOTAS FALLECIDAS - Estilos respetuosos
+═══════════════════════════════════════════ */
+
+.pet-card.deceased {
+  position: relative;
+  background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f4 100%);
+  border: 1px solid #e0e0e0;
+  opacity: 0.85;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    opacity: 1;
+  }
+}
+
+.deceased-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+  color: #1565c0;
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-align: center;
+  border-bottom: 1px solid #90caf9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  z-index: 1;
+}
+
+.deceased-icon {
+  font-size: 0.9rem;
+}
+
+.deceased-text {
+  font-style: italic;
+}
+
+.pet-card.deceased .pet-card-header {
+  padding-top: 44px; /* Espacio para el banner */
+}
+
+.pet-avatar.deceased-avatar {
+  background: #f5f5f5;
+  border: 2px solid #e0e0e0;
+  filter: grayscale(20%);
+  
+  .pet-photo {
+    filter: grayscale(20%) sepia(10%) hue-rotate(200deg) saturate(0.8);
+  }
+}
+
+.pet-card-name.deceased-name {
+  color: #5f6368;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deceased-heart {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+.pet-card-readonly {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 8px;
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  color: #5f6368;
+  font-weight: 500;
+}
+
+.readonly-label {
+  font-style: italic;
+}
+
+.pet-card.deceased .pet-card-body {
+  background: rgba(248, 249, 250, 0.5);
+}
+
+.pet-card.deceased .detail-row {
+  color: #5f6368;
+  border-bottom-color: #e8eaed;
+  
+  strong {
+    color: #3c4043;
+  }
+}
+
+/* Efectos sutiles para honrar la memoria */
+.pet-card.deceased::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 49%, rgba(255, 255, 255, 0.1) 50%, transparent 51%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .deceased-banner {
+    padding: 5px 10px !important;
+    font-size: 0.7rem !important;
+  }
+  
+  .pet-card.deceased .pet-card-header {
+    padding-top: 38px !important;
+  }
+  
+  .pet-card-readonly {
+    padding: 3px 6px !important;
+    font-size: 0.65rem !important;
+  }
+}

@@ -119,6 +119,14 @@ export class AtencionMedicaComponent implements OnInit {
   }
 
   iniciarAtencion(cita: RecepAppointmentResponse): void {
+    // Si la cita ya está en progreso, solo continuar sin llamar al backend
+    if (cita.status === 'IN_PROGRESS') {
+      this.medicalRecordService.iniciarAtencion(cita);
+      this.router.navigate(['/veterinario/formulario-consulta']);
+      return;
+    }
+
+    // Si la cita está confirmada, iniciarla en el backend
     this.appointmentService.startAppointment(cita.id).subscribe({
       next: () => {
         this.medicalRecordService.iniciarAtencion(cita);
@@ -132,8 +140,15 @@ export class AtencionMedicaComponent implements OnInit {
     });
   }
 
-  continuarAtencion(): void {
-    const atencionActiva = this.medicalRecordService.getAtencionActiva();
+  continuarAtencion(cita?: RecepAppointmentResponse): void {
+    let atencionActiva = this.medicalRecordService.getAtencionActiva();
+    
+    // Si no hay atención activa pero se pasó una cita, restaurarla
+    if (!atencionActiva && cita) {
+      this.medicalRecordService.iniciarAtencion(cita);
+      atencionActiva = this.medicalRecordService.getAtencionActiva();
+    }
+    
     if (atencionActiva) {
       this.router.navigate(['/veterinario/formulario-consulta']);
     } else {
@@ -165,13 +180,6 @@ export class AtencionMedicaComponent implements OnInit {
   getInitials(name: string): string {
     if (!name) return '??';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
-  }
-
-  limpiarAtencionManual(): void {
-    if (confirm('¿Estás seguro de que quieres limpiar la atención activa? Se perderá cualquier progreso no guardado.')) {
-      this.medicalRecordService.cerrarAtencion();
-      this.aplicarFiltros();
-    }
   }
 
   limpiarTodasLasAtenciones(): void {

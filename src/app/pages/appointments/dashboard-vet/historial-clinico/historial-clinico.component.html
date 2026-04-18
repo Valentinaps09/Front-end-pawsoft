@@ -77,21 +77,28 @@
 
           <!-- Header colapsado -->
           <div class="registro-header" (click)="toggleExpand(r.id)">
-            <div class="reg-avatar">
-              <img *ngIf="r.petPhotoUrl" [src]="r.petPhotoUrl" [alt]="r.petName">
-              <span *ngIf="!r.petPhotoUrl">{{ getEmojiBySpecies(r.petSpecies) }}</span>
+            <div class="reg-left-section">
+              <div class="reg-avatar" [class.deceased-avatar]="r.petIsDeceased">
+                <img *ngIf="r.petPhotoUrl" [src]="r.petPhotoUrl" [alt]="r.petName">
+                <span *ngIf="!r.petPhotoUrl">{{ getEmojiBySpecies(r.petSpecies) }}</span>
+              </div>
+              <div class="reg-info">
+                <div class="reg-pet-name">
+                  {{ r.petName }}
+                  <span class="deceased-badge" *ngIf="r.petIsDeceased">✝ Fallecido</span>
+                </div>
+                <div class="reg-details">{{ r.petSpecies }} · {{ r.ownerName }}</div>
+              </div>
+              <div class="reg-vet">👨‍⚕️ {{ r.vetName }}</div>
             </div>
-            <div class="reg-info">
-              <div class="reg-pet-name">{{ r.petName }}</div>
-              <div class="reg-details">{{ r.petSpecies }} · {{ r.ownerName }}</div>
+            <div class="reg-right-section">
+              <div class="reg-fecha">{{ formatDate(r.appointmentDate) }}</div>
+              <div class="reg-diagnostico">{{ r.diagnosticoPrincipal || '—' }}</div>
+              <div class="reg-costo" *ngIf="r.costoTotal && r.costoTotal > 0">
+                💲 {{ r.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}
+              </div>
+              <div class="reg-chevron" [class.open]="isExpanded(r.id)">▼</div>
             </div>
-            <div class="reg-vet">👨‍⚕️ {{ r.vetName }}</div>
-            <div class="reg-fecha">{{ formatDate(r.appointmentDate) }}</div>
-            <div class="reg-diagnostico">{{ r.diagnosticoPrincipal || '—' }}</div>
-            <div class="reg-costo" *ngIf="r.costoTotal && r.costoTotal > 0">
-              💲 {{ r.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}
-            </div>
-            <div class="reg-chevron" [class.open]="isExpanded(r.id)">▼</div>
           </div>
 
           <!-- Detalle expandido -->
@@ -192,11 +199,21 @@
               <div class="detalle-seccion full-width" *ngIf="r.fotosAdjuntas && parseFotos(r.fotosAdjuntas).length > 0">
                 <div class="detalle-titulo">🔬 Estudios y Evidencia Clínica</div>
                 <div class="fotos-grid">
-                  <ng-container *ngFor="let foto of parseFotos(r.fotosAdjuntas)">
+                  <ng-container *ngFor="let foto of parseFotos(r.fotosAdjuntas); let i = index">
                     <!-- PDF -->
-                    <a *ngIf="esPdf(foto)" [href]="foto" target="_blank" rel="noopener" class="pdf-adjunto">
-                      📄 Ver PDF
-                    </a>
+                    <div *ngIf="esPdf(foto)" class="pdf-item-historial">
+                      <div class="pdf-icon">📄</div>
+                      <span class="pdf-label">PDF {{ i + 1 }}</span>
+                      <div class="pdf-buttons-hist">
+                        <button (click)="abrirPdf(foto)" class="btn-ver-pdf-hist" title="Ver PDF">
+                          Ver
+                        </button>
+                        <button (click)="descargarPdf(foto, i + 1)" class="btn-descargar-pdf-hist" [disabled]="descargandoPdf" title="Descargar PDF">
+                          <span *ngIf="!descargandoPdf">📥 Descargar</span>
+                          <span *ngIf="descargandoPdf">⏳...</span>
+                        </button>
+                      </div>
+                    </div>
                     <!-- Imagen -->
                     <img *ngIf="!esPdf(foto)"
                          [src]="foto" alt="Imagen del registro" class="foto-thumb"
@@ -222,6 +239,10 @@
                     <span>{{ r.costoTotal | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                   </div>
                 </div>
+                <div class="info-note">
+                  <span class="info-icon">ℹ️</span>
+                  <span class="info-text">Los costos mostrados son los originales. Para ver ajustes y descuentos aplicados, consulta el panel de Pagos.</span>
+                </div>
               </div>
 
             </div>
@@ -245,5 +266,22 @@
   <div class="lightbox-content" (click)="$event.stopPropagation()">
     <button class="lightbox-close" (click)="cerrarFoto()" aria-label="Cerrar">✕</button>
     <img [src]="fotoSeleccionada" alt="Imagen ampliada" class="lightbox-img">
+  </div>
+</div>
+
+<!-- MODAL VISUALIZAR PDF -->
+<div class="modal-overlay" *ngIf="pdfSeleccionado" (click)="cerrarPdf()">
+  <div class="modal-pdf-container" (click)="$event.stopPropagation()">
+    <div class="modal-pdf-header">
+      <h3>📄 Visualizar PDF</h3>
+      <button class="modal-close-btn" (click)="cerrarPdf()">✕</button>
+    </div>
+    <div class="modal-pdf-content">
+      <iframe [src]="pdfSeleccionado" class="pdf-viewer"></iframe>
+    </div>
+    <div class="modal-pdf-footer">
+      <button class="btn-secondary" (click)="cerrarPdf()">Cerrar</button>
+      <button class="btn-primary" (click)="descargarPdf(pdfUrlOriginal!, 1)" [disabled]="!pdfUrlOriginal">📥 Descargar</button>
+    </div>
   </div>
 </div>

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppSidebarComponent } from 'src/app/share/components/app-sidebar/app-sidebar.component';
 import { MedicalRecordService, MedicalRecordResponse } from 'src/app/services/medical-record.service';
 import {
@@ -37,8 +38,12 @@ export class HistorialClinicoComponent implements OnInit {
 
   isLoading = false;
   errorMsg = '';
+  descargandoPdf = false;
 
-  constructor(private readonly medicalRecordService: MedicalRecordService) {
+  constructor(
+    private readonly medicalRecordService: MedicalRecordService,
+    private readonly sanitizer: DomSanitizer
+  ) {
     const today = new Date();
     this.maxDate = today.toISOString().split('T')[0];
     const twentyYearsAgo = new Date();
@@ -108,8 +113,19 @@ export class HistorialClinicoComponent implements OnInit {
   isExpanded(id: number): boolean { return this.expandidos.has(id); }
 
   fotoSeleccionada: string | null = null;
+  pdfSeleccionado: SafeResourceUrl | null = null;
+  pdfUrlOriginal: string | null = null; // URL original sin sanitizar para descarga
   abrirFoto(url: string): void { this.fotoSeleccionada = url; }
   cerrarFoto(): void { this.fotoSeleccionada = null; }
+  
+  abrirPdf(url: string): void { 
+    // En lugar de iframe, abrir en nueva pestaña (más confiable con Cloudinary)
+    window.open(url, '_blank');
+  }
+  cerrarPdf(): void { 
+    this.pdfSeleccionado = null; 
+    this.pdfUrlOriginal = null;
+  }
 
   parseMedicamentos(json: string): any[] {
     try { return JSON.parse(json) || []; } catch { return []; }
@@ -128,6 +144,46 @@ export class HistorialClinicoComponent implements OnInit {
 
   esPdf(url: string): boolean {
     return url.toLowerCase().includes('.pdf') || url.toLowerCase().includes('/raw/');
+  }
+
+  descargarPdf(url: string, numero: number): void {
+    this.descargandoPdf = true;
+    
+    // Transformar la URL de Cloudinary para forzar descarga
+    let downloadUrl = url;
+    
+    // Si es una URL de Cloudinary, agregar el flag de attachment
+    if (url.includes('cloudinary.com')) {
+      // Para URLs de tipo /raw/upload/, insertar fl_attachment después de /upload/
+      if (url.includes('/raw/upload/')) {
+        downloadUrl = url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+      } else if (url.includes('/image/upload/')) {
+        downloadUrl = url.replace('/image/upload/', '/image/upload/fl_attachment/');
+      }
+    }
+    
+    // Crear un link temporal y hacer clic para descargar
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = `documento-${numero}.pdf`;
+    link.target = '_blank';
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    
+    try {
+      link.click();
+      
+      // Limpiar después de un pequeño delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+        this.descargandoPdf = false;
+      }, 100);
+    } catch (error) {
+      console.error('Error descargando PDF:', error);
+      this.errorMsg = 'Error al descargar el PDF. Intenta de nuevo.';
+      this.descargandoPdf = false;
+      document.body.removeChild(link);
+    }
   }
 
   getEmojiBySpecies(species: string): string {

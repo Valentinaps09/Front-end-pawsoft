@@ -20,9 +20,29 @@ export class AdminPaymentsComponent implements OnInit {
   filteredPayments: PaymentResponse[] = [];
   stats: PaymentStats | null = null;
 
-  searchText    = '';
-  statusFilter  = '';
-  loading       = true;
+  searchText     = '';
+  statusFilter   = '';
+  discountFilter = '';  // '' | 'with' | 'without'
+  loading        = true;
+  fechaDesde     = '';
+  fechaHasta     = '';
+
+  // Fila expandida
+  expandedId: number | null = null;
+
+  // Filtro activo combinado
+  activeFilter: 'all' | 'paid' | 'pending' | 'paid_discount' | 'paid_no_discount' = 'all';
+
+  setFilter(f: typeof this.activeFilter): void {
+    this.activeFilter = f;
+    this.filter();
+  }
+
+  limpiarFechas(): void {
+    this.fechaDesde = '';
+    this.fechaHasta = '';
+    this.filter();
+  }
 
   // Modal de ajuste
   showAdjustModal   = false;
@@ -31,6 +51,36 @@ export class AdminPaymentsComponent implements OnInit {
   adjustReason      = '';
   savingAdjust      = false;
   adjustError       = '';
+
+  get minAllowed(): number {
+    return this.adjustingPayment ? Math.ceil(this.adjustingPayment.baseAmount * 0.5) : 0;
+  }
+
+  get maxAllowed(): number {
+    return this.adjustingPayment ? Math.floor(this.adjustingPayment.baseAmount * 2) : 0;
+  }
+
+  get amountValidationError(): string {
+    if (!this.adjustingPayment) return '';
+    const v = this.adjustedAmount;
+    if (v === 0 || v === null || v === undefined) {
+      return 'Ingresa un monto mayor a cero. Si necesitas cancelar el cobro, usa el botón "Revertir pago".';
+    }
+    if (v < 0) {
+      return 'El monto no puede ser negativo.';
+    }
+    if (v < this.minAllowed) {
+      return `El monto mínimo permitido es ${this.formatCurrency(this.minAllowed)} (50% del precio original de ${this.formatCurrency(this.adjustingPayment.baseAmount)}). No se permiten descuentos mayores al 50%.`;
+    }
+    if (v > this.maxAllowed) {
+      return `El monto máximo permitido es ${this.formatCurrency(this.maxAllowed)} (200% del precio original). Si el servicio costó más, registra un nuevo pago adicional.`;
+    }
+    return '';
+  }
+
+  get isAmountValid(): boolean {
+    return this.amountValidationError === '';
+  }
 
   constructor(private readonly paymentService: PaymentService) {}
 
@@ -44,7 +94,7 @@ export class AdminPaymentsComponent implements OnInit {
     this.loading = true;
     this.paymentService.getStats().subscribe({ next: (s) => { this.stats = s; }, error: () => {} });
     this.paymentService.getAllPayments().subscribe({
-      next: (data) => { this.payments = data; this.filteredPayments = [...data]; this.loading = false; },
+      next: (data) => { this.payments = data; this.filter(); this.loading = false; },
       error: () => { this.loading = false; }
     });
   }
@@ -52,10 +102,48 @@ export class AdminPaymentsComponent implements OnInit {
   filter(): void {
     const s = this.searchText.toLowerCase();
     this.filteredPayments = this.payments.filter(p => {
-      const matchSearch = `${p.clientName} ${p.clientEmail} ${p.petName} ${p.vetName} ${p.concept}`.toLowerCase().includes(s);
-      const matchStatus = !this.statusFilter || p.status === this.statusFilter;
-      return matchSearch && matchStatus;
+      const matchSearch = !s || `${p.clientName} ${p.clientEmail} ${p.petName} ${p.vetName} ${p.concept}`.toLowerCase().includes(s);
+      const hasDiscount  = p.amount !== p.baseAmount || (!!p.adjustments && p.adjustments.length > 0);
+      let matchFilter = true;
+      switch (this.activeFilter) {
+        case 'paid':            matchFilter = p.status === 'PAID'; break;
+        case 'pending':         matchFilter = p.status === 'PENDING'; break;
+        case 'paid_discount':   matchFilter = p.status === 'PAID' && hasDiscount; break;
+        case 'paid_no_discount':matchFilter = p.status === 'PAID' && !hasDiscount; break;
+        default:                matchFilter = true;
+      }
+
+      // Filtro por fecha de cita
+      let matchFecha = true;
+      if (this.fechaDesde || this.fechaHasta) {
+        const fechaPago = p.appointmentDate ? new Date(p.appointmentDate + 'T00:00:00') : null;
+        if (fechaPago) {
+          if (this.fechaDesde) {
+            const desde = new Date(this.fechaDesde + 'T00:00:00');
+            if (fechaPago < desde) matchFecha = false;
+          }
+          if (this.fechaHasta) {
+            const hasta = new Date(this.fechaHasta + 'T23:59:59');
+            if (fechaPago > hasta) matchFecha = false;
+          }
+        }
+      }
+
+      return matchSearch && matchFilter && matchFecha;
     });
+  }
+
+  toggleRow(id: number): void {
+    this.expandedId = this.expandedId === id ? null : id;
+  }
+
+  hasDiscount(p: PaymentResponse): boolean {
+    return p.amount !== p.baseAmount || (!!p.adjustments && p.adjustments.length > 0);
+  }
+
+  getDiscountPct(p: PaymentResponse): number {
+    if (!p.baseAmount || p.baseAmount === 0) return 0;
+    return Math.round(((p.baseAmount - p.amount) / p.baseAmount) * 100);
   }
 
   revert(payment: PaymentResponse): void {
@@ -91,8 +179,8 @@ export class AdminPaymentsComponent implements OnInit {
       this.adjustError = 'El motivo debe tener al menos 10 caracteres';
       return;
     }
-    if (this.adjustedAmount <= 0) {
-      this.adjustError = 'El monto ajustado debe ser mayor a 0';
+    if (!this.isAmountValid) {
+      this.adjustError = this.amountValidationError;
       return;
     }
     this.savingAdjust = true;
@@ -128,6 +216,14 @@ export class AdminPaymentsComponent implements OnInit {
       });
     }
     return new Date(date).toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  formatDateTime(date: string | null): string {
+    if (!date) return '—';
+    return new Date(date).toLocaleString('es-CO', {
+      day: '2-digit', month: 'short', year: 'numeric',
+      hour: '2-digit', minute: '2-digit'
+    });
   }
 
   formatCurrency(amount: number): string {
