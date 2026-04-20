@@ -18,7 +18,6 @@ import {
   arrowBackOutline,
 } from 'ionicons/icons';
 import {AuthService} from "../../../services/auth";
-import { AuthChatbotComponent } from '../../../component/auth-chatbot/auth-chatbot.component';
 
 @Component({
   selector: 'app-forgot-password',
@@ -34,7 +33,6 @@ import { AuthChatbotComponent } from '../../../component/auth-chatbot/auth-chatb
     IonInput,
     IonButton,
     IonIcon,
-    AuthChatbotComponent,
   ],
 })
 export class ForgotPasswordPage {
