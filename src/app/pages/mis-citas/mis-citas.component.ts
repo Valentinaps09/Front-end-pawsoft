@@ -86,19 +86,11 @@ export class MisCitasComponent implements OnInit {
     this.isLoading = true;
     this.errorMsg = '';
 
-    // Cargar citas y registros médicos en paralelo
-    forkJoin({
-      citas:    this.appointmentService.getMyAppointments(),
-      registros: this.medicalRecordService.obtenerRegistrosCliente(),
-      pagos:    this.paymentService.getMyPayments()
-    }).subscribe({
-      next: ({ citas, registros, pagos }) => {
-        const recordMap = new Map<string, MedicalRecordResponse>();
-        registros.forEach(r => recordMap.set(String(r.appointmentId), r));
-
-        const paymentMap = new Map<string, PaymentResponse>();
-        pagos.forEach(p => paymentMap.set(String(p.appointmentId), p));
-
+    // OPTIMIZACIÓN: Cargar citas primero (lo más importante)
+    // Luego cargar registros y pagos en segundo plano
+    this.appointmentService.getMyAppointments().subscribe({
+      next: (citas) => {
+        // Mostrar citas INMEDIATAMENTE
         this.citas = citas.map(a => {
           const rawDateStr = a.date ?? a.dateFormatted ?? '';
           const rawTimeStr = a.time ?? '00:00:00';
@@ -116,19 +108,52 @@ export class MisCitasComponent implements OnInit {
             vetName:     a.vetName ?? 'Veterinario',
             status:      ((a.status ?? 'upcoming').toLowerCase()) as EstadoCita,
             sortTimestamp: new Date(`${rawDateStr}T${rawTimeStr}`).getTime(),
-            medicalRecord: recordMap.get(id),
-            payment:       paymentMap.get(id),
+            medicalRecord: undefined, // Se cargará después
+            payment:       undefined, // Se cargará después
             showingRecord: false,
           };
         }).sort((a, b) => b.sortTimestamp - a.sortTimestamp);
 
         this.aplicarFiltros();
         this.isLoading = false;
+
+        // Cargar registros médicos y pagos en segundo plano
+        this.cargarDatosAdicionales();
       },
       error: () => {
         this.errorMsg = 'No se pudieron cargar las citas. Intenta de nuevo.';
         this.isLoading = false;
       }
+    });
+  }
+
+  private cargarDatosAdicionales(): void {
+    // Cargar registros médicos
+    this.medicalRecordService.obtenerRegistrosCliente().subscribe({
+      next: (registros) => {
+        const recordMap = new Map<string, MedicalRecordResponse>();
+        registros.forEach(r => recordMap.set(String(r.appointmentId), r));
+        
+        // Actualizar citas con registros médicos
+        this.citas.forEach(c => {
+          c.medicalRecord = recordMap.get(c.id);
+        });
+      },
+      error: () => {} // Silencioso - no afecta la UI principal
+    });
+
+    // Cargar pagos
+    this.paymentService.getMyPayments().subscribe({
+      next: (pagos) => {
+        const paymentMap = new Map<string, PaymentResponse>();
+        pagos.forEach(p => paymentMap.set(String(p.appointmentId), p));
+        
+        // Actualizar citas con pagos
+        this.citas.forEach(c => {
+          c.payment = paymentMap.get(c.id);
+        });
+      },
+      error: () => {} // Silencioso - no afecta la UI principal
     });
   }
 

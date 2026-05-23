@@ -37,10 +37,19 @@
         <button class="btn-retry" (click)="cargarDatos()">Reintentar</button>
       </div>
 
-      <!-- LOADING -->
+      <!-- LOADING CON SKELETONS -->
       <div class="loading-wrap" *ngIf="isLoading">
-        <div class="spinner"></div>
-        <span>Cargando citas...</span>
+        <div class="skeleton-cita" *ngFor="let i of [1,2,3]">
+          <div class="skeleton-header">
+            <div class="skeleton-avatar"></div>
+            <div class="skeleton-info">
+              <div class="skeleton-line skeleton-line-title"></div>
+              <div class="skeleton-line skeleton-line-meta"></div>
+              <div class="skeleton-line skeleton-line-reason"></div>
+            </div>
+            <div class="skeleton-badge"></div>
+          </div>
+        </div>
       </div>
 
       <!-- LISTA -->

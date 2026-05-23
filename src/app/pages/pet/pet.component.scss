@@ -875,6 +875,96 @@ button, .btn-icon { cursor: pointer; }
 .form-select option[value=""] { color: #aaa; }
 
 /* ═══════════════════════════════════════════
+   SKELETON LOADERS - Mascotas
+═══════════════════════════════════════════ */
+
+.skeleton-card {
+  pointer-events: none;
+  user-select: none;
+}
+
+.skeleton-avatar {
+  background: linear-gradient(90deg, #E8F5EE 0%, #DFF2EA 50%, #E8F5EE 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line {
+  height: 12px;
+  background: linear-gradient(90deg, #E8F5EE 0%, #DFF2EA 50%, #E8F5EE 100%);
+  background-size: 200% 100%;
+  border-radius: 6px;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-name {
+  width: 120px;
+  height: 14px;
+  margin-bottom: 6px;
+}
+
+.skeleton-species {
+  width: 90px;
+  height: 11px;
+}
+
+.skeleton-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.skeleton-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #E8F5EE 0%, #DFF2EA 50%, #E8F5EE 100%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-label {
+  width: 70px;
+  height: 10px;
+}
+
+.skeleton-value {
+  width: 100px;
+  height: 10px;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 768px) {
+  .skeleton-name {
+    width: 100px;
+  }
+  
+  .skeleton-species {
+    width: 70px;
+  }
+  
+  .skeleton-value {
+    width: 80px;
+  }
+}
+
+/* ═══════════════════════════════════════════
    MASCOTAS FALLECIDAS - Estilos respetuosos
 ═══════════════════════════════════════════ */
 

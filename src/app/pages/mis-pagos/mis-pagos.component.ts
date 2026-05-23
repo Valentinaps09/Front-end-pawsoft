@@ -19,6 +19,7 @@ export class MisPagosComponent implements OnInit {
   pagos: PaymentResponse[] = [];
   pagosFiltrados: PaymentResponse[] = [];
   isLoading = false;
+  loadingPayments = true;
   errorMsg = '';
 
   filtroFecha = '';
@@ -35,6 +36,7 @@ export class MisPagosComponent implements OnInit {
 
   cargarPagos(): void {
     this.isLoading = true;
+    this.loadingPayments = true;
     this.errorMsg = '';
     this.paymentService.getMyPayments().subscribe({
       next: (data) => {
@@ -44,10 +46,12 @@ export class MisPagosComponent implements OnInit {
         this.conceptosDisponibles = [...new Set(data.map(p => p.concept).filter(Boolean))];
         this.aplicarFiltros();
         this.isLoading = false;
+        this.loadingPayments = false;
       },
       error: () => {
         this.errorMsg = 'No se pudieron cargar los pagos. Intenta de nuevo.';
         this.isLoading = false;
+        this.loadingPayments = false;
       }
     });
   }

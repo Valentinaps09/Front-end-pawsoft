@@ -2647,6 +2647,58 @@ body.font-xlarge ion-textarea::part(native) {
   font-size: 1.25rem !important;
 }
 
+/* ── Escalado de fuente para chatbot ── */
+body.font-large .chat-window .bubble,
+body.font-large .chat-window .input-field {
+  font-size: 15px !important;
+}
+
+body.font-xlarge .chat-window .bubble,
+body.font-xlarge .chat-window .input-field {
+  font-size: 17px !important;
+}
+
+/* Escalado específico para contenido HTML del chatbot */
+body.font-large .chat-window .bubble p,
+body.font-large .chat-window .bubble span,
+body.font-large .chat-window .bubble strong,
+body.font-large .chat-window .bubble em,
+body.font-large .chat-window .bubble li,
+body.font-large .chat-window .bubble div,
+body.font-large .chat-window .bubble * {
+  font-size: 15px !important;
+}
+
+body.font-xlarge .chat-window .bubble p,
+body.font-xlarge .chat-window .bubble span,
+body.font-xlarge .chat-window .bubble strong,
+body.font-xlarge .chat-window .bubble em,
+body.font-xlarge .chat-window .bubble li,
+body.font-xlarge .chat-window .bubble div,
+body.font-xlarge .chat-window .bubble * {
+  font-size: 17px !important;
+}
+
+/* Escalado para placeholder del input del chatbot */
+body.font-large .chat-window .input-field::placeholder {
+  font-size: 15px !important;
+}
+
+body.font-xlarge .chat-window .input-field::placeholder {
+  font-size: 17px !important;
+}
+
+/* Escalado del botón de enviar del chatbot */
+body.font-large .chat-window .send-btn {
+  width: 42px !important;
+  height: 42px !important;
+}
+
+body.font-xlarge .chat-window .send-btn {
+  width: 46px !important;
+  height: 46px !important;
+}
+
 /* ── El logo PawSoft escala junto con el resto del texto ── */
 body.font-large .logo-section h1,
 body.font-large .logo-section h1 span {
@@ -2837,3 +2889,1485 @@ body.theme-dark {
   }
 }
 
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - CONTACTO
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  app-contacto .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  app-contacto .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-contacto .topbar-title {
+    color: #ffffff !important;
+  }
+
+  app-contacto .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  app-contacto .contact-card,
+  app-contacto .info-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-contacto .contact-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-contacto .header-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  app-contacto .contact-header h2 {
+    color: #ffffff !important;
+  }
+
+  app-contacto .contact-header p {
+    color: #b8c5be !important;
+  }
+
+  app-contacto .detail-item {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-contacto .detail-icon {
+    background: #1a1f1d !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-contacto .detail-label {
+    color: #b8c5be !important;
+  }
+
+  app-contacto .whatsapp-number,
+  app-contacto .whatsapp-action {
+    color: #7dd3a3 !important;
+  }
+
+  app-contacto .whatsapp-link:hover .whatsapp-number,
+  app-contacto .whatsapp-link:hover .whatsapp-action {
+    color: #a3e6c4 !important;
+  }
+
+  app-contacto .email-link {
+    color: #7dd3a3 !important;
+  }
+
+  app-contacto .email-link:hover {
+    color: #a3e6c4 !important;
+  }
+
+  app-contacto .detail-value {
+    color: #ffffff !important;
+  }
+
+  app-contacto .detail-value strong {
+    color: #7dd3a3 !important;
+  }
+
+  app-contacto .info-card h3 {
+    color: #ffffff !important;
+  }
+
+  app-contacto .help-list li {
+    color: #ffffff !important;
+  }
+
+  app-contacto .help-list li::before {
+    color: #7dd3a3 !important;
+  }
+
+  /* Scrollbar personalizado en modo oscuro */
+  app-contacto .main-content::-webkit-scrollbar-track {
+    background: rgba(26, 122, 76, 0.08) !important;
+  }
+
+  app-contacto .main-content::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-contacto .main-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(26, 122, 76, 0.5) !important;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - MIS PAGOS
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  app-mis-pagos .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-mis-pagos .topbar-title {
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  app-mis-pagos .filters-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-mis-pagos .filter-label {
+    color: #b8c5be !important;
+  }
+
+  app-mis-pagos .form-input,
+  app-mis-pagos .form-select {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  app-mis-pagos .form-select option {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .btn-limpiar {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: #ff6b6b !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  app-mis-pagos .pago-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-mis-pagos .pago-concepto {
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .pago-meta {
+    color: #b8c5be !important;
+  }
+
+  app-mis-pagos .pago-fecha {
+    color: #8a9a92 !important;
+  }
+
+  app-mis-pagos .pago-nota {
+    color: #b8c5be !important;
+  }
+
+  app-mis-pagos .pago-monto {
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .pago-badge.paid {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+  }
+
+  app-mis-pagos .pago-badge.pending {
+    background: rgba(244, 184, 96, 0.15) !important;
+    color: #f4b860 !important;
+  }
+
+  app-mis-pagos .loading-wrap {
+    color: #b8c5be !important;
+  }
+
+  app-mis-pagos .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  app-mis-pagos .error-card {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: #ff6b6b !important;
+  }
+
+  app-mis-pagos .btn-retry {
+    background: rgba(255, 107, 107, 0.15) !important;
+    border-color: rgba(255, 107, 107, 0.4) !important;
+    color: #ff6b6b !important;
+  }
+
+  app-mis-pagos .empty-state {
+    color: #8a9a92 !important;
+  }
+
+  app-mis-pagos .empty-title {
+    color: #ffffff !important;
+  }
+
+  app-mis-pagos .empty-sub {
+    color: #8a9a92 !important;
+  }
+
+  /* Scrollbar personalizado en modo oscuro */
+  app-mis-pagos .main-content::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-mis-pagos .main-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(26, 122, 76, 0.5) !important;
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - HISTORIAL CLÍNICO
+══════════════════════════════════════════════════════ */
+
+body.theme-dark {
+
+  app-historial-clinico .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  app-historial-clinico .main-content::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-historial-clinico .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-historial-clinico .topbar-title {
+    color: #ffffff !important;
+  }
+
+  app-historial-clinico .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  app-historial-clinico .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  app-historial-clinico .form-input,
+  app-historial-clinico .form-select {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+  }
+
+  app-historial-clinico .form-select option {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+  }
+
+  app-historial-clinico .form-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) sepia(1) saturate(2) hue-rotate(100deg) !important;
+  }
+
+  app-historial-clinico .filter-label {
+    color: #b8c5be !important;
+  }
+
+  app-historial-clinico .error-card {
+    background: rgba(244, 67, 54, 0.15) !important;
+    border-color: rgba(244, 67, 54, 0.3) !important;
+    color: #ff8a80 !important;
+  }
+
+  app-historial-clinico .btn-retry {
+    background: #b03030 !important;
+
+    &:hover {
+      background: #8a2424 !important;
+    }
+  }
+
+  app-historial-clinico .loading-wrap {
+    color: #b8c5be !important;
+  }
+
+  app-historial-clinico .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  app-historial-clinico .registro-item {
+    background: #1e2422 !important;
+    border-color: rgba(34, 160, 107, 0.2) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  app-historial-clinico .registro-header:hover {
+    background: rgba(34, 160, 107, 0.12) !important;
+  }
+
+  app-historial-clinico .reg-avatar {
+    background: rgba(34, 160, 107, 0.25) !important;
+    border: 1px solid rgba(34, 160, 107, 0.3) !important;
+  }
+
+  app-historial-clinico .reg-avatar.deceased-avatar {
+    background: rgba(229, 115, 115, 0.25) !important;
+    border-color: rgba(229, 115, 115, 0.4) !important;
+  }
+
+  app-historial-clinico .reg-pet-name {
+    color: #e8f5ee !important;
+  }
+
+  app-historial-clinico .deceased-badge {
+    background: rgba(244, 67, 54, 0.2) !important;
+    border-color: rgba(244, 67, 54, 0.4) !important;
+    color: #ff8a80 !important;
+  }
+
+  app-historial-clinico .reg-details {
+    color: #a8bfb5 !important;
+  }
+
+  app-historial-clinico .reg-fecha {
+    background: rgba(94, 45, 158, 0.25) !important;
+    border-color: rgba(94, 45, 158, 0.4) !important;
+    color: #d4b3f0 !important;
+  }
+
+  app-historial-clinico .reg-diagnostico {
+    color: #c8ddd2 !important;
+  }
+
+  app-historial-clinico .reg-costo {
+    background: rgba(34, 160, 107, 0.2) !important;
+    color: #8fe6b8 !important;
+  }
+
+  app-historial-clinico .reg-chevron {
+    color: #a8bfb5 !important;
+  }
+
+  app-historial-clinico .registro-detalle {
+    background: #151a18 !important;
+    border-top-color: rgba(34, 160, 107, 0.15) !important;
+  }
+
+  app-historial-clinico .detalle-titulo {
+    color: #e8f5ee !important;
+    border-bottom-color: rgba(34, 160, 107, 0.2) !important;
+  }
+
+  app-historial-clinico .det-label {
+    color: #a8bfb5 !important;
+  }
+
+  app-historial-clinico .det-val {
+    color: #e8f5ee !important;
+  }
+
+  app-historial-clinico .med-tag {
+    background: rgba(34, 160, 107, 0.2) !important;
+    border-color: rgba(34, 160, 107, 0.35) !important;
+    color: #8fe6b8 !important;
+  }
+
+  app-historial-clinico .med-tag.recetado {
+    background: rgba(99, 102, 241, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.35) !important;
+    color: #a5b4fc !important;
+  }
+
+  app-historial-clinico .foto-thumb {
+    border-color: rgba(34, 160, 107, 0.3) !important;
+  }
+
+  app-historial-clinico .pdf-item-historial {
+    background: linear-gradient(135deg, #1e2422 0%, #151a18 100%) !important;
+    border-color: rgba(34, 160, 107, 0.3) !important;
+
+    &:hover {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+  }
+
+  app-historial-clinico .pdf-label {
+    color: #8fe6b8 !important;
+  }
+
+  app-historial-clinico .btn-ver-pdf-hist {
+    background: linear-gradient(135deg, #1A7A4C 0%, #145C42 100%) !important;
+    box-shadow: 0 2px 6px rgba(26, 122, 76, 0.4) !important;
+
+    &:hover {
+      background: linear-gradient(135deg, #145C42 0%, #0F4531 100%) !important;
+      box-shadow: 0 4px 12px rgba(26, 122, 76, 0.5) !important;
+    }
+  }
+
+  app-historial-clinico .btn-descargar-pdf-hist {
+    background: linear-gradient(135deg, #4E6B5F 0%, #3D5A4C 100%) !important;
+    box-shadow: 0 2px 6px rgba(78, 107, 95, 0.4) !important;
+
+    &:hover:not(:disabled) {
+      background: linear-gradient(135deg, #3D5A4C 0%, #2C453A 100%) !important;
+      box-shadow: 0 4px 12px rgba(78, 107, 95, 0.5) !important;
+    }
+
+    &:disabled {
+      box-shadow: 0 2px 6px rgba(78, 107, 95, 0.2) !important;
+    }
+  }
+
+  app-historial-clinico .empty-state {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  app-historial-clinico .empty-title {
+    color: #ffffff !important;
+  }
+
+  app-historial-clinico .empty-sub {
+    color: #8a9a92 !important;
+  }
+
+  app-historial-clinico .costo-resumen-hist {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  app-historial-clinico .costo-row-hist {
+    color: #c8ddd2 !important;
+  }
+
+  app-historial-clinico .costo-total-hist {
+    border-top-color: rgba(34, 160, 107, 0.3) !important;
+    color: #8fe6b8 !important;
+  }
+
+  app-historial-clinico .info-note {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    color: #a5b4fc !important;
+  }
+
+  app-historial-clinico .pdf-adjunto {
+    background: rgba(244, 67, 54, 0.15) !important;
+    border-color: rgba(244, 67, 54, 0.3) !important;
+    color: #ff8a80 !important;
+
+    &:hover {
+      background: rgba(244, 67, 54, 0.25) !important;
+    }
+  }
+
+  app-historial-clinico .lightbox-close {
+    background: #1a1f1d !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #2a3f3d !important;
+    }
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - DASHBOARD CLIENTE (CITAS)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark app-dashboard-cliente {
+
+  --verde: #1A7A4C !important;
+  --verde-claro: rgba(26, 122, 76, 0.15) !important;
+  --verde-hover: rgba(26, 122, 76, 0.25) !important;
+  --verde-oscuro: #7dd3a3 !important;
+  --texto: #ffffff !important;
+  --texto-secundario: #b8c5be !important;
+  --borde: rgba(255, 255, 255, 0.15) !important;
+  --fondo: #0a0f0d !important;
+  --blanco: #1a1f1d !important;
+  --rojo: #ff6b6b !important;
+  --rojo-claro: rgba(255, 107, 107, 0.12) !important;
+
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .section-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .section-header h3 {
+    color: #ffffff !important;
+  }
+
+  .appointment-item {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.cancelled {
+      background: #0f1412 !important;
+      opacity: 0.5 !important;
+    }
+  }
+
+  .appt-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .appt-pet-name {
+    color: #ffffff !important;
+  }
+
+  .appt-datetime {
+    color: #7dd3a3 !important;
+  }
+
+  .appt-reason {
+    color: #b8c5be !important;
+  }
+
+  .appt-vet {
+    color: #7dd3a3 !important;
+  }
+
+  .btn-cancel-small {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .appt-cancelled-label {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8a9a92 !important;
+  }
+
+  .no-appointments {
+    color: #b8c5be !important;
+  }
+
+  .pets-grid .pet-chip {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.hospitalized {
+      background: rgba(244, 184, 96, 0.15) !important;
+      border-color: rgba(244, 184, 96, 0.4) !important;
+      opacity: 0.8 !important;
+    }
+  }
+
+  .hospitalized-badge {
+    background: #f4b860 !important;
+    border-color: #1a1f1d !important;
+  }
+
+  .pet-status {
+    color: #f4b860 !important;
+  }
+
+  .no-pets {
+    color: #b8c5be !important;
+  }
+
+  .calendar-widget {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .cal-month {
+    color: #ffffff !important;
+  }
+
+  .cal-nav-btn {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .cal-day-name {
+    color: #b8c5be !important;
+  }
+
+  .cal-day {
+    color: #ffffff !important;
+
+    &.available:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.today:not(.selected) {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &.disabled {
+      opacity: 0.2 !important;
+    }
+  }
+
+  .time-slot {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &:disabled {
+      opacity: 0.3 !important;
+    }
+  }
+
+  .selected-date-label {
+    color: #7dd3a3 !important;
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .loading-slots {
+    color: #b8c5be !important;
+  }
+
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  .form-label {
+    color: #ffffff !important;
+  }
+
+  .form-select,
+  .form-input,
+  .form-textarea {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .appointment-summary {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .summary-row {
+    border-bottom-color: rgba(26, 122, 76, 0.2) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .btn-confirm {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #22A06B !important;
+      box-shadow: 0 4px 14px rgba(26, 122, 76, 0.4) !important;
+    }
+  }
+
+  .btn-link {
+    color: #7dd3a3 !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .btn-primary {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #22A06B !important;
+    }
+  }
+
+  .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .btn-danger {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .btn-toggle-all {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.25) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .vets-grid .vet-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .vet-avatar {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .vet-name {
+    color: #ffffff !important;
+  }
+
+  .vet-specialty {
+    color: #b8c5be !important;
+  }
+
+  .vet-selected-check {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+  }
+
+  .no-vets {
+    color: #b8c5be !important;
+  }
+
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .cancel-warning-box {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    p {
+      color: #f4b860 !important;
+    }
+
+    strong {
+      color: #f4b860 !important;
+    }
+  }
+
+  .cancel-details {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .detail-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .toast {
+    background: #1a1f1d !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+
+    &.toast-success {
+      border-left-color: #1A7A4C !important;
+    }
+
+    &.toast-error {
+      border-left-color: #ff6b6b !important;
+    }
+  }
+
+  .pay-item {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.08) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .pay-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .pay-pet-name {
+    color: #ffffff !important;
+  }
+
+  .pay-service {
+    color: #b8c5be !important;
+  }
+
+  .pay-date {
+    color: #7dd3a3 !important;
+  }
+
+  .pay-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .pay-badge {
+    &.paid {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.pending {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+  }
+
+  .price-hint-box {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .price-hint-label {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-disclaimer {
+    color: #b8c5be !important;
+  }
+
+  .price-hint-no-price {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    .price-hint-disclaimer {
+      color: #f4b860 !important;
+    }
+  }
+
+  .appt-status-badge {
+    &.completed {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.confirmed {
+      background: rgba(74, 143, 212, 0.15) !important;
+      color: #5B9FE4 !important;
+    }
+
+    &.no_show {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+
+    &.pending-status {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #8a9a92 !important;
+    }
+  }
+
+  .btn-view-record {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.25) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .medical-record-summary {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .record-title {
+    color: #7dd3a3 !important;
+  }
+
+  .record-text {
+    color: #ffffff !important;
+  }
+
+  .medication-item {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .med-name {
+    color: #ffffff !important;
+  }
+
+  .med-details {
+    color: #b8c5be !important;
+  }
+
+  .content-area {
+    scrollbar-color: rgba(26, 122, 76, 0.3) transparent !important;
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(26, 122, 76, 0.3) !important;
+
+      &:hover {
+        background: rgba(26, 122, 76, 0.5) !important;
+      }
+    }
+  }
+}
+
+
+/* ══════════════════════════════════════════════════════
+   TEMA OSCURO - MIS CITAS (HISTORIAL DE CITAS CLIENTE)
+══════════════════════════════════════════════════════ */
+
+body.theme-dark app-mis-citas {
+
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  .filters-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .filter-label {
+    color: #b8c5be !important;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .error-card {
+    background: rgba(255, 107, 107, 0.12) !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+    color: #ff6b6b !important;
+  }
+
+  .btn-retry {
+    background: #ff6b6b !important;
+  }
+
+  .loading-wrap {
+    color: #b8c5be !important;
+  }
+
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  .cita-card {
+    background: #1e2522 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .cita-avatar {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .cita-pet {
+    color: #ffffff !important;
+  }
+
+  .cita-meta,
+  .cita-vet {
+    color: #b8c5be !important;
+  }
+
+  .cita-reason {
+    color: #8a9a92 !important;
+  }
+
+  .status-badge {
+    &.badge-pending {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+      border-color: rgba(244, 184, 96, 0.3) !important;
+    }
+
+    &.badge-confirmed {
+      background: rgba(74, 143, 212, 0.15) !important;
+      color: #5B9FE4 !important;
+      border-color: rgba(74, 143, 212, 0.3) !important;
+    }
+
+    &.badge-completed {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+
+    &.badge-cancelled {
+      background: rgba(255, 107, 107, 0.12) !important;
+      color: #ff6b6b !important;
+      border-color: rgba(255, 107, 107, 0.3) !important;
+    }
+
+    &.badge-noshow {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #8a9a92 !important;
+      border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+  }
+
+  /* Badge "Sin cancelación" con estilos inline */
+  span.status-badge[style*="background:#f5f5f5"] {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8a9a92 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .btn-ver-resumen {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(26, 122, 76, 0.25) !important;
+    }
+  }
+
+  .sin-resumen {
+    color: #8a9a92 !important;
+  }
+
+  .resumen-medico {
+    background: #0f1412 !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .resumen-titulo {
+    color: #ffffff !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .resumen-texto {
+    color: #ffffff !important;
+  }
+
+  .med-item {
+    &.aplicado {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: rgba(26, 122, 76, 0.3) !important;
+    }
+
+    &.recetado {
+      background: rgba(74, 143, 212, 0.15) !important;
+      border-color: rgba(74, 143, 212, 0.3) !important;
+    }
+  }
+
+  .med-nombre {
+    color: #ffffff !important;
+  }
+
+  .med-detalle-grid {
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .med-meta {
+    color: #8a9a92 !important;
+  }
+
+  .vital-item {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .vital-label {
+    color: #b8c5be !important;
+  }
+
+  .vital-val {
+    color: #ffffff !important;
+  }
+
+  .fotos-grid .foto-thumb {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .empty-state {
+    background: #1a1f1d !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .empty-title {
+    color: #ffffff !important;
+  }
+
+  .empty-sub {
+    color: #b8c5be !important;
+  }
+
+  .costo-resumen-cliente {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .costo-fila {
+    color: #b8c5be !important;
+
+    span:last-child {
+      color: #ffffff !important;
+    }
+  }
+
+  .costo-total-cliente {
+    border-top-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+
+    span:last-child {
+      color: #7dd3a3 !important;
+    }
+  }
+
+  .costo-tachado {
+    color: #8a9a92 !important;
+  }
+
+  .costo-ajuste {
+    color: #ff6b6b !important;
+
+    &.descuento {
+      color: #7dd3a3 !important;
+    }
+  }
+
+  .costo-motivo {
+    color: #8a9a92 !important;
+  }
+
+  .btn-cancel-cita {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8a9a92 !important;
+    border: 1px solid rgba(255, 255, 255, 0.15) !important;
+    cursor: pointer !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 107, 107, 0.12) !important;
+      border-color: rgba(255, 107, 107, 0.3) !important;
+      color: #ff6b6b !important;
+    }
+  }
+
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .cancel-cita-details {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+  }
+
+  .cancel-pet {
+    color: #ffffff !important;
+  }
+
+  .cancel-date {
+    color: #f4b860 !important;
+  }
+
+  .cancel-vet {
+    color: #b8c5be !important;
+  }
+
+  .char-count {
+    color: #8a9a92 !important;
+  }
+
+  .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .btn-danger {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border: 1px solid rgba(255, 107, 107, 0.3) !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(255, 107, 107, 0.2) !important;
+      border-color: rgba(255, 107, 107, 0.5) !important;
+    }
+  }
+
+  .pdf-item-cliente {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4) !important;
+    }
+  }
+
+  .pdf-label {
+    color: #7dd3a3 !important;
+  }
+
+  .modal-pdf-container {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-pdf-header {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  .modal-close-btn {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .modal-pdf-footer {
+    background: #1a1f1d !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .pdf-viewer {
+    background: #0f1412 !important;
+  }
+
+  .main-content {
+    &::-webkit-scrollbar-thumb {
+      background: rgba(26, 122, 76, 0.3) !important;
+    }
+  }
+}

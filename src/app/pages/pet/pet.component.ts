@@ -40,6 +40,7 @@ export class PetComponent implements OnInit {
   userName = '';
   userRole = '';
   pets: Pet[] = [];
+  loadingPets = true;
 
   showFormModal = false;
   editingPet: Pet | null = null;
@@ -173,9 +174,15 @@ export class PetComponent implements OnInit {
   }
 
   loadPets(): void {
+    this.loadingPets = true;
     this.petService.getMyPets().subscribe({
-      next: (data) => { this.pets = data; },
-      error: () => {}
+      next: (data) => { 
+        this.pets = data; 
+        this.loadingPets = false;
+      },
+      error: () => {
+        this.loadingPets = false;
+      }
     });
   }
 

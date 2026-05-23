@@ -157,7 +157,7 @@ export class AuthService {
     }
     this.inactivityService.stopWatching();
     localStorage.clear();
-    window.location.href = '/login?reason=logout';
+    this.router.navigate(['/login'], { queryParams: { reason: 'logout' } });
   }
 
   // ── Refresh Token ───────────────────────────────────────────────────────────

@@ -1,5 +1,7 @@
 <!-- Ventana del chat -->
-<div class="chat-window" [class.open]="isOpen">
+<div class="chat-window" 
+     [class.open]="isOpen"
+     [class.hidden-by-accessibility]="accessibilityPanelOpen">
   <div class="chat-header">
     <div class="header-info">
       <div class="bot-avatar">
@@ -83,6 +85,7 @@
 
 <!-- Botón FAB con robot SVG -->
 <button class="fab-btn" 
+        [class.hidden-by-accessibility]="accessibilityPanelOpen"
         (click)="toggleChat()" 
         [attr.aria-label]="isOpen ? 'Cerrar chat' : 'Abrir asistente de autenticación'">
   <div class="fab-icon" [class.hidden]="isOpen">

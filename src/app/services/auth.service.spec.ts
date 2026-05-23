@@ -452,10 +452,6 @@ describe('AuthService - Pruebas Funcionales (FE-AUTH-01 a FE-AUTH-24)', () => {
       localStorage.setItem('rol', 'ROLE_CLIENTE');
       localStorage.setItem('email', 'usuario@test.com');
 
-      // Mock window.location.href
-      delete (window as any).location;
-      (window as any).location = { href: '' };
-
       service.logout();
 
       expect(inactivityService.stopWatching).toHaveBeenCalled();
@@ -463,7 +459,9 @@ describe('AuthService - Pruebas Funcionales (FE-AUTH-01 a FE-AUTH-24)', () => {
       expect(localStorage.getItem('refreshToken')).toBeNull();
       expect(localStorage.getItem('rol')).toBeNull();
       expect(localStorage.getItem('email')).toBeNull();
-      expect(window.location.href).toBe('/login?reason=logout');
+      expect(router.navigate).toHaveBeenCalledWith(
+        ['/login'], { queryParams: { reason: 'logout' } }
+      );
 
       const req = httpMock.expectOne(`${apiUrl}/auth/logout`);
       expect(req.request.method).toBe('POST');

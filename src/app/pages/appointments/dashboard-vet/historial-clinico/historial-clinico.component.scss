@@ -389,46 +389,52 @@
     color: #ffffff !important;
   }
 
+  .main-content::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.3) !important;
+  }
+
   .topbar {
     background: #1a1f1d !important;
     border-bottom-color: rgba(255, 255, 255, 0.1) !important;
   }
 
-  .topbar-title { color: #ffffff !important; }
-  .topbar-sub { color: #b8c5be !important; }
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
 
   .section-card {
     background: #1a1f1d !important;
     border-color: rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.4) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4) !important;
   }
 
-  .form-input, .form-select {
+  .form-input,
+  .form-select {
     background: #0f1412 !important;
     border-color: rgba(255, 255, 255, 0.15) !important;
     color: #ffffff !important;
+
     &:focus {
       border-color: #1A7A4C !important;
       box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
     }
-    &::placeholder { color: rgba(255, 255, 255, 0.4) !important; }
-  }
-  
-  .form-select {
-    option {
-      background: #0f1412 !important;
-      color: #ffffff !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
     }
   }
 
-  .form-input[type="date"] {
-    &::-webkit-calendar-picker-indicator {
-      filter: invert(0.8) sepia(1) saturate(2) hue-rotate(100deg) !important;
-    }
+  .form-select option {
+    background: #0f1412 !important;
+    color: #ffffff !important;
   }
 
-  .date-label {
-    color: #b8c5be !important;
+  .form-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.8) sepia(1) saturate(2) hue-rotate(100deg) !important;
   }
 
   .filter-label {
@@ -443,7 +449,10 @@
 
   .btn-retry {
     background: #b03030 !important;
-    &:hover { background: #8a2424 !important; }
+
+    &:hover {
+      background: #8a2424 !important;
+    }
   }
 
   .loading-wrap {
@@ -458,31 +467,36 @@
   .registro-item {
     background: #1e2422 !important;
     border-color: rgba(34, 160, 107, 0.2) !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.5) !important;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5) !important;
   }
 
-  .registro-header {
-    &:hover { background: rgba(34, 160, 107, 0.12) !important; }
+  .registro-header:hover {
+    background: rgba(34, 160, 107, 0.12) !important;
   }
 
   .reg-avatar {
     background: rgba(34, 160, 107, 0.25) !important;
-    border: 1px solid rgba(34, 160, 107, 0.3);
-    
-    &.deceased-avatar {
-      background: rgba(229, 115, 115, 0.25) !important;
-      border-color: rgba(229, 115, 115, 0.4) !important;
-    }
+    border: 1px solid rgba(34, 160, 107, 0.3) !important;
   }
 
-  .reg-pet-name { color: #e8f5ee !important; }
-  
+  .reg-avatar.deceased-avatar {
+    background: rgba(229, 115, 115, 0.25) !important;
+    border-color: rgba(229, 115, 115, 0.4) !important;
+  }
+
+  .reg-pet-name {
+    color: #e8f5ee !important;
+  }
+
   .deceased-badge {
     background: rgba(244, 67, 54, 0.2) !important;
     border-color: rgba(244, 67, 54, 0.4) !important;
     color: #ff8a80 !important;
   }
-  .reg-details { color: #a8bfb5 !important; }
+
+  .reg-details {
+    color: #a8bfb5 !important;
+  }
 
   .reg-fecha {
     background: rgba(94, 45, 158, 0.25) !important;
@@ -492,6 +506,11 @@
 
   .reg-diagnostico {
     color: #c8ddd2 !important;
+  }
+
+  .reg-costo {
+    background: rgba(34, 160, 107, 0.2) !important;
+    color: #8fe6b8 !important;
   }
 
   .reg-chevron {
@@ -508,13 +527,28 @@
     border-bottom-color: rgba(34, 160, 107, 0.2) !important;
   }
 
-  .det-label { color: #a8bfb5 !important; }
-  .det-val { color: #e8f5ee !important; }
+  .det-label {
+    color: #a8bfb5 !important;
+  }
+
+  .det-val {
+    color: #e8f5ee !important;
+  }
 
   .med-tag {
     background: rgba(34, 160, 107, 0.2) !important;
     border-color: rgba(34, 160, 107, 0.35) !important;
     color: #8fe6b8 !important;
+  }
+
+  .med-tag.recetado {
+    background: rgba(99, 102, 241, 0.2) !important;
+    border-color: rgba(99, 102, 241, 0.35) !important;
+    color: #a5b4fc !important;
+  }
+
+  .foto-thumb {
+    border-color: rgba(34, 160, 107, 0.3) !important;
   }
 
   .pdf-item-historial {
@@ -530,14 +564,6 @@
   .pdf-label {
     color: #8fe6b8 !important;
   }
-
-  .empty-state {
-    background: #1a1f1d !important;
-    border-color: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .empty-title { color: #ffffff !important; }
-  .empty-sub { color: #8a9a92 !important; }
 
   .btn-ver-pdf-hist {
     background: linear-gradient(135deg, #1A7A4C 0%, #145C42 100%) !important;
@@ -560,6 +586,58 @@
 
     &:disabled {
       box-shadow: 0 2px 6px rgba(78, 107, 95, 0.2) !important;
+    }
+  }
+
+  .empty-state {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .empty-title {
+    color: #ffffff !important;
+  }
+
+  .empty-sub {
+    color: #8a9a92 !important;
+  }
+
+  .costo-resumen-hist {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .costo-row-hist {
+    color: #c8ddd2 !important;
+  }
+
+  .costo-total-hist {
+    border-top-color: rgba(34, 160, 107, 0.3) !important;
+    color: #8fe6b8 !important;
+  }
+
+  .info-note {
+    background: rgba(99, 102, 241, 0.15) !important;
+    border-color: rgba(99, 102, 241, 0.3) !important;
+    color: #a5b4fc !important;
+  }
+
+  .pdf-adjunto {
+    background: rgba(244, 67, 54, 0.15) !important;
+    border-color: rgba(244, 67, 54, 0.3) !important;
+    color: #ff8a80 !important;
+
+    &:hover {
+      background: rgba(244, 67, 54, 0.25) !important;
+    }
+  }
+
+  .lightbox-close {
+    background: #1a1f1d !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #2a3f3d !important;
     }
   }
 }

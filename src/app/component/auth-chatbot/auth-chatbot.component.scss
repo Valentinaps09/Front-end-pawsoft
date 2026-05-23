@@ -275,6 +275,10 @@
     right: 12px;
     box-shadow: 0 3px 12px rgba(16, 185, 129, 0.4);
     opacity: 0.85;
+
+    &.hidden-by-accessibility {
+      right: 320px; /* Ajuste para móviles */
+    }
   }
 
   .chat-window {
@@ -282,6 +286,45 @@
     right: 8px;
     width: calc(100vw - 16px);
     max-width: 340px;
+
+    &.hidden-by-accessibility {
+      right: 320px; /* Ajuste para móviles */
+      width: calc(100vw - 340px);
+      max-width: 300px;
+    }
+  }
+
+  /* Escalado móvil para accesibilidad */
+  body.font-large .fab-btn {
+    width: 54px !important;
+    height: 54px !important;
+    
+    svg {
+      width: 32px !important;
+      height: 32px !important;
+    }
+  }
+
+  body.font-xlarge .fab-btn {
+    width: 64px !important;
+    height: 64px !important;
+    
+    svg {
+      width: 38px !important;
+      height: 38px !important;
+    }
+  }
+
+  body.font-large .chat-window {
+    width: calc(100vw - 20px) !important;
+    max-width: 360px !important;
+    height: 520px !important;
+  }
+
+  body.font-xlarge .chat-window {
+    width: calc(100vw - 24px) !important;
+    max-width: 380px !important;
+    height: 560px !important;
   }
 }
 
@@ -296,6 +339,177 @@
     opacity: 0;
     transform: scale(0.6) rotate(20deg);
     pointer-events: none;
+  }
+}
+
+/* Reposicionar cuando accesibilidad está abierta */
+.fab-btn.hidden-by-accessibility {
+  right: 380px; /* Mover más a la izquierda para dar espacio al panel */
+  transition: right 0.3s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s;
+}
+
+.chat-window.hidden-by-accessibility {
+  right: 380px; /* Mover más a la izquierda para dar espacio al panel */
+  transition: right 0.3s ease, opacity 0.28s ease, transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Escalado de fuente para accesibilidad ── */
+body.font-large .fab-btn {
+  width: 70px !important;
+  height: 70px !important;
+  
+  svg {
+    width: 36px !important;
+    height: 36px !important;
+  }
+}
+
+body.font-xlarge .fab-btn {
+  width: 80px !important;
+  height: 80px !important;
+  
+  svg {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}
+
+body.font-large .chat-window {
+  width: 380px !important;
+  height: 540px !important;
+}
+
+body.font-xlarge .chat-window {
+  width: 420px !important;
+  height: 590px !important;
+}
+
+body.font-large .bot-name {
+  font-size: 16px !important;
+}
+
+body.font-xlarge .bot-name {
+  font-size: 18px !important;
+}
+
+body.font-large .bot-status {
+  font-size: 13px !important;
+}
+
+body.font-xlarge .bot-status {
+  font-size: 15px !important;
+}
+
+body.font-large .bubble {
+  font-size: 15px !important;
+  
+  ::ng-deep {
+    p, span, strong, em, li, ol, ul, div {
+      font-size: 15px !important;
+    }
+    
+    * {
+      font-size: inherit !important;
+    }
+  }
+}
+
+body.font-xlarge .bubble {
+  font-size: 17px !important;
+  
+  ::ng-deep {
+    p, span, strong, em, li, ol, ul, div {
+      font-size: 17px !important;
+    }
+    
+    * {
+      font-size: inherit !important;
+    }
+  }
+}
+
+body.font-large .input-field {
+  font-size: 15px !important;
+  
+  &::placeholder {
+    font-size: 15px !important;
+  }
+}
+
+body.font-xlarge .input-field {
+  font-size: 17px !important;
+  
+  &::placeholder {
+    font-size: 17px !important;
+  }
+}
+
+/* Asegurar que el texto escrito por el usuario también se escale */
+body.font-large .message.user .bubble {
+  font-size: 15px !important;
+}
+
+body.font-xlarge .message.user .bubble {
+  font-size: 17px !important;
+}
+
+/* Asegurar que las respuestas del bot también se escalen */
+body.font-large .message.bot .bubble {
+  font-size: 15px !important;
+}
+
+body.font-xlarge .message.bot .bubble {
+  font-size: 17px !important;
+}
+
+/* Escalado del indicador de typing */
+body.font-large .typing span {
+  width: 8px !important;
+  height: 8px !important;
+}
+
+body.font-xlarge .typing span {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+/* Escalado del botón de enviar */
+body.font-large .send-btn {
+  width: 42px !important;
+  height: 42px !important;
+  
+  svg {
+    width: 18px !important;
+    height: 18px !important;
+  }
+}
+
+body.font-xlarge .send-btn {
+  width: 46px !important;
+  height: 46px !important;
+  
+  svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+}
+
+/* Escalado del input field */
+body.font-large .input-field {
+  font-size: 15px !important;
+  padding: 11px 16px !important;
+  
+  &::placeholder {
+    font-size: 15px !important;
+  }
+}
+
+body.font-xlarge .input-field {
+  font-size: 17px !important;
+  padding: 12px 18px !important;
+  
+  &::placeholder {
+    font-size: 17px !important;
   }
 }
 

@@ -180,7 +180,9 @@ export class LoginPage implements OnInit, OnDestroy {
   // ── Fase 1: Login ──────────────────────────────────────────────
 
   login(): void {
-    if (!this.recaptchaToken) {
+    const isDemoUser = this.email.trim().toLowerCase() === 'demo@pawsoft.com';
+
+    if (!isDemoUser && !this.recaptchaToken) {
       this.errorMsg = 'Por favor, completa el reCAPTCHA antes de continuar.';
       return;
     }
@@ -191,15 +193,26 @@ export class LoginPage implements OnInit, OnDestroy {
     this.cargando            = true;
 
     const sub = this.authService.login(this.email, this.password, this.recaptchaToken).subscribe({
-      next: () => {
+      next: (res: any) => {
         this.cargando       = false;
-        this.correoUsuario  = this.email;
-        localStorage.setItem('email_pendiente', this.email);
-        this.password       = '';
         this.recaptchaToken = '';
         this.resetRecaptcha();
-        this.mostrarOtp     = true;
+
+        // Usuario demo — el back retorna JWT directo, sin 2FA
+        if (res?.token) {
+          this.authService.guardarSesion(res.token, res.role, this.email, res.refreshToken);
+          localStorage.removeItem('email_pendiente');
+          this.redirigirPorRol(res.role);
+          return;
+        }
+
+        // Flujo normal — espera código 2FA
+        this.correoUsuario = this.email;
+        localStorage.setItem('email_pendiente', this.email);
+        this.password   = '';
+        this.mostrarOtp = true;
       },
+
       error: (err: unknown) => {
         this.cargando       = false;
         this.recaptchaToken = '';

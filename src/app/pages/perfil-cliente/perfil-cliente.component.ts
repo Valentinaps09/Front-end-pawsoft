@@ -96,6 +96,11 @@ export class PerfilClienteComponent implements OnInit, OnDestroy {
 
   loadProfile(): void {
     this.loadingProfile = true;
+    
+    // Cargar datos del localStorage primero (instantáneo)
+    this.email = localStorage.getItem('email') || '';
+    
+    // Luego cargar del backend
     this.profileService.getProfile().subscribe({
       next: (data) => {
         this.name  = data.name  ?? '';
@@ -105,7 +110,7 @@ export class PerfilClienteComponent implements OnInit, OnDestroy {
         this.loadingProfile = false;
       },
       error: () => {
-        this.email = localStorage.getItem('email') || '';
+        // Ya tenemos el email del localStorage
         this.loadingProfile = false;
       }
     });

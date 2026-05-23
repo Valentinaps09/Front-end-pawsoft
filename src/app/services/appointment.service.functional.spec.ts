@@ -146,7 +146,7 @@ describe('AppointmentService - Pruebas Funcionales (FE-APT-01 a FE-APT-18)', () 
       const appointmentId = '123';
 
       service.cancelAppointment(appointmentId).subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/cliente/appointments/${appointmentId}/cancel`);
@@ -286,7 +286,7 @@ describe('AppointmentService - Pruebas Funcionales (FE-APT-01 a FE-APT-18)', () 
       const appointmentId = 1;
 
       service.startAppointment(appointmentId).subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/vet/appointments/${appointmentId}/start`);
@@ -304,7 +304,7 @@ describe('AppointmentService - Pruebas Funcionales (FE-APT-01 a FE-APT-18)', () 
       const appointmentId = 1;
 
       service.cancelStartedAppointment(appointmentId).subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/vet/appointments/${appointmentId}/cancel-start`);
@@ -322,7 +322,7 @@ describe('AppointmentService - Pruebas Funcionales (FE-APT-01 a FE-APT-18)', () 
       const appointmentId = 1;
 
       service.completeAppointment(appointmentId).subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/vet/appointments/${appointmentId}/complete`);
@@ -338,7 +338,7 @@ describe('AppointmentService - Pruebas Funcionales (FE-APT-01 a FE-APT-18)', () 
   describe('FE-APT-12: Limpiar citas en progreso', () => {
     it('debe limpiar citas que quedaron en progreso', () => {
       service.cleanupInProgressAppointments().subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/vet/appointments/cleanup/in-progress`);

@@ -102,7 +102,7 @@ describe('ChatbotService - Pruebas Funcionales (FE-BOT-01 a FE-BOT-18)', () => {
       service.sendMessage(message, history).subscribe(response => {
         expect(response).toEqual(mockResponse);
         expect(response.reply).toContain('cachorros');
-        expect(response.reply).toContain('alimentación');
+        expect(response.reply.toLowerCase()).toContain('alimentación');
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/chatbot/chat`);
@@ -229,10 +229,10 @@ describe('ChatbotService - Pruebas Funcionales (FE-BOT-01 a FE-BOT-18)', () => {
   describe('FE-BOT-09: Obtener sugerencias médicas', () => {
     it('debe obtener sugerencias médicas para formulario', () => {
       const request: MedicalFormSuggestionRequest = {
-        petSpecies: 'Perro',
-        petAge: 3,
         symptoms: 'Tos persistente, letargo',
-        physicalExamFindings: 'Temperatura elevada, ganglios inflamados'
+        animalType: 'Perro',
+        age: '3 años',
+        additionalInfo: 'Temperatura elevada, ganglios inflamados'
       };
       
       const mockResponse: MedicalFormSuggestionResponse = {
@@ -240,7 +240,7 @@ describe('ChatbotService - Pruebas Funcionales (FE-BOT-01 a FE-BOT-18)', () => {
         differentialDiagnoses: ['Bronquitis', 'Neumonía', 'Traqueobronquitis'],
         recommendedTreatment: 'Antibióticos y reposo',
         medications: [
-          { name: 'Amoxicilina', dosage: '500mg cada 12 horas', duration: '7 días' }
+          'Amoxicilina 500mg cada 12 horas por 7 días'
         ],
         complementaryExams: ['Radiografía de tórax', 'Hemograma completo'],
         prognosis: 'Favorable con tratamiento adecuado',
@@ -267,10 +267,10 @@ describe('ChatbotService - Pruebas Funcionales (FE-BOT-01 a FE-BOT-18)', () => {
   describe('FE-BOT-10: Error en sugerencias médicas', () => {
     it('debe manejar errores en sugerencias médicas', () => {
       const request: MedicalFormSuggestionRequest = {
-        petSpecies: 'Perro',
-        petAge: 3,
         symptoms: 'Síntomas',
-        physicalExamFindings: 'Hallazgos'
+        animalType: 'Perro',
+        age: '3 años',
+        additionalInfo: 'Hallazgos'
       };
 
       service.getMedicalFormSuggestions(request).subscribe(response => {

@@ -11,14 +11,37 @@
     </div>
 
     <div class="content-area">
-      <div class="empty-state" *ngIf="pets.length === 0">
+      <!-- Skeleton loaders mientras carga -->
+      <div class="pets-grid" *ngIf="loadingPets">
+        <div class="pet-card skeleton-card" *ngFor="let i of [1,2,3]">
+          <div class="pet-card-header">
+            <div class="pet-avatar skeleton-avatar"></div>
+            <div class="pet-card-info">
+              <div class="skeleton-line skeleton-name"></div>
+              <div class="skeleton-line skeleton-species"></div>
+            </div>
+            <div class="skeleton-actions">
+              <div class="skeleton-btn"></div>
+              <div class="skeleton-btn"></div>
+            </div>
+          </div>
+          <div class="pet-card-body">
+            <div class="detail-row" *ngFor="let j of [1,2,3,4]">
+              <div class="skeleton-line skeleton-label"></div>
+              <div class="skeleton-line skeleton-value"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="empty-state" *ngIf="!loadingPets && pets.length === 0">
         <div class="empty-icon">🐾</div>
         <h3>No tienes mascotas registradas</h3>
         <p>Agrega tu primera mascota para comenzar</p>
         <button class="btn-primary" (click)="openCreateModal()">+ Registrar Mascota</button>
       </div>
 
-      <div class="pets-grid" *ngIf="pets.length > 0">
+      <div class="pets-grid" *ngIf="!loadingPets && pets.length > 0">
         <div class="pet-card" *ngFor="let pet of pets" [class.deceased]="pet.isDeceased">
           <!-- Indicador de mascota fallecida -->
           <div class="deceased-banner" *ngIf="pet.isDeceased">

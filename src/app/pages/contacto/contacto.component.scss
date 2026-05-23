@@ -381,3 +381,117 @@ body.underline-links .email-link {
     font-size: 0.85rem !important;
   }
 }
+
+
+/* ══════════════════════════════════════════════════════
+   MODO OSCURO - CONTACTO
+══════════════════════════════════════════════════════ */
+
+:host-context(body.theme-dark) {
+
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  .contact-card,
+  .info-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .contact-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .header-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .contact-header h2 {
+    color: #ffffff !important;
+  }
+
+  .contact-header p {
+    color: #b8c5be !important;
+  }
+
+  .detail-item {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .detail-icon {
+    background: #1a1f1d !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .detail-label {
+    color: #b8c5be !important;
+  }
+
+  .whatsapp-number,
+  .whatsapp-action {
+    color: #7dd3a3 !important;
+  }
+
+  .whatsapp-link:hover .whatsapp-number,
+  .whatsapp-link:hover .whatsapp-action {
+    color: #a3e6c4 !important;
+  }
+
+  .email-link {
+    color: #7dd3a3 !important;
+  }
+
+  .email-link:hover {
+    color: #a3e6c4 !important;
+  }
+
+  .detail-value {
+    color: #ffffff !important;
+  }
+
+  .detail-value strong {
+    color: #7dd3a3 !important;
+  }
+
+  .info-card h3 {
+    color: #ffffff !important;
+  }
+
+  .help-list li {
+    color: #ffffff !important;
+  }
+
+  .help-list li::before {
+    color: #7dd3a3 !important;
+  }
+
+  /* Scrollbar personalizado en modo oscuro */
+  .main-content::-webkit-scrollbar-track {
+    background: rgba(26, 122, 76, 0.08) !important;
+  }
+
+  .main-content::-webkit-scrollbar-thumb {
+    background: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .main-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(26, 122, 76, 0.5) !important;
+  }
+}

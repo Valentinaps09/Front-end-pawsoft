@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
+import { UiStateService } from '../../services/ui-state.service';
 
 interface ChatMessage {
   role: 'user' | 'model';
@@ -25,6 +26,7 @@ export class AuthChatbotComponent implements OnInit {
   messages: ChatMessage[] = [];
   inputText = '';
   isLoading = false;
+  accessibilityPanelOpen = false;
 
   private readonly SYSTEM_PROMPT = `Eres un asistente virtual de autenticación para Pawsoft, una aplicación de gestión veterinaria.
 
@@ -52,10 +54,20 @@ INFORMACIÓN ÚTIL:
 
   constructor(
     private http: HttpClient,
-    private sanitizer: DomSanitizer
-  ) {}
+    private sanitizer: DomSanitizer,
+    private uiStateService: UiStateService
+  ) {
+    this.uiStateService.accessibilityPanelOpen$.subscribe(isOpen => {
+      this.accessibilityPanelOpen = isOpen;
+      if (isOpen && this.isOpen) {
+        // Opcional: cerrar el chat cuando se abre accesibilidad
+        // this.isOpen = false;
+      }
+    });
+  }
 
   ngOnInit() {
+    console.log('[AUTH-CHATBOT] Inicializando con contexto:', this.context);
     // Mensaje inicial según contexto
     const mensajeInicial = this.getMensajeInicial();
     this.addBotMessage(mensajeInicial);

@@ -18,7 +18,8 @@
     "test:chatbot": "ng test --include='**/chatbot.service.functional.spec.ts'",
     "test:login": "ng test --include='**/login.page.spec.ts'",
     "test:interceptor": "ng test --include='**/token-refresh.interceptor.spec.ts'",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "sonar": "sonar-scanner"
   },
   "private": true,
   "dependencies": {
@@ -69,6 +70,8 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
+    "karma-junit-reporter": "^2.0.1",
+    "sonarqube-scanner": "^4.2.3",
     "typescript": "~5.9.0"
   },
   "description": "An Ionic project"

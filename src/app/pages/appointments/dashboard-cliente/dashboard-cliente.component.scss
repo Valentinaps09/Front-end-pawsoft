@@ -879,6 +879,27 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+}
+
+.pay-pet-name {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--texto);
+  line-height: 1.2;
+}
+
+.pay-service {
+  font-size: 0.82rem;
+  color: var(--texto-secundario);
+  line-height: 1.3;
+}
+
+.pay-date {
+  font-size: 0.78rem;
+  color: var(--verde-oscuro);
+  font-weight: 600;
+  line-height: 1.3;
 }
 
 .pay-right {
@@ -886,6 +907,7 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
+  flex-shrink: 0;
 }
 
 .pay-amount {
@@ -959,8 +981,10 @@
 
   .section-card {
     padding: 14px !important;
-    margin-bottom: 14px !important;
+    margin-bottom: 24px !important;
     border-radius: 12px !important;
+    position: relative !important;
+    z-index: auto !important;
   }
 
   .section-header h3 { font-size: 0.85rem !important; }
@@ -1087,8 +1111,52 @@
     text-align: center !important;
   }
 
-  .pay-item { padding: 8px 10px !important; }
-  .pay-amount { font-size: 0.85rem !important; }
+  .pay-item { 
+    padding: 8px 10px !important;
+    flex-wrap: wrap !important;
+    gap: 8px !important;
+  }
+  
+  .pay-icon {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    font-size: 0.9rem !important;
+  }
+  
+  .pay-info {
+    flex: 1 !important;
+    min-width: 0 !important;
+  }
+  
+  .pay-pet-name {
+    font-size: 0.85rem !important;
+  }
+  
+  .pay-service {
+    font-size: 0.78rem !important;
+  }
+  
+  .pay-date {
+    font-size: 0.75rem !important;
+  }
+  
+  .pay-right {
+    align-items: flex-end !important;
+    flex-shrink: 0 !important;
+    min-width: fit-content !important;
+  }
+  
+  .pay-amount { 
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+  }
+  
+  .pay-badge {
+    font-size: 0.68rem !important;
+    padding: 2px 6px !important;
+    white-space: nowrap !important;
+  }
 }
 
 * { cursor: inherit; }
@@ -1229,4 +1297,620 @@ button, [role="button"], .pet-chip, .cal-day, .time-slot { cursor: pointer; }
   font-size: 0.78rem;
   color: var(--texto-secundario);
   line-height: 1.4;
+}
+
+
+/* ══════════════════════════════════════════════════════
+   MODO OSCURO - DASHBOARD CLIENTE
+══════════════════════════════════════════════════════ */
+
+:host-context(body.theme-dark) {
+
+  --verde: #1A7A4C !important;
+  --verde-claro: rgba(26, 122, 76, 0.15) !important;
+  --verde-hover: rgba(26, 122, 76, 0.25) !important;
+  --verde-oscuro: #7dd3a3 !important;
+  --texto: #ffffff !important;
+  --texto-secundario: #b8c5be !important;
+  --borde: rgba(255, 255, 255, 0.15) !important;
+  --fondo: #0a0f0d !important;
+  --blanco: #1a1f1d !important;
+  --rojo: #ff6b6b !important;
+  --rojo-claro: rgba(255, 107, 107, 0.12) !important;
+
+  .dashboard-layout {
+    background: linear-gradient(135deg, #0a0f0d 0%, #121816 100%) !important;
+    color: #ffffff !important;
+  }
+
+  .topbar {
+    background: #1a1f1d !important;
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .topbar-title {
+    color: #ffffff !important;
+  }
+
+  .topbar-sub {
+    color: #b8c5be !important;
+  }
+
+  .section-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+  }
+
+  .section-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .section-header h3 {
+    color: #ffffff !important;
+  }
+
+  .appointment-item {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.cancelled {
+      background: #0f1412 !important;
+      opacity: 0.5 !important;
+    }
+  }
+
+  .appt-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .appt-pet-name {
+    color: #ffffff !important;
+  }
+
+  .appt-datetime {
+    color: #7dd3a3 !important;
+  }
+
+  .appt-reason {
+    color: #b8c5be !important;
+  }
+
+  .appt-vet {
+    color: #7dd3a3 !important;
+  }
+
+  .btn-cancel-small {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .appt-cancelled-label {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #8a9a92 !important;
+  }
+
+  .no-appointments {
+    color: #b8c5be !important;
+  }
+
+  .pets-grid .pet-chip {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.hospitalized {
+      background: rgba(244, 184, 96, 0.15) !important;
+      border-color: rgba(244, 184, 96, 0.4) !important;
+      opacity: 0.8 !important;
+    }
+  }
+
+  .hospitalized-badge {
+    background: #f4b860 !important;
+    border-color: #1a1f1d !important;
+  }
+
+  .pet-status {
+    color: #f4b860 !important;
+  }
+
+  .no-pets {
+    color: #b8c5be !important;
+  }
+
+  .calendar-widget {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .cal-month {
+    color: #ffffff !important;
+  }
+
+  .cal-nav-btn {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .cal-day-name {
+    color: #b8c5be !important;
+  }
+
+  .cal-day {
+    color: #ffffff !important;
+
+    &.available:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.today:not(.selected) {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &.disabled {
+      opacity: 0.2 !important;
+    }
+  }
+
+  .time-slot {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: #1A7A4C !important;
+      color: #ffffff !important;
+      border-color: #22A06B !important;
+    }
+
+    &:disabled {
+      opacity: 0.3 !important;
+    }
+  }
+
+  .selected-date-label {
+    color: #7dd3a3 !important;
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .loading-slots {
+    color: #b8c5be !important;
+  }
+
+  .spinner {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    border-top-color: #1A7A4C !important;
+  }
+
+  .form-label {
+    color: #ffffff !important;
+  }
+
+  .form-select,
+  .form-input,
+  .form-textarea {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    color: #ffffff !important;
+
+    &::placeholder {
+      color: rgba(255, 255, 255, 0.4) !important;
+    }
+
+    &:focus {
+      border-color: #1A7A4C !important;
+      box-shadow: 0 0 0 3px rgba(26, 122, 76, 0.2) !important;
+    }
+  }
+
+  .appointment-summary {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .summary-row {
+    border-bottom-color: rgba(26, 122, 76, 0.2) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .btn-confirm {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover:not(:disabled) {
+      background: #22A06B !important;
+      box-shadow: 0 4px 14px rgba(26, 122, 76, 0.4) !important;
+    }
+  }
+
+  .btn-link {
+    color: #7dd3a3 !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .btn-primary {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+
+    &:hover {
+      background: #22A06B !important;
+    }
+  }
+
+  .btn-secondary {
+    background: #0f1412 !important;
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .btn-danger {
+    background: rgba(255, 107, 107, 0.12) !important;
+    color: #ff6b6b !important;
+    border-color: rgba(255, 107, 107, 0.3) !important;
+
+    &:hover {
+      background: rgba(255, 107, 107, 0.2) !important;
+    }
+  }
+
+  .btn-toggle-all {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.25) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .vets-grid .vet-card {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+
+    &.selected {
+      background: rgba(26, 122, 76, 0.15) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .vet-avatar {
+    background: rgba(26, 122, 76, 0.15) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+    color: #7dd3a3 !important;
+  }
+
+  .vet-name {
+    color: #ffffff !important;
+  }
+
+  .vet-specialty {
+    color: #b8c5be !important;
+  }
+
+  .vet-selected-check {
+    background: #1A7A4C !important;
+    color: #ffffff !important;
+  }
+
+  .no-vets {
+    color: #b8c5be !important;
+  }
+
+  .modal-overlay {
+    background: rgba(0, 0, 0, 0.7) !important;
+  }
+
+  .modal-card {
+    background: #1a1f1d !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .modal-header {
+    border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+
+    h3 {
+      color: #ffffff !important;
+    }
+  }
+
+  .modal-close {
+    background: #0f1412 !important;
+    color: #b8c5be !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.15) !important;
+    }
+  }
+
+  .modal-footer {
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .cancel-warning-box {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    p {
+      color: #f4b860 !important;
+    }
+
+    strong {
+      color: #f4b860 !important;
+    }
+  }
+
+  .cancel-details {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .detail-row {
+    border-bottom-color: rgba(255, 255, 255, 0.05) !important;
+    color: #b8c5be !important;
+
+    strong {
+      color: #ffffff !important;
+    }
+  }
+
+  .toast {
+    background: #1a1f1d !important;
+    color: #ffffff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6) !important;
+
+    &.toast-success {
+      border-left-color: #1A7A4C !important;
+    }
+
+    &.toast-error {
+      border-left-color: #ff6b6b !important;
+    }
+  }
+
+  .pay-item {
+    border-color: rgba(255, 255, 255, 0.15) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.08) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .pay-icon {
+    background: rgba(26, 122, 76, 0.15) !important;
+  }
+
+  .pay-pet-name {
+    color: #ffffff !important;
+  }
+
+  .pay-service {
+    color: #b8c5be !important;
+  }
+
+  .pay-date {
+    color: #7dd3a3 !important;
+  }
+
+  .pay-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .pay-badge {
+    &.paid {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.pending {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+  }
+
+  .price-hint-box {
+    background: rgba(26, 122, 76, 0.12) !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+  }
+
+  .price-hint-label {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-amount {
+    color: #7dd3a3 !important;
+  }
+
+  .price-hint-disclaimer {
+    color: #b8c5be !important;
+  }
+
+  .price-hint-no-price {
+    background: rgba(244, 184, 96, 0.12) !important;
+    border-color: rgba(244, 184, 96, 0.3) !important;
+
+    .price-hint-disclaimer {
+      color: #f4b860 !important;
+    }
+  }
+
+  .appt-status-badge {
+    &.completed {
+      background: rgba(26, 122, 76, 0.15) !important;
+      color: #7dd3a3 !important;
+    }
+
+    &.confirmed {
+      background: rgba(74, 143, 212, 0.15) !important;
+      color: #5B9FE4 !important;
+    }
+
+    &.no_show {
+      background: rgba(244, 184, 96, 0.15) !important;
+      color: #f4b860 !important;
+    }
+
+    &.pending-status {
+      background: rgba(255, 255, 255, 0.05) !important;
+      color: #8a9a92 !important;
+    }
+  }
+
+  .btn-view-record {
+    background: rgba(26, 122, 76, 0.15) !important;
+    color: #7dd3a3 !important;
+    border-color: rgba(26, 122, 76, 0.3) !important;
+
+    &:hover {
+      background: rgba(26, 122, 76, 0.25) !important;
+      border-color: #1A7A4C !important;
+    }
+  }
+
+  .medical-record-summary {
+    background: #0f1412 !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .record-title {
+    color: #7dd3a3 !important;
+  }
+
+  .record-text {
+    color: #ffffff !important;
+  }
+
+  .medication-item {
+    background: #1a1f1d !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .med-name {
+    color: #ffffff !important;
+  }
+
+  .med-details {
+    color: #b8c5be !important;
+  }
+
+  .content-area {
+    scrollbar-color: rgba(26, 122, 76, 0.3) transparent !important;
+
+    &::-webkit-scrollbar-thumb {
+      background: rgba(26, 122, 76, 0.3) !important;
+
+      &:hover {
+        background: rgba(26, 122, 76, 0.5) !important;
+      }
+    }
+  }
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   SKELETON LOADERS PARA MASCOTAS
+═══════════════════════════════════════════════════════════════ */
+
+.skeleton-pet {
+  pointer-events: none;
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-pet-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #E8F5EE 25%, #F0F7F3 50%, #E8F5EE 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  margin: 0 auto 8px;
+}
+
+.skeleton-pet-name {
+  width: 70%;
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #E8F5EE 25%, #F0F7F3 50%, #E8F5EE 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  margin: 0 auto;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes skeleton-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }

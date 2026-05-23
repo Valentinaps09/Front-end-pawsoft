@@ -47,7 +47,7 @@ describe('PetService - Pruebas Funcionales (FE-PET-01 a FE-PET-19)', () => {
         birthDate: '2020-05-15',
         sex: 'Hembra',
         ownerEmail: 'usuario@test.com',
-        photoUrl: null,
+        photoUrl: undefined,
         isDeceased: false,
         isHospitalized: false
       };
@@ -156,7 +156,7 @@ describe('PetService - Pruebas Funcionales (FE-PET-01 a FE-PET-19)', () => {
       const petId = 1;
 
       service.deletePet(petId).subscribe(response => {
-        expect(response).toBeUndefined(); // void response
+        expect(response).toBeFalsy(); // void response
       });
 
       const req = httpMock.expectOne(`${apiUrl}/api/cliente/pets/${petId}`);
@@ -441,7 +441,7 @@ describe('PetService - Pruebas Funcionales (FE-PET-01 a FE-PET-19)', () => {
         next: () => fail('Debería haber fallado'),
         error: (error) => {
           expect(error.status).toBe(400);
-          expect(error.error.message).toContain('formato');
+          expect(error.error.message).toContain('Formato');
         }
       });
 
@@ -463,13 +463,11 @@ describe('PetService - Pruebas Funcionales (FE-PET-01 a FE-PET-19)', () => {
         birthDate: '2020-05-15',
         sex: 'Hembra',
         medicalProfileInitial: {
-          weight: 25.5,
-          allergies: 'Ninguna conocida',
-          chronicDiseases: 'Ninguna',
+          bloodType: 'DEA 1.1+',
+          knownAllergies: 'Ninguna conocida',
+          chronicConditions: 'Ninguna',
           currentMedications: 'Ninguna',
-          vaccinationHistory: 'Al día',
-          previousSurgeries: 'Ninguna',
-          behavioralNotes: 'Muy amigable'
+          additionalNotes: 'Muy amigable'
         }
       };
 

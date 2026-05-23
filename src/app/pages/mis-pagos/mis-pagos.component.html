@@ -37,13 +37,31 @@
         <button class="btn-retry" (click)="cargarPagos()">Reintentar</button>
       </div>
 
-      <div class="loading-wrap" *ngIf="isLoading">
+      <!-- Skeleton loaders mientras carga -->
+      <div class="pagos-scroll" *ngIf="loadingPayments">
+        <div class="pagos-list">
+          <div class="pago-card skeleton-card" *ngFor="let i of [1,2,3,4,5]">
+            <div class="skeleton-icon"></div>
+            <div class="pago-info">
+              <div class="skeleton-line skeleton-concepto"></div>
+              <div class="skeleton-line skeleton-meta"></div>
+              <div class="skeleton-line skeleton-fecha"></div>
+            </div>
+            <div class="pago-right">
+              <div class="skeleton-line skeleton-monto"></div>
+              <div class="skeleton-badge"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="loading-wrap" *ngIf="isLoading && !loadingPayments">
         <div class="spinner"></div>
         <span>Cargando pagos...</span>
       </div>
 
       <!-- LISTA CON SCROLL -->
-      <div class="pagos-scroll" *ngIf="!isLoading && !errorMsg">
+      <div class="pagos-scroll" *ngIf="!isLoading && !errorMsg && !loadingPayments">
         <div class="pagos-list">
 
           <div class="pago-card" *ngFor="let pay of pagosFiltrados">

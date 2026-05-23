@@ -98,6 +98,8 @@ export class AppComponent implements OnInit, OnDestroy {
     else if (url.startsWith('/forgot-password')) this.currentAuthContext = 'forgot-password';
     else                                    this.currentAuthContext = 'login';
 
+    console.log('[APP-COMPONENT] URL:', url, 'isAuthRoute:', this.isAuthRoute, 'context:', this.currentAuthContext);
+
     if (isPublic) {
       this.inactivityService.stopWatching();
     } else {

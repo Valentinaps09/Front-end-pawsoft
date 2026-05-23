@@ -118,14 +118,22 @@
               <h3>🐾 Paso 1 · Selecciona tu Mascota</h3>
             </div>
 
-            <div class="no-pets" *ngIf="pets.length === 0">
+            <div class="no-pets" *ngIf="pets.length === 0 && !loadingPets">
               <p>No tienes mascotas registradas</p>
               <button class="btn-link" (click)="router.navigate(['/pet'], { queryParams: { action: 'create' } })">
                 + Registrar mascota
               </button>
             </div>
 
-            <div class="pets-grid" *ngIf="pets.length > 0">
+            <!-- SKELETON LOADER PARA MASCOTAS -->
+            <div class="pets-grid" *ngIf="loadingPets">
+              <div class="pet-chip skeleton-pet" *ngFor="let i of [1,2,3]">
+                <div class="skeleton-pet-avatar"></div>
+                <div class="skeleton-pet-name"></div>
+              </div>
+            </div>
+
+            <div class="pets-grid" *ngIf="pets.length > 0 && !loadingPets">
               <div class="pet-chip" *ngFor="let pet of pets"
                    [class.selected]="selectedPet?.id === pet.id"
                    [class.hospitalized]="pet.isHospitalized"
